@@ -1,0 +1,6 @@
+source ${HOME}/vulkan/1.1.106.0/setup-env.sh
+
+#-- DON'T CHANGE BELOW LINE --
+
+export TOP=`pwd`
+alias croot='cd $TOP'

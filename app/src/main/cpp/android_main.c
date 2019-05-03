@@ -25,11 +25,10 @@
 #include <assert.h>
 #include <vulkan_wrapper.h>
 #include <android_native_app_glue.h>
+#include "vk_engine.h"
 
-#include <android/log.h>
-#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "gearsvk", __VA_ARGS__))
-#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "gearsvk", __VA_ARGS__))
-#define LOGE(...) ((void)__android_log_print(ANDROID_LOG_ERROR, "gearsvk", __VA_ARGS__))
+#define LOG_TAG "gearsvk"
+#include "a3d_log.h"
 
 /***********************************************************
 * platform                                                 *
@@ -39,6 +38,8 @@ typedef struct
 {
 	struct android_app* app;
 	int focus;
+
+	vk_engine_t* engine;
 } platform_t;
 
 static void onAppCmd(struct android_app* app, int32_t cmd);
@@ -48,6 +49,8 @@ static int32_t onInputEvent(struct android_app* app,
 static platform_t*
 platform_new(struct android_app* app)
 {
+	assert(app);
+
 	platform_t* self = (platform_t*)
 	                   calloc(1, sizeof(platform_t));
 	if(self == NULL)
@@ -67,12 +70,27 @@ platform_new(struct android_app* app)
 static void
 platform_termWindow(platform_t* self)
 {
+	assert(self);
+
+	vk_engine_delete(&self->engine);
 }
 
 static void
 platform_initWindow(platform_t* self)
 {
 	assert(self);
+
+	if(self->engine)
+	{
+		LOGW("engine already exists");
+		return;
+	}
+
+	LOGI("InitVulkan=%i", InitVulkan());
+
+	uint32_t version = VK_MAKE_VERSION(1,0,0);
+	self->engine = vk_engine_new(self->app, "gearsvk",
+	                             version);
 }
 
 static void platform_delete(platform_t** _self)
@@ -91,14 +109,18 @@ static void platform_delete(platform_t** _self)
 static void platform_draw(platform_t* self)
 {
 	assert(self);
+
+	if(self->engine)
+	{
+		vk_engine_draw(self->engine);
+	}
 }
 
 static int platform_rendering(platform_t* self)
 {
 	assert(self);
 
-	// TODO - check if Vulkan enabled
-	if(self->focus)
+	if(self->focus && self->engine)
 	{
 		return 1;
 	}

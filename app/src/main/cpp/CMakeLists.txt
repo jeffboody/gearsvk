@@ -10,6 +10,9 @@ add_library(native_app_glue
 set(CMAKE_SHARED_LINKER_FLAGS
     "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")
 
+# Compiler options
+add_compile_options(-Wall -DVK_USE_PLATFORM_ANDROID_KHR)
+
 # Main library
 add_library(gearsvk
             SHARED
@@ -18,15 +21,16 @@ add_library(gearsvk
             ${ANDROID_NDK}/sources/third_party/vulkan/src/common/vulkan_wrapper.cpp
 
             # Source
-            android_main.c)
-
-set(${CMAKE_C_FLAGS}, "${CMAKE_C_FLAGS} -Wall -DVK_USE_PLATFORM_ANDROID_KHR")
-set(${CMAKE_CXX_FLAGS}, "${CMAKE_CXX_FLAGS} -Wall -DVK_USE_PLATFORM_ANDROID_KHR")
+            android_main.c
+            a3d_math.c
+            a3d_log.c
+            vk_engine.c)
 
 target_include_directories(gearsvk
                            PRIVATE
 
                            # PATH
+                           ${ANDROID_NDK}/sources/third_party/vulkan/src/include/vulkan
                            ${ANDROID_NDK}/sources/third_party/vulkan/src/common
                            ${ANDROID_NDK}/sources/android/native_app_glue)
 
