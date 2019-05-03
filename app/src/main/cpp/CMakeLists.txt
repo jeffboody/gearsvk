@@ -36,6 +36,4 @@ target_link_libraries(gearsvk
                       # NDK libraries
                       android
                       native_app_glue
-                      EGL
-                      GLESv1_CM
                       log)

@@ -25,8 +25,6 @@
 #include <assert.h>
 #include <vulkan_wrapper.h>
 #include <android_native_app_glue.h>
-#include <EGL/egl.h>
-#include <GLES/gl.h>
 
 #include <android/log.h>
 #define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "gearsvk", __VA_ARGS__))
@@ -40,9 +38,6 @@
 typedef struct
 {
 	struct android_app* app;
-	EGLDisplay display;
-	EGLSurface surface;
-	EGLContext context;
 	int focus;
 } platform_t;
 
@@ -72,167 +67,12 @@ platform_new(struct android_app* app)
 static void
 platform_termWindow(platform_t* self)
 {
-	if(self->display != EGL_NO_DISPLAY)
-	{
-		eglMakeCurrent(self->display,
-		               EGL_NO_SURFACE, EGL_NO_SURFACE,
-		               EGL_NO_CONTEXT);
-		if(self->context != EGL_NO_CONTEXT)
-		{
-			eglDestroyContext(self->display, self->context);
-			self->context = EGL_NO_CONTEXT;
-		}
-
-		if(self->surface != EGL_NO_SURFACE)
-		{
-			eglDestroySurface(self->display, self->surface);
-			self->surface = EGL_NO_SURFACE;
-		}
-
-		eglTerminate(self->display);
-		self->display = EGL_NO_DISPLAY;
-	}
 }
 
 static void
 platform_initWindow(platform_t* self)
 {
 	assert(self);
-
-	if(self->display != EGL_NO_DISPLAY)
-	{
-		LOGW("initWindow called with existing display");
-		engine_termWindow(self);
-	}
-
-	self->display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-	if(self->display == EGL_NO_DISPLAY)
-	{
-		LOGE("eglGetDisplay failed");
-		return;
-	}
-
-	EGLint major;
-	EGLint minor;
-	if(eglInitialize(self->display, &major, &minor) == EGL_FALSE)
-	{
-		LOGE("eglInitialize failed");
-		goto fail_initalize;
-	}
-	LOGI("EGL %i.%i", major, minor);
-
-	const EGLint attribs[] =
-	{
-		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-		EGL_BLUE_SIZE, 8,
-		EGL_GREEN_SIZE, 8,
-		EGL_RED_SIZE, 8,
-		EGL_NONE
-	};
-
-	// query the number of EGL configs
-	EGLint num_config = 0;
-	if(eglChooseConfig(self->display, attribs, NULL,
-	                   0, &num_config) == EGL_FALSE)
-	{
-		LOGE("eglChooseConfig failed");
-		goto fail_num_config;
-	}
-
-	// allocate temporary array of configs
-	EGLConfig* configs;
-	configs = (EGLConfig*)
-	          calloc(num_config, sizeof(EGLConfig));
-	if(configs == 0)
-	{
-		LOGE("calloc failed");
-		goto fail_alloc_config;
-	}
-
-	// get the configs
-	if(eglChooseConfig(self->display, attribs, configs,
-	                   num_config, &num_config) == EGL_FALSE)
-	{
-		LOGE("eglChooseConfig failed");
-		goto fail_get_config;
-	}
-
-	// choose a config
-	int i;
-	EGLConfig config;
-	for(i = 0; i < num_config; ++i)
-	{
-		EGLint r, g, b;
-		if(eglGetConfigAttrib(self->display, configs[i],
-		                      EGL_RED_SIZE, &r)   &&
-		   eglGetConfigAttrib(self->display, configs[i],
-		                      EGL_GREEN_SIZE, &g) &&
-		   eglGetConfigAttrib(self->display, configs[i],
-		                      EGL_BLUE_SIZE, &b)  &&
-		   (r == 8) && (g == 8) && (b == 8))
-		{
-			config = configs[i];
-			break;
-		}
-	}
-
-	if(i == num_config)
-	{
-		LOGE("invalid config");
-		goto fail_choose;
-	}
-
-	self->surface = eglCreateWindowSurface(self->display,
-	                                       config,
-	                                       self->app->window,
-	                                       NULL);
-	if(self->surface == EGL_NO_SURFACE)
-	{
-		LOGE("eglCreateWindowSurface failed");
-		goto fail_surface;
-	}
-
-	self->context = eglCreateContext(self->display, config,
-	                                 NULL, NULL);
-	if(self->context == EGL_NO_CONTEXT)
-	{
-		LOGE("eglCreateContext failed");
-		goto fail_context;
-	}
-
-	if(eglMakeCurrent(self->display,
-	                  self->surface, self->surface,
-	                  self->context) == EGL_FALSE)
-	{
-		LOGE("eglMakeCurrent failed");
-		goto fail_current;
-	}
-
-	eglQuerySurface(self->display, self->surface,
-	                EGL_WIDTH, &self->width);
-	eglQuerySurface(self->display, self->surface,
-	                EGL_HEIGHT, &self->height);
-	LOGI("%ix%i", self->width, self->height);
-
-	// success
-	return;
-
-	// failure
-	fail_current:
-		eglDestroyContext(self->display, self->context);
-		self->context = EGL_NO_CONTEXT;
-	fail_context:
-		eglDestroySurface(self->display, self->surface);
-		self->surface = EGL_NO_SURFACE;
-	fail_surface:
-	fail_choose:
-	fail_get_config:
-		free(configs);
-	fail_alloc_config:
-	fail_num_config:
-		eglTerminate(self->display);
-	fail_initalize:
-		self->display = EGL_NO_DISPLAY;
 }
 
 static void platform_delete(platform_t** _self)
@@ -251,18 +91,14 @@ static void platform_delete(platform_t** _self)
 static void platform_draw(platform_t* self)
 {
 	assert(self);
-
-	glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
-	eglSwapBuffers(self->display, self->surface);
 }
 
 static int platform_rendering(platform_t* self)
 {
 	assert(self);
 
-	if(self->focus &&
-	   (self->context != EGL_NO_CONTEXT))
+	// TODO - check if Vulkan enabled
+	if(self->focus)
 	{
 		return 1;
 	}
