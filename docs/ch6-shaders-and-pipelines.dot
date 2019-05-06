@@ -1,0 +1,189 @@
+// Copyright (c) 2019 Jeff Boody
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+// sudo apt-get install graphviz
+// dot -Tpdf shaders-and-pipelines.dot -o shaders-and-pipelines.pdf
+// xdot ch6-shaders-and-pipelines.dot
+digraph SHADERS_AND_PIPELINES
+{
+	label="Chapter 6. Shaders and Pipelines";
+	fontsize=20;
+	size="2,1";
+	ratio=fill;
+
+	// handles
+	VkDevice              [shape=box, fillcolor=yellow, style=filled, label="VkDevice\nSee CH1"];
+	VkBuffer              [shape=box, fillcolor=yellow, style=filled, label="VkBuffer\nSee CH2"];
+	VkImageView           [shape=box, fillcolor=yellow, style=filled, label="VkImageView\nSee CH2"];
+	VkBufferView          [shape=box, fillcolor=yellow, style=filled, label="VkBufferView\nSee CH2"];
+	VkCommandBuffer       [shape=box, fillcolor=yellow, style=filled, label="VkCommandBuffer\nSee CH3"];
+	VkShaderModule        [shape=box, fillcolor=yellow, style=filled, label="VkShaderModule\nA shader module contains shader code defined in SPIR-V format."];
+	VkPipeline            [shape=box, fillcolor=yellow, style=filled, label="VkPipeline\nA graphics pipeline consists of a series of stages that perform\nfixed function or programmable transformations.\nA compute pipeline consists of a single programmable stage.\nThe pipeline object encapsulates the state for each stage."];
+	VkPipelineCache       [shape=box, fillcolor=yellow, style=filled, label="VkPipelineCache\nA pipeline cache allows the result of the pipeline construction to be\nreused between pipelines and and between runs of the application.\ne.g. by storing compiled shaders in the pipeline cache data"];
+	VkDescriptorSetLayout [shape=box, fillcolor=yellow, style=filled, label="VkDescriptorSetLayout\nA descriptor set layout is defined by an array of zero or more descriptor\nbindings. Each individual binding represents a resource such as a\nuniform or sampler. The resource binding number corresponds to the same\nbinding number in the shader stages."];
+	VkPipelineLayout      [shape=box, fillcolor=yellow, style=filled, label="VkPipelineLayout\nA pipeline layout describes the complete set of resources that can be\naccessed by the pipeline. The pipeline layout consists of descriptor set layouts\nand push constant ranges (zero or more of each).\nA push constant is a uniform variable in a shader that can be used\njust like a member of a uniform block but is declared in the shader\nwith a push_constant modifier. Push constants are owned by Vulkan and\ncan be pushed into the pipeline directly from the command buffer\nrather than being backed by memory."];
+	VkDescriptorPool      [shape=box, fillcolor=yellow, style=filled, label="VkDescriptorPool\nDescriptor pools are used to optimize allocations of descriptor sets.\nOperations involving descriptor pools are NOT thread safe."];
+	VkDescriptorSet       [shape=box, fillcolor=yellow, style=filled, label="VkDescriptorSet\nA descriptor set is a set of resources that are bound into\nthe pipeline as a group. The descriptor sets are described\nby a descriptor set layout. This descriptor set layout is used\nto allocate the descriptor set and to define the pipeline layout.\nTwo sets with the same layout are considered to be\ncompatible and interchangable."];
+	VkSampler             [shape=box, fillcolor=yellow, style=filled, label="VkSampler\nA sampler encapsulates the state required for the device to read image data."];
+
+	// enums
+	VkPipelineBindPoint        [shape=box, fillcolor=salmon, style=filled, label="VkPipelineBindPoint\n(VK_PIPELINE_BIND_POINT_)\nCOMPUTE\nGRAPHICS"];
+	VkDescriptorType           [shape=box, fillcolor=salmon, style=filled, label="VkDescriptorType\n(VK_DESCRIPTOR_TYPE_)\nSAMPLER\nSAMPLED_IMAGE\nCOMBINED_IMAGE_SAMPLER\nSTORAGE_IMAGE\nUNIFORM_TEXEL_BUFFER\nSTORAGE_TEXEL_BUFFER\nUNIFORM_BUFFER\nSTORAGE_BUFFER\nUNIFORM_BUFFER_DYNAMIC\nSTORAGE_BUFFER_DYNAMIC\nINPUT_ATTACHMENT"];
+	VkShaderStageFlagBits      [shape=box, fillcolor=salmon, style=filled, label="VkShaderStageFlagBits\n(VK_SHADER_STAGE_*)\nVERTEX_BIT\nTESSELLATION_CONTROL_BIT\nTESSELLATION_EVALUATION_BIT\nGEOMETRY_BIT\nFRAGMENT_BIT\nCOMPUTE_BIT\nALL_GRAPHICS\nALL"];
+	VkDescriptorPoolResetFlags [shape=box, fillcolor=salmon, style=filled, label="VkDescriptorPoolResetFlags\n(reserved for future use)"];
+	VkImageLayout              [shape=box, fillcolor=salmon, style=filled, label="VkImageLayout\n(VK_IMAGE_LAYOUT_)\nUNDEFINED\nGENERAL\nCOLOR_ATTACHMENT\nDEPTH_STENCIL_ATTACHMENT_OPTIMAL\nDEPTH_STENCIL_READ_ONLY_OPTIMAL\nSHADER_READ_ONLY_OPTIMAL\nTRANSFER_SRC_OPTIMAL\nTRANSFER_DST_OPTIMAL\nPREINITIALIZED\nPRESENT_SRC_KHR"];
+	VkSamplerCreateFlagBits    [shape=box, fillcolor=salmon, style=filled, label="VkSamplerCreateFlagBits\nVK_SAMPLER_CREATE_*_BIT_EXT\nSUBSAMPLED\nSUBSAMPLED_COARSE_RECONSTRUCTION"];
+	VkFilter                   [shape=box, fillcolor=salmon, style=filled, label="VkFilter\nVK_FILTER_*\nNEAREST\nLINEAR"];
+	VkSamplerMipmapMode        [shape=box, fillcolor=salmon, style=filled, label="VkSamplerMipmapMode\nVK_SAMPLER_MIPMAP_MODE_*\nNEAREST\nLINEAR"];
+	VkSamplerAddressMode       [shape=box, fillcolor=salmon, style=filled, label="VkSamplerAddressMode\nVK_SAMPLER_ADDRESS_MODE_*\nMIRRORED_REPEAT\nCLAMP_TO_EDGE\nCLAMP_TO_BORDER\nMIRROR_CLAMP_TO_EDGE"];
+	VkCompareOp                [shape=box, fillcolor=salmon, style=filled, label="VkCompareOp\nVK_COMPARE_OP_*\nNEVER\nLESS\nEQUAL\nLESS_OR_EQUAL\nGREATER\nNOT_EQUAL\nGREATER_OR_EQUAL\nALWAYS"];
+	VkBorderColor              [shape=box, fillcolor=salmon, style=filled, label="VkBorderColor\nVK_COMPARE_OP_*\nFLOAT_TRANSPARENT_BLACK\nINT_TRANSPARENT_BLACK\nFLOAT_OPAQUE_BLACK\nINT_OPAQUE_BLACK\nFLOAT_OPAQUE_WHITE\nINT_OPAQUE_WHITE"];
+
+	// structures
+	VkShaderModuleCreateInfo        [shape=box, fillcolor=orange, style=filled, label="VkShaderModuleCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkShaderModuleCreateFlags flags;\nsize_t codeSize;\nconst uint32_t* pCode;"];
+	VkComputePipelineCreateInfo     [shape=box, fillcolor=orange, style=filled, label="VkComputePipelineCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkPipelineCreateFlags flags;\nVkPipelineShaderStageCreateInfo stage;\nVkPipelineLayout layout;\nVkPipeline basePipelineHandle;\nint32_t basePipelineIndex;"];
+	VkPipelineShaderStageCreateInfo [shape=box, fillcolor=orange, style=filled, label="VkPipelineShaderStageCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkPipelineShaderStageCreateFlags flags;\nVkShaderStageFlagBits stage;\nVkShaderModule module;\nconst char* pName;\nconst VkSpecializationInfo* pSpecializationInfo;"];
+	VkSpecializationInfo            [shape=box, fillcolor=orange, style=filled, label="VkSpecializationInfo\nuint32_t mapEntryCount;\nconst VkSpecializationMapEntry* pMapEntries;\nsize_t dataSize;\nconst void* pData;"];
+	VkSpecializationMapEntry        [shape=box, fillcolor=orange, style=filled, label="VkSpecializationMapEntry\nuint32_t constantID;\nuint32_t offset;\nsize_t size;"];
+	VkPipelineCacheCreateInfo       [shape=box, fillcolor=orange, style=filled, label="VkPipelineCacheCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkPipelineCacheCreateFlags flags;\nsize_t initialDataSize;\nconst void* pInitialData;"];
+	VkDispatchIndirectCommand       [shape=box, fillcolor=orange, style=filled, label="VkDispatchIndirectCommand\nuint32_t x;\nuint32_t y;\nuint32_t z;"];
+	VkDescriptorSetLayoutCreateInfo [shape=box, fillcolor=orange, style=filled, label="VkDescriptorSetLayoutCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkDescriptorSetLayoutCreateFlags flags;\nuint32_t bindingCount;\nconst VkDescriptorSetLayoutBinding* pBindings;"];
+	VkDescriptorSetLayoutBinding    [shape=box, fillcolor=orange, style=filled, label="VkDescriptorSetLayoutBinding\nuint32_t binding;\nVkDescriptorType descriptorType;\nuint32_t descriptorCount;\nVkShaderStageFlags stageFlags;\nconst VkSampler* pImmutableSamplers;"];
+	VkPipelineLayoutCreateInfo      [shape=box, fillcolor=orange, style=filled, label="VkPipelineLayoutCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkPipelineLayoutCreateFlags flags;\nuint32_t setLayoutCount;\nconst VkDescriptorSetLayout* pSetLayouts;\nuint32_t pushConstantRangeCount;\nconst VkPushConstantRange* pPushConstantRanges;"];
+	VkDescriptorPoolCreateInfo      [shape=box, fillcolor=orange, style=filled, label="VkDescriptorPoolCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkDescriptorPoolCreateFlags flags;\nuint32_t maxSets;\nuint32_t poolSizeCount;\nconst VkDescriptorPoolSize* pPoolSizes;"];
+	VkDescriptorPoolSize            [shape=box, fillcolor=orange, style=filled, label="VkDescriptorPoolSize\nVkDescriptorType type;\nuint32_t descriptorCount;"];
+	VkDescriptorSetAllocateInfo     [shape=box, fillcolor=orange, style=filled, label="VkDescriptorSetAllocateInfo\nVkStructureType sType;\nconst void* pNext;\nVkDescriptorPool descriptorPool;\nuint32_t descriptorSetCount;\nconst VkDescriptorSetLayout* pSetLayouts;"];
+	VkWriteDescriptorSet            [shape=box, fillcolor=orange, style=filled, label="VkWriteDescriptorSet\nVkStructureType sType;\nconst void* pNext;\nVkDescriptorSet dstSet;\nuint32_t dstBinding;\nuint32_t dstArrayElement;\nuint32_t descriptorCount;\nVkDescriptorType descriptorType;\nconst VkDescriptorImageInfo* pImageInfo;\nconst VkDescriptorBufferInfo* pBufferInfo;\nconst VkBufferView* pTexelBufferView;"];
+	VkDescriptorImageInfo           [shape=box, fillcolor=orange, style=filled, label="VkDescriptorImageInfo\nVkSampler sampler;\nVkImageView imageView;\nVkImageLayout imageLayout;"];
+	VkDescriptorBufferInfo          [shape=box, fillcolor=orange, style=filled, label="VkDescriptorBufferInfo\nVkBuffer buffer;\nVkDeviceSize(uint64_t) offset;\nVkDeviceSize(uint64_t) range;"];
+	VkCopyDescriptorSet             [shape=box, fillcolor=orange, style=filled, label="VkCopyDescriptorSet\nVkStructureType sType;\nconst void* pNext;\nVkDescriptorSet srcSet;\nuint32_t srcBinding;\nuint32_t srcArrayElement;\nVkDescriptorSet dstSet;\nuint32_t dstBinding;\nuint32_t dstArrayElement;\nuint32_t descriptorCount;"];
+	VkPushConstantRange             [shape=box, fillcolor=orange, style=filled, label="VkPushConstantRange\nVkShaderStageFlags stageFlags;\nuint32_t offset;\nuint32_t size;"];
+	VkSamplerCreateInfo             [shape=box, fillcolor=orange, style=filled, label="VkSamplerCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkSamplerCreateFlags flags;\nVkFilter magFilter;\nVkFilter minFilter;\nVkSamplerMipmapMode mipmapMode;\nVkSamplerAddressMode addressModeU;\nVkSamplerAddressMode addressModeV;\nVkSamplerAddressMode addressModeW;\nfloat mipLodBias;\nVkBool32 anisotropyEnable;\nfloat maxAnisotropy;\nVkBool32 compareEnable;\nVkCompareOp compareOp;\nfloat minLod;\nfloat maxLod;\nVkBorderColor borderColor;\nVkBool32 unnormalizedCoordinates;"];
+
+	// functions
+	vkCreateShaderModule         [fillcolor=skyblue, style=filled, label="VkResult vkCreateShaderModule(\nVkDevice device,\nconst VkShaderModuleCreateInfo* pCreateInfo,\nconst VkAllocationCallbacks* pAllocator;\nVkShaderModule* pShaderModule);"];
+	vkDestroyShaderModule        [fillcolor=skyblue, style=filled, label="void vkDestroyShaderModule(\nVkDevice device,\nVkShaderModule shaderModule,\nconst VkAllocationCallbacks* pAllocator);"];
+	vkCreateComputePipelines     [fillcolor=skyblue, style=filled, label="VkResult vkCreateComputePipelines(\nVkDevice device,\nVkPipelineCache pipelineCache,\nuint32_t createInfoCount,\nconst VkComputePipelineCreateInfo* pCreateInfos,\nconst VkAllocationCallbacks* pAllocator,\nVkPipeline* pPipelines);"];
+	vkDestroyPipeline            [fillcolor=skyblue, style=filled, label="void vkDestroyPipeline(\nVkDevice device,\nVkPipeline pipeline,\nconst VkAllocationCallbacks* pAllocator);"];
+	vkCreatePipelineCache        [fillcolor=skyblue, style=filled, label="VkResult vkCreatePipelineCache(\nVkDevice device,\nconst VkPipelineCacheCreateInfo* pCreateInfo,\nconst VkAllocationCallbacks* pAllocator,\nVkPipelineCache* pPipelineCache);"];
+	vkGetPipelineCacheData       [fillcolor=skyblue, style=filled, label="VkResult vkGetPipelineCacheData(\nVkDevice device,\nVkPipelineCache pipelineCache,\nsize_t* pDataSize,\nvoid* pData);"];
+	vkMergePipelineCaches        [fillcolor=skyblue, style=filled, label="VkResult vkMergePipelineCaches(\nVkDevice device,\nVkPipelineCache dstCache,\nuint32_t srcCacheCount,\nconst VkPipelineCache* pSrcCaches);"];
+	vkDestroyPipelineCache       [fillcolor=skyblue, style=filled, label="void vkDestroyPipelineCache(\nVkDevice device,\nVkPipelineCache pipelineCache,\nconst VkAllocationCallbacks* pAllocator);"];
+	vkCmdBindPipeline            [fillcolor=skyblue, style=filled, label="void vkCmdBindPipeline(\nVkCommandBuffer commandBuffer,\nVkPipelineBindPoint pipelineBindPoint,\nVkPipeline pipeline);"]
+	vkCmdDispatch                [fillcolor=skyblue, style=filled, label="void vkCmdDispatch(\nVkCommandBuffer commandBuffer,\nuint32_t groupCountX,\nuint32_t groupCountY,\nuint32_t groupCountZ);"];
+	vkCmdDispatchIndirect        [fillcolor=skyblue, style=filled, label="void vkCmdDispatchIndirect(\nVkCommandBuffer commandBuffer,\nVkBuffer buffer,\nVkDeviceSize(uint64_t) offset);"];
+	vkCreateDescriptorSetLayout  [fillcolor=skyblue, style=filled, label="VkResult vkCreateDescriptorSetLayout(\nVkDevice device,\nconst VkDescriptorSetLayoutCreateInfo* pCreateInfo,\nconst VkAllocationCallbacks* pAllocator,\nVkDescriptorSetLayout* pSetLayout);"];
+	vkCreatePipelineLayout       [fillcolor=skyblue, style=filled, label="VkResult vkCreatePipelineLayout(\nVkDevice device,\nconst VkPipelineLayoutCreateInfo* pCreateInfo,\nconst VkAllocationCallbacks* pAllocator,\nVkPipelineLayout* pPipelineLayout);"];
+	vkDestroyPipelineLayout      [fillcolor=skyblue, style=filled, label="void vkDestroyPipelineLayout(\nVkDevice device,\nVkPipelineLayout pipelineLayout,\nconst VkAllocationCallbacks* pAllocator);"];
+	vkDestroyDescriptorSetLayout [fillcolor=skyblue, style=filled, label="void vkDestroyDescriptorSetLayout(\nVkDevice device,\nVkDescriptorSetLayout descriptorSetLayout,\nconst VkAllocationCallbacks* pAllocator);"];
+	vkCreateDescriptorPool       [fillcolor=skyblue, style=filled, label="VkResult vkCreateDescriptorPool(\nVkDevice device,\nconst VkDescriptorPoolCreateInfo* pCreateInfo,\nconst VkAllocationCallbacks* pAllocator,\nVkDescriptorPool* pDescriptorPool);"];
+	vkAllocateDescriptorSets     [fillcolor=skyblue, style=filled, label="VkResult vkAllocateDescriptorSets(\nVkDevice device,\nconst VkDescriptorSetAllocateInfo* pAllocateInfo,\nVkDescriptorSet* pDescriptorSets);"];
+	vkFreeDescriptorSets         [fillcolor=skyblue, style=filled, label="VkResult vkFreeDescriptorSets(\nVkDevice device,\nVkDescriptorPool descriptorPool,\nuint32_t descriptorSetCount,\nconst VkDescriptorSet* pDescriptorSets);"];
+	vkResetDescriptorPool        [fillcolor=skyblue, style=filled, label="VkResult vkResetDescriptorPool(\nVkDevice device,\nVkDescriptorPool descriptorPool,\nVkDescriptorPoolResetFlags flags);"];
+	vkDestroyDescriptorPool      [fillcolor=skyblue, style=filled, label="void vkDestroyDescriptorPool(\nVkDevice device,\nVkDescriptorPool descriptorPool,\nconst VkAllocationCallbacks* pAllocator);"];
+	vkUpdateDescriptorSets       [fillcolor=skyblue, style=filled, label="void vkUpdateDescriptorSets(\nVkDevice device,\nuint32_t descriptorWriteCount,\nconst VkWriteDescriptorSet* pDescriptorWrites,\nuint32_t descriptorCopyCount,\nconst VkCopyDescriptorSet* pDescriptorCopies);"];
+	vkCmdBindDescriptorSets      [fillcolor=skyblue, style=filled, label="void vkCmdBindDescriptorSets(\nVkCommandBuffer commandBuffer,\nVkPipelineBindPoint pipelineBindPoint,\nVkPipelineLayout layout,\nuint32_t firstSet,\nuint32_t descriptorSetCount,\nconst VkDescriptorSet* pDescriptorSets,\nuint32_t dynamicOffsetCount,\nconst uint32_t* pDynamicOffsets);"];
+	vkCmdPushConstants           [fillcolor=skyblue, style=filled, label="void vkCmdPushConstants(\nVkCommandBuffer commandBuffer,\nVkPipelineLayout layout,\nVkShaderStageFlags stageFlags,\nuint32_t offset,\nuint32_t size,\nconst void* pValues);"];
+	vkCreateSampler              [fillcolor=skyblue, style=filled, label="VkResult vkCreateSampler(\nVkDevice device,\nconst VkSamplerCreateInfo* pCreateInfo,\nconst VkAllocationCallbacks* pAllocator,\nVkSampler* pSampler);"];
+	vkDestroySampler             [fillcolor=skyblue, style=filled, label="void vkDestroySampler(\nVkDevice device,\nVkSampler sampler,\nconst VkAllocationCallbacks* pAllocator);"];
+
+	// parameters
+	VkShaderStageFlagBits           -> VkPipelineShaderStageCreateInfo [label="stage"];
+	VkShaderModuleCreateInfo        -> vkCreateShaderModule            [label="pCreateInfo"];
+	vkCreateShaderModule            -> VkShaderModule                  [label="pShaderModule"];
+	VkShaderModule                  -> vkDestroyShaderModule           [label="shaderModule"];
+	VkPipelineCache                 -> vkCreateComputePipelines        [label="pipelineCache"];
+	VkPipelineShaderStageCreateInfo -> VkComputePipelineCreateInfo     [label="stage"];
+	VkComputePipelineCreateInfo     -> vkCreateComputePipelines        [label="pCreateInfos"];
+	vkCreateComputePipelines        -> VkPipeline                      [label="pPipelines"];
+	VkShaderModule                  -> VkPipelineShaderStageCreateInfo [label="module"];
+	VkSpecializationInfo            -> VkPipelineShaderStageCreateInfo [label="pSpecializationInfo"];
+	VkSpecializationMapEntry        -> VkSpecializationInfo            [label="pMapEntries"];
+	VkPipeline                      -> vkDestroyPipeline               [label="pipeline"];
+	VkPipelineCacheCreateInfo       -> vkCreatePipelineCache           [label="pCreateInfo"];
+	vkCreatePipelineCache           -> VkPipelineCache                 [label="pPipelineCache"];
+	VkPipelineCache                 -> vkGetPipelineCacheData          [label="pipelineCache"];
+	VkPipelineCache                 -> vkMergePipelineCaches           [label="pSrcCaches"];
+	vkMergePipelineCaches           -> VkPipelineCache                 [label="dstCache"];
+	VkPipelineCache                 -> vkDestroyPipelineCache          [label="pipelineCache"];
+	VkPipelineBindPoint             -> vkCmdBindPipeline               [label="pipelineBindPoint"];
+	VkPipeline                      -> vkCmdBindPipeline               [label="pipeline"];
+	VkDispatchIndirectCommand       -> vkCmdDispatchIndirect           [label="buffer"];
+	VkDescriptorSetLayoutCreateInfo -> vkCreateDescriptorSetLayout     [label="pCreateInfo"];
+	vkCreateDescriptorSetLayout     -> VkDescriptorSetLayout           [label="pSetLayout"];
+	VkDescriptorSetLayoutBinding    -> VkDescriptorSetLayoutCreateInfo [label="pBindings"];
+	VkDescriptorType                -> VkDescriptorSetLayoutBinding    [label="descriptorType"];
+	VkDescriptorType                -> VkWriteDescriptorSet            [label="descriptorType"];
+	VkDescriptorType                -> VkDescriptorPoolSize            [label="type"];
+	VkShaderStageFlagBits           -> VkDescriptorSetLayoutBinding    [label="stageFlags"];
+	VkShaderStageFlagBits           -> VkPushConstantRange             [label="stageFlags"];
+	VkShaderStageFlagBits           -> vkCmdPushConstants              [label="stageFlags"];
+	VkSampler                       -> VkDescriptorSetLayoutBinding    [label="pImmutableSamplers"];
+	VkSampler                       -> VkDescriptorImageInfo           [label="sampler"];
+	VkSampler                       -> vkDestroySampler                [label="sampler"];
+	vkCreatePipelineLayout          -> VkPipelineLayout                [label="pPipelineLayout"];
+	VkPipelineLayoutCreateInfo      -> vkCreatePipelineLayout          [label="pCreateInfo"];
+	VkDescriptorSetLayout           -> VkPipelineLayoutCreateInfo      [label="pSetLayouts"];
+	VkPipelineLayout                -> vkDestroyPipelineLayout         [label="pipelineLayout"];
+	VkDescriptorSetLayout           -> vkDestroyDescriptorSetLayout    [label="descriptorSetLayout"];
+	VkDescriptorPoolCreateInfo      -> vkCreateDescriptorPool          [label="pCreateInfo"];
+	vkCreateDescriptorPool          -> VkDescriptorPool                [label="pDescriptorPool"];
+	VkDescriptorPoolSize            -> VkDescriptorPoolCreateInfo      [label="pPoolSizes"];
+	vkAllocateDescriptorSets        -> VkDescriptorSet                 [label="pDescriptorSets"];
+	VkDescriptorPool                -> VkDescriptorSetAllocateInfo     [label="descriptorPool"];
+	VkDescriptorSetLayout           -> VkDescriptorSetAllocateInfo     [label="pSetLayouts"];
+	VkDescriptorSetAllocateInfo     -> vkAllocateDescriptorSets        [label="pAllocateInfo"];
+	VkDescriptorPool                -> vkFreeDescriptorSets            [label="descriptorPool"];
+	VkDescriptorSet                 -> vkFreeDescriptorSets            [label="pDescriptorSets"];
+	VkDescriptorPool                -> vkResetDescriptorPool           [label="descriptorPool"];
+	VkDescriptorPool                -> vkDestroyDescriptorPool         [label="descriptorPool"];
+	VkWriteDescriptorSet            -> vkUpdateDescriptorSets          [label="pDescriptorWrites"];
+	VkCopyDescriptorSet             -> vkUpdateDescriptorSets          [label="pDescriptorCopies"];
+	VkDescriptorImageInfo           -> VkWriteDescriptorSet            [label="pImageInfo"];
+	VkDescriptorBufferInfo          -> VkWriteDescriptorSet            [label="pBufferInfo"];
+	VkDescriptorSet                 -> VkWriteDescriptorSet            [label="dstSet"];
+	VkDescriptorSet                 -> VkCopyDescriptorSet             [label="srcSet, dstSet"];
+	VkPipelineBindPoint             -> vkCmdBindDescriptorSets         [label="pipelineBindPoint"];
+	VkPipelineLayout                -> vkCmdBindDescriptorSets         [label="layout"];
+	VkDescriptorSet                 -> vkCmdBindDescriptorSets         [label="pDescriptorSets"];
+	VkPipelineLayout                -> vkCmdPushConstants              [label="layout"];
+	VkSamplerCreateInfo             -> vkCreateSampler                 [label="pCreateInfo"];
+	vkCreateSampler                 -> VkSampler                       [label="pSampler"];
+	VkPushConstantRange             -> VkPipelineLayoutCreateInfo      [label="pPushConstantRanges"];
+	VkDescriptorPoolResetFlags      -> vkResetDescriptorPool           [label="flags"];
+	VkPipelineLayout                -> VkComputePipelineCreateInfo     [label="layout"];
+	VkPipeline                      -> VkComputePipelineCreateInfo     [label="basePipelineHandle"];
+	VkBuffer                        -> VkDescriptorBufferInfo          [label="buffer"];
+	VkBuffer                        -> vkCmdDispatchIndirect           [label="buffer"];
+	VkCommandBuffer                 -> vkCmdBindPipeline               [label="commandBuffer"];
+	VkCommandBuffer                 -> vkCmdDispatch                   [label="commandBuffer"];
+	VkCommandBuffer                 -> vkCmdDispatchIndirect           [label="commandBuffer"];
+	VkCommandBuffer                 -> vkCmdBindDescriptorSets         [label="commandBuffer"];
+	VkCommandBuffer                 -> vkCmdPushConstants              [label="commandBuffer"];
+	VkImageView                     -> VkDescriptorImageInfo           [label="imageView"];
+	VkImageLayout                   -> VkDescriptorImageInfo           [label="imageLayout"];
+	VkBufferView                    -> VkWriteDescriptorSet            [label="pTexelBufferView"];
+	VkSamplerCreateFlagBits         -> VkSamplerCreateInfo             [label="flags"];
+	VkFilter                        -> VkSamplerCreateInfo             [label="magFilter, minFilter"];
+	VkSamplerMipmapMode             -> VkSamplerCreateInfo             [label="mipmapMode"];
+	VkSamplerAddressMode            -> VkSamplerCreateInfo             [label="addressModeU, addressModeV, addressModeW"];
+	VkCompareOp                     -> VkSamplerCreateInfo             [label="compareOp"];
+	VkBorderColor                   -> VkSamplerCreateInfo             [label="borderColor"];
+}

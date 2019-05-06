@@ -1,0 +1,85 @@
+// Copyright (c) 2019 Jeff Boody
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+// sudo apt-get install graphviz
+// xdot ch8-drawing.dot
+digraph DRAWING
+{
+	label="Chapter 8. Drawing";
+	fontsize=20;
+	size="2,1";
+	ratio=fill;
+
+	// handles
+	VkBuffer        [shape=box, fillcolor=yellow, style=filled, label="VkBuffer\nSee CH2"];
+	VkCommandBuffer [shape=box, fillcolor=yellow, style=filled, label="VkCommandBuffer\nSee CH3"];
+	VkRenderPass    [shape=box, fillcolor=yellow, style=filled, label="VkRenderPass\nSee CH7"];
+	VkFramebuffer   [shape=box, fillcolor=yellow, style=filled, label="VkFramebuffer\nSee CH7"];
+
+	// enums
+	VkIndexType       [shape=box, fillcolor=salmon, style=filled, label="VkIndexType\n(VK_INDEX_TYPE_)\nUINT16\nUINT32"];
+	VkSubpassContents [shape=box, fillcolor=salmon, style=filled, label="VkSubpassContents\n(VK_SUBPASS_CONTENTS_*)\nINLINE\nSECONDARY_COMMAND_BUFFERS"];
+
+	// unions
+	VkClearColorValue [shape=box, fillcolor=darkorange, style=filled, label="VkClearColorValue\nfloat float32[4];\nint32_t int32[4];\nuint32_t uint32[4];"];
+
+	// structures
+	VkRenderPassBeginInfo    [shape=box, fillcolor=orange, style=filled, label="VkRenderPassBeginInfo\nVkStructureType sType;\nconst void* pNext;\nVkRenderPass renderPass;\nVkFramebuffer framebuffer;\nVkRect2D renderArea;\nuint32_t clearValueCount;\nconst VkClearValue* pClearValues;"];
+	VkClearValue             [shape=box, fillcolor=orange, style=filled, label="VkClearValue\nVkClearColorValue color;\nVkClearDepthStencilValue depthStencil;"];
+	VkRect2D                 [shape=box, fillcolor=orange, style=filled, label="VkRect2D\nVkOffset2D offset;\nVkExtent2D extent;"];
+	VkClearDepthStencilValue [shape=box, fillcolor=orange, style=filled, label="VkClearDepthStencilValue\nfloat depth;\nuint32_t stencil;"];
+	VkOffset2D               [shape=box, fillcolor=orange, style=filled, label="VkOffset2D\nint32_t x;\nint32_t y;"]
+	VkExtent2D               [shape=box, fillcolor=orange, style=filled, label="VkExtent2D\nuint32_t width;\nuint32_t height;"];
+
+	// functions
+	vkCmdDraw                [fillcolor=skyblue, style=filled, label="void vkCmdDraw(\nVkCommandBuffer commandBuffer,\nuint32_t vertexCount,\nuint32_t instanceCount,\nuint32_t firstVertex,\nuint32_t firstInstance);"];
+	vkCmdBeginRenderPass     [fillcolor=skyblue, style=filled, label="void vkCmdBeginRenderPass(\nVkCommandBuffer commandBuffer,\nconst VkRenderPassBeginInfo* pRenderPassBegin,\nVkSubpassContents contents);"];
+	vkCmdEndRenderPass       [fillcolor=skyblue, style=filled, label="void vkCmdEndRenderPass(\nVkCommandBuffer commandBuffer);"];
+	vkCmdBindVertexBuffers   [fillcolor=skyblue, style=filled, label="void vkCmdBindVertexBuffers(\nVkCommandBuffer commandBuffer,\nuint32_t firstBinding,\nuint32_t bindingCount,\nconst VkBuffer* pBuffers,\nconst VkDeviceSize(uint64_t)* pOffsets);"];
+	vkCmdDrawIndexed         [fillcolor=skyblue, style=filled, label="void vkCmdDrawIndexed(\nVkCommandBuffer commandBuffer,\nuint32_t indexCount,\nuint32_t instanceCount,\nuint32_t firstIndex,\nint32_t vertexOffset,\nuint32_t firstInstance);"];
+	vkCmdBindIndexBuffer     [fillcolor=skyblue, style=filled, label="void vkCmdBindIndexBuffer(\nVkCommandBuffer commandBuffer,\nVkBuffer buffer,\nVkDeviceSize(uint64_t) offset,\nVkIndexType indexType);"];
+	vkCmdDrawIndirect        [fillcolor=skyblue, style=filled, label="void vkCmdDrawIndirect(\nVkCommandBuffer commandBuffer,\nVkBuffer buffer,\nVkDeviceSize(uint64_t) offset,\nuint32_t drawCount,\nuint32_t stride);"];
+	vkCmdDrawIndexedIndirect [fillcolor=skyblue, style=filled, label="void vkCmdDrawIndexedIndirect(\nVkCommandBuffer commandBuffer,\nVkBuffer buffer,\nVkDeviceSize(uint64_t) offset,\nuint32_t drawCount,\nuint32_t stride);"];
+
+	// parameters
+	VkRenderPass             -> VkRenderPassBeginInfo    [label="renderPass"];
+	VkFramebuffer            -> VkRenderPassBeginInfo    [label="framebuffer"];
+	VkRenderPassBeginInfo    -> vkCmdBeginRenderPass     [label="pRenderPassBegin"];
+	VkClearValue             -> VkRenderPassBeginInfo    [label="pClearValues"];
+	VkIndexType              -> vkCmdBindIndexBuffer     [label="indexType"];
+	VkCommandBuffer          -> vkCmdDraw                [label="commandBuffer"];
+	VkCommandBuffer          -> vkCmdBeginRenderPass     [label="commandBuffer"];
+	VkCommandBuffer          -> vkCmdEndRenderPass       [label="commandBuffer"];
+	VkCommandBuffer          -> vkCmdBindVertexBuffers   [label="commandBuffer"];
+	VkCommandBuffer          -> vkCmdDrawIndexed         [label="commandBuffer"];
+	VkCommandBuffer          -> vkCmdBindIndexBuffer     [label="commandBuffer"];
+	VkCommandBuffer          -> vkCmdDrawIndirect        [label="commandBuffer"];
+	VkCommandBuffer          -> vkCmdDrawIndexedIndirect [label="commandBuffer"];
+	VkBuffer                 -> vkCmdBindVertexBuffers   [label="pBuffers"];
+	VkBuffer                 -> vkCmdBindIndexBuffer     [label="buffer"];
+	VkBuffer                 -> vkCmdDrawIndirect        [label="buffer"];
+	VkBuffer                 -> vkCmdDrawIndexedIndirect [label="buffer"];
+	VkSubpassContents        -> vkCmdBeginRenderPass     [label="contents"];
+	VkRect2D                 -> VkRenderPassBeginInfo    [label="renderArea"];
+	VkClearColorValue        -> VkClearValue             [label="color"];
+	VkClearDepthStencilValue -> VkClearValue             [label="depthStencil"]
+	VkOffset2D               -> VkRect2D                 [label="offset"];
+	VkExtent2D               -> VkRect2D                 [label="extent"];
+}

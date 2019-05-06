@@ -1,0 +1,224 @@
+// Copyright (c) 2019 Jeff Boody
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+// sudo apt-get install graphviz
+// xdot ch2-memory-and-references.dot
+digraph MEMORY
+{
+	label="Chapter 2. Memory and References";
+	fontsize=20;
+	size="2,1";
+	ratio=fill;
+
+	// variables
+	pAllocator [shape=box, fillcolor=magenta, style=filled];
+
+	// handles
+	VkDevice       [shape=box, fillcolor=yellow, style=filled, label="VkDevice\nSee CH1"];
+	VkQueue        [shape=box, fillcolor=yellow, style=filled, label="VkQueue\nSee CH3"];
+	VkSemaphore    [shape=box, fillcolor=yellow, style=filled, label="VkSemaphore\nSee CH11"];
+	VkFence        [shape=box, fillcolor=yellow, style=filled, label="VkFence\nSee CH11"];
+	VkImage        [shape=box, fillcolor=yellow, style=filled, label="VkImage\nImages represent multidimensional arrays of data\nwhich can be used for various purposes including\nattachments and textures."];
+	VkBuffer       [shape=box, fillcolor=yellow, style=filled, label="VkBuffer\nBuffers represent linear arrays of data\nwhich are used for various purposes including\nvertex buffers and index buffers."];
+	VkBufferView   [shape=box, fillcolor=yellow, style=filled, label="VkBufferView\nA BufferView object represents a contiguous range of a buffer\nand a specific format to interpret the data."];
+	VkImageView    [shape=box, fillcolor=yellow, style=filled, label="VkImageView\nAn ImageView object represents a contiguous range of an image\nwith additional metadata to interpret the data."];
+	VkDeviceMemory [shape=box, fillcolor=yellow, style=filled, label="VkDeviceMemory\nA Vulkan device operates on data that must be stored in device memory\nwhich may be physically separate from CPU accessible memory"];
+
+	// enums
+	VkSystemAllocationScope     [shape=box, fillcolor=salmon, style=filled, label="VkSystemAllocationScope\n(VK_SYSTEM_ALLOCATION_SCOPE_)\nCOMMAND\nOBJECT\nCACHE\nDEVICE\nINSTANCE"];
+	VkBufferUsageFlags          [shape=box, fillcolor=salmon, style=filled, label="VkBufferUsageFlags\n(VK_BUFFER_USAGE_*_BIT)\nTRANSFER_SRC\nTRANSFER_DST\nSTORAGE_TEXEL_BUFFER\nUNIFORM_BUFFER\nSTORAGE_BUFFER\nINDEX_BUFFER\nVERTEX_BUFFER\nINDIRECT_BUFFER"];
+	VkSharingMode               [shape=box, fillcolor=salmon, style=filled, label="VkSharingMode\n(VK_SHARING_MODE_)\nEXCLUSIVE\nCONCURRENT"];
+	VkFormatFeatureFlags        [shape=box, fillcolor=salmon, style=filled, label="VkFormatFeatureFlags\n(VK_FORMAT_FEATURE_*_BIT)\nSAMPLED_IMAGE\nSAMPLED_IMAGE_FILTER_LINEAR\nSTORAGE_IMAGE\nSTORAGE_IMAGE_ATOMIC\nUNIFORM_TEXEL_BUFFER\nSTORAGE_TEXEL_BUFFER\nSTORAGE_TEXEL_BUFFER_ATOMIC\nVERTEX_BUFFER\nCOLOR_ATTACHMENT\nCOLOR_ATTACHMENT_BLEND\nDEPTH_STENCIL_ATTACHMENT\nBLIT_SRC\nBLIT_DST"];
+	VkImageType                 [shape=box, fillcolor=salmon, style=filled, label="VkImageType\n(VK_IMAGE_TYPE_)\n1D\n2D\n3D"];
+	VkImageTiling               [shape=box, fillcolor=salmon, style=filled, label="VkImageTiling\n(VK_IMAGE_TILING_)\nLINEAR\nOPTIMAL"];
+	VkImageCreateFlags          [shape=box, fillcolor=salmon, style=filled, label="VkImageCreateFlags\n(VK_IMAGE_CREATE_*_BIT)\nSPARSE_BINDING\nSPARSE_RESIDENCY\nSPARSE_ALIASED\nMUTABLE_FORMAT\nCUBE_COMPATIBLE"];
+	VkImageUsageFlags           [shape=box, fillcolor=salmon, style=filled, label="VkImageUsageFlags\n(VK_IMAGE_USAGE_*_BIT)\nTRANSFER_SRC\nTRANSFER_DST\nSAMPLED\nSTORAGE\nCOLOR_ATTACHMENT\nDEPTH_STENCIL_ATTACHMENT\nTRANSIENT_ATTACHMENT\nINPUT_ATTACHMENT"];
+	VkImageLayout               [shape=box, fillcolor=salmon, style=filled, label="VkImageLayout\n(VK_IMAGE_LAYOUT_)\nUNDEFINED\nGENERAL\nCOLOR_ATTACHMENT\nDEPTH_STENCIL_ATTACHMENT_OPTIMAL\nDEPTH_STENCIL_READ_ONLY_OPTIMAL\nSHADER_READ_ONLY_OPTIMAL\nTRANSFER_SRC_OPTIMAL\nTRANSFER_DST_OPTIMAL\nPREINITIALIZED\nPRESENT_SRC_KHR"];
+	VkImageAspectFlags          [shape=box, fillcolor=salmon, style=filled, label="VkImageAspectFlags\n(VK_IMAGE_ASPECT_*_BIT)\nCOLOR\nDEPTH\nSTENCIL"];
+	VkMemoryMapFlags            [shape=box, fillcolor=salmon, style=filled, label="VkMemoryMapFlags\n(reserved)"];
+	VkSparseMemoryBindFlagBits  [shape=box, fillcolor=salmon, style=filled, label="VkSparseMemoryBindFlagBits\n(VK_SPARSE_MEMORY_BIND_*_BIT)\nMETADATA"];
+	VkSparseImageFormatFlagBits [shape=box, fillcolor=salmon, style=filled, label="VkSparseImageFormatFlagBits\n(VK_SPARSE_IMAGE_FORMAT*_BIT)\nSINGLE_MIPTAIL\nALIGNED_MIP_SIZE\nNONSTANDARD_BLOCK_SIZE"];
+	VkSampleCountFlagBits       [shape=box, fillcolor=salmon, style=filled, label="VkSampleCountFlagBits\n(VK_SAMPLE_COUNT_*_BIT)\n1\n2\n4\n8\n16\n32\n64"];
+	VkFormat                    [shape=box, fillcolor=salmon, style=filled, label="VkFormat\n(too many to list)"];
+	VkComponentSwizzle          [shape=box, fillcolor=salmon, style=filled, label="VkComponentSwizzle\n(VK_COMPONENT_SWIZZLE_*)\nIDENTITY\nZERO\nONE\nR\nG\nB\nA"];
+	VkImageViewType             [shape=box, fillcolor=salmon, style=filled, label="VkImageViewType\n(VK_IMAGE_VIEW_TYPE_*)\n1D\n2D\n3D\nCUBE\n1D_ARRAY\n2D_ARRAY\nCUBE_ARRAY"];
+
+	// structures
+	VkAllocationCallbacks             [shape=box, fillcolor=orange, style=filled, label="VkAllocationCallbacks\nvoid* pUserData;\nPFN_vkAllocationFunction pfnAllocation;\nPFN_vkReallocationFunction pfnReallocation;\nPFN_vkFreeFunction pfnFree;\nPFN_vkInternalAllocationNotification pfnInternalAllocation;\nPFN_vkInternalFreeNotification pfnInternalFree;"];
+	VkBufferCreateInfo                [shape=box, fillcolor=orange, style=filled, label="VkBufferCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkBufferCreateFlags flags;\nVkDeviceSize(uint64_t) size;\nVkBufferUsageFlags usage;\nVkSharingMode sharingMode;\nuint32_t queueFamilyIndexCount;\nconst uint32_t* pQueueFamilyIndices;"];
+	VkFormatProperties                [shape=box, fillcolor=orange, style=filled, label="VkFormatProperties\nVkFormatFeatureFlags linearTilingFeatures;\nVkFormatFeatureFlags optimalTilingFeatures;\nVkFormatFeatureFlags bufferFeatures;"];
+	VkImageFormatProperties           [shape=box, fillcolor=orange, style=filled, label="VkImageFormatProperties\nVkExtent3D maxExtent;\nuint32_t maxMipLevels;\nuint32_t maxArrayLayers;\nVkSampleCountFlags sampleCounts;\nVkDeviceSize(uint64_t) maxResourceSize;"];
+	VkImageCreateInfo                 [shape=box, fillcolor=orange, style=filled, label="VkImageCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkImageCreateFlags flags;\nVkImageType imageType;\nVkFormat format;\nVkExtent3D extent;\nuint32_t mipLevels;\nuint32_t arrayLayers;\nVkSampleCountFlagBits samples;\nVkImageTiling tiling;\nVkImageUsageFlags usage;\nVkSharingMode sharingMode;\nuint32_t queueFamilyIndexCount;\nconst uint32_t* pQueueFamilyIndices;\nVkImageLayout initialLayout;"];
+	VkImageSubresource                [shape=box, fillcolor=orange, style=filled, label="VkImageSubresource\nVkImageAspectFlags aspectMask;\nuint32_t mipLevel;\nuint32_t arrayLayer;"];
+	VkSubresourceLayout               [shape=box, fillcolor=orange, style=filled, label="VkSubresourceLayout\nVkDeviceSize(uint64_t) offset;\nVkDeviceSize(uint64_t) size;\nVkDeviceSize(uint64_t) rowPitch;\nVkDeviceSize(uint64_t) arrayPitch;\nVkDeviceSize(uint64_t) depthPitch;"];
+	VkBufferViewCreateInfo            [shape=box, fillcolor=orange, style=filled, label="VkBufferViewCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkBufferViewCreateFlags flags;\nVkBuffer buffer;\nVkFormat format;\nVkDeviceSize(uint64_t) offset;\nVkDeviceSize(uint64_t) range;"];
+	VkImageViewCreateInfo             [shape=box, fillcolor=orange, style=filled, label="VkImageViewCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkImageViewCreateFlags flags;\nVkImage image;\nVkImageViewType viewType;\nVkFormat format;\nVkComponentMapping components;\nVkImageSubresourceRange subresourceRange;"];
+	VkComponentMapping                [shape=box, fillcolor=orange, style=filled, label="VkComponentMapping\nVkComponentSwizzle r;\nVkComponentSwizzle g;\nVkComponentSwizzle b;\nVkComponentSwizzle a;"];
+	VkImageSubresourceRange           [shape=box, fillcolor=orange, style=filled, label="VkImageSubresourceRange\nVkImageAspectFlags aspectMask;\nuint32_t baseMipLevel;\nuint32_t levelCount;\nuint32_t baseArrayLayer;\nuint32_t layerCount;"];
+	VkMemoryAllocateInfo              [shape=box, fillcolor=orange, style=filled, label="VkMemoryAllocateInfo\nVkStructureType sType;\nconst void* pNext;\nVkDeviceSize(uint64_t) allocationSize;\nuint32_t memoryTypeIndex;"];
+	VkMappedMemoryRange               [shape=box, fillcolor=orange, style=filled, label="VkMappedMemoryRange\nVkStructureType sType;\nconst void* pNext;\nVkDeviceMemory memory;\nVkDeviceSize(uint64_t) offset;\nVkDeviceSize(uint64_t) size;"];
+	VkMemoryRequirements              [shape=box, fillcolor=orange, style=filled, label="VkMemoryRequirements\nVkDeviceSize(uint64_t) size;\nVkDeviceSize(uint64_t) alignment;\nuint32_t memoryTypeBits;"];
+	VkSparseImageMemoryRequirements   [shape=box, fillcolor=orange, style=filled, label="VkSparseImageMemoryRequirements\nVkSparseImageFormatProperties formatProperties;\nuint32_t imageMipTailFirstLod;\nVkDeviceSize(uint64_t) imageMipTailSize;\nVkDeviceSize(uint64_t) imageMipTailOffset;\nVkDeviceSize(uint64_t) imageMipTailStride;"];
+	VkSparseImageFormatProperties     [shape=box, fillcolor=orange, style=filled, label="VkSparseImageFormatProperties\nVkImageAspectFlags aspectMask;\nVkExtent3D imageGranularity;\nVkSparseImageFormatFlags flags;"];
+	VkBindSparseInfo                  [shape=box, fillcolor=orange, style=filled, label="VkBindSparseInfo\nVkStructureType sType;\nconst void* pNext;\nuint32_t waitSemaphoreCount;\nconst VkSemaphore* pWaitSemaphores;\nuint32_t bufferBindCount;\nconst VkSparseBufferMemoryBindInfo* pBufferBinds;\nuint32_t imageOpaqueBindCount;\nconst VkSparseImageOpaqueMemoryBindInfo* pImageOpaqueBinds;\nuint32_t imageBindCount;\nconst VkSparseImageMemoryBindInfo* pImageBinds;\nuint32_t signalSemaphoreCount;\nconst VkSemaphore* pSignalSemaphores;"];
+	VkSparseBufferMemoryBindInfo      [shape=box, fillcolor=orange, style=filled, label="VkSparseBufferMemoryBindInfo\nVkBuffer buffer;\nuint32_t bindCount;\nconst VkSparseMemoryBind* pBinds;"];
+	VkSparseMemoryBind                [shape=box, fillcolor=orange, style=filled, label="VkSparseMemoryBind\nVkDeviceSize(uint64_t) resourceOffset;\nVkDeviceSize(uint64_t) size;\nVkDeviceMemory memory;\nVkDeviceSize(uint64_t) memoryOffset;\nVkSparseMemoryBindFlags flags;"];
+	VkSparseImageMemoryBindInfo       [shape=box, fillcolor=orange, style=filled, label="VkSparseImageMemoryBindInfo\nVkImage image;\nuint32_t bindCount;\nconst VkSparseImageMemoryBind* pBinds;"];
+	VkSparseImageMemoryBind           [shape=box, fillcolor=orange, style=filled, label="VkSparseImageMemoryBind\nVkImageSubresource subresource;\nVkOffset3D offset;\nVkExtent3D extent;\nVkDeviceMemory memory;\nVkDeviceSize(uint64_t) memoryOffset;\nVkSparseMemoryBindFlags flags;"];
+	VkSparseImageOpaqueMemoryBindInfo [shape=box, fillcolor=orange, style=filled, label="VkSparseImageOpaqueMemoryBindInfo\nVkImage image;\nuint32_t bindCount;\nconst VkSparseMemoryBind* pBinds;"];
+
+	// user functions
+	Allocation                                     [fillcolor=turquoise, style=filled, label="Allocation\npUserData\nsize\nalignment\nallocationScope"];
+	Reallocation                                   [fillcolor=turquoise, style=filled, label="Reallocation\npUserdata\npOriginal\nsize\nalignment\nallocationScope"];
+	Free                                           [fillcolor=turquoise, style=filled, label="Free\npUserData\npMemory"];
+	InternalAllocationNotification                 [fillcolor=turquoise, style=filled, label="InternalAllocationNotification\npUserData\nsize\nallocationType\nallocationScope"];
+	InternalFreeNotification                       [fillcolor=turquoise, style=filled, label="InternalFreeNotification\npUserData\nsize\nallocationType\nallocationScope"];
+
+	// functions
+	vkCreateBuffer                                 [fillcolor=skyblue, style=filled, label="VkResult vkCreateBuffer(\nVkDevice device,\nconst VkBufferCreateInfo* pCreateInfo,\nconst VkAllocationCallbacks* pAllocator,\nVkBuffer* pBuffer);"];
+	vkGetPhysicalDeviceFormatProperties            [fillcolor=skyblue, style=filled, label="void vkGetPhysicalDeviceFormatProperties(\nVkPhysicalDevice physicalDevice,\nVkFormat format,\nVkFormatProperties* pFormatProperties);"];
+	vkGetPhysicalDeviceImageFormatProperties       [fillcolor=skyblue, style=filled, label="VkResult vkGetPhysicalDeviceImageFormatProperties(\nVkPhysicalDevice physicalDevice,\nVkFormat format,\nVkImageType type,\nVkImageTiling tiling,\nVkImageUsageFlags usage,\nVkImageCreateFlags flags,\nVkImageFormatProperties* pImageFormatProperties);"];
+	vkCreateImage                                  [fillcolor=skyblue, style=filled, label="VkResult vkCreateImage(\nVkDevice device,\nconst VkImageCreateInfo* pCreateInfo,\nconst VkAllocationCallbacks* pAllocator,\nVkImage* pImage);"];
+	vkGetImageSubresourceLayout                    [fillcolor=skyblue, style=filled, label="void vkGetImageSubresourceLayout(\nVkDevice device,\nVkImage image,\nconst VkImageSubresource* pSubresource,\nVkSubresourceLayout* pLayout);"];
+	vkCreateBufferView                             [fillcolor=skyblue, style=filled, label="VkResult vkCreateBufferView(\nVkDevice device,\nconst VkBufferViewCreateInfo* pCreateInfo,\nconst VkAllocationCallbacks* pAllocator,\nVkBufferView* pView);"];
+	vkCreateImageView                              [fillcolor=skyblue, style=filled, label="VkResult vkCreateImageView(\nVkDevice device,\nconst VkImageViewCreateInfo* pCreateInfo,\nconst VkAllocationCallbacks* pAllocator,\nVkImageView* pView);"];
+	vkDestroyBuffer                                [fillcolor=skyblue, style=filled, label="void vkDestroyBuffer(\nVkDevice device,\nVkBuffer buffer,\nconst VkAllocationCallbacks* pAllocator);"];
+	vkDestroyBufferView                            [fillcolor=skyblue, style=filled, label="void vkDestroyBufferView(\nVkDevice device,\nVkBufferView bufferView,\nconst VkAllocationCallbacks* pAllocator);"];
+	vkDestroyImage                                 [fillcolor=skyblue, style=filled, label="void vkDestroyImage(\nVkDevice device,\nVkImage image,\nconst VkAllocationCallbacks* pAllocator);"];
+	vkDestroyImageView                             [fillcolor=skyblue, style=filled, label="void vkDestroyImageView(\nVkDevice device,\nVkImageView imageView,\nconst VkAllocationCallbacks* pAllocator);"];
+	vkAllocateMemory                               [fillcolor=skyblue, style=filled, label="VkResult vkAllocateMemory(\nVkDevice device,\nconst VkMemoryAllocateInfo* pAllocateInfo,\nconst VkAllocationCallbacks* pAllocator,\nVkDeviceMemory* pMemory);"];
+	vkFreeMemory                                   [fillcolor=skyblue, style=filled, label="void vkFreeMemory(\nVkDevice device,\nVkDeviceMemory memory,\nconst VkAllocationCallbacks* pAllocator);"];
+	vkGetDeviceMemoryCommitment                    [fillcolor=skyblue, style=filled, label="void vkGetDeviceMemoryCommitment(\nVkDevice device,\nVkDeviceMemory memory,\nVkDeviceSize(uint64_t)* pCommittedMemoryInBytes);"];
+	vkMapMemory                                    [fillcolor=skyblue, style=filled, label="VkResult vkMapMemory(\nVkDevice device,\nVkDeviceMemory memory,\nVkDeviceSize(uint64_t) offset,\nVkDeviceSize(uint64_t) size,\nVkMemoryMapFlags flags,\nvoid** ppData);"];
+	vkUnmapMemory                                  [fillcolor=skyblue, style=filled, label="void vkUnmapMemory(\nVkDevice device,\nVkDeviceMemory memory);"];
+	vkFlushMappedMemoryRanges                      [fillcolor=skyblue, style=filled, label="VkResult vkFlushMappedMemoryRanges(\nVkDevice device,\nuint32_t memoryRangeCount,\nconst VkMappedMemoryRange* pMemoryRanges);"];
+	vkInvalidateMappedMemoryRanges                 [fillcolor=skyblue, style=filled, label="VkResult vkInvalidateMappedMemoryRanges(\nVkDevice device,\nuint32_t memoryRangeCount,\nconst VkMappedMemoryRange* pMemoryRanges);"];
+	vkGetBufferMemoryRequirements                  [fillcolor=skyblue, style=filled, label="void vkGetBufferMemoryRequirements(\nVkDevice device,\nVkBuffer buffer,\nVkMemoryRequirements* pMemoryRequirements);"];
+	vkGetImageMemoryRequirements                   [fillcolor=skyblue, style=filled, label="void vkGetImageMemoryRequirements(\nVkDevice device,\nVkImage image,\nVkMemoryRequirements* pMemoryRequirements);"];
+	vkBindBufferMemory                             [fillcolor=skyblue, style=filled, label="VkResult vkBindBufferMemory(\nVkDevice device,\nVkBuffer buffer,\nVkDeviceMemory memory,\nVkDeviceSize(uint64_t) memoryOffset);"];
+	vkBindImageMemory                              [fillcolor=skyblue, style=filled, label="VkResult vkBindImageMemory(\nVkDevice device,\nVkImage image,\nVkDeviceMemory memory,\nVkDeviceSize(uint64_t) memoryOffset);"];
+	vkGetImageSparseMemoryRequirements             [fillcolor=skyblue, style=filled, label="void vkGetImageSparseMemoryRequirements(\nVkDevice device,\nVkImage image,\nuint32_t* pSparseMemoryRequirementCount,\nVkSparseImageMemoryRequirements* pSparseMemoryRequirements);"];
+	vkGetPhysicalDeviceSparseImageFormatProperties [fillcolor=skyblue, style=filled, label="void vkGetPhysicalDeviceSparseImageFormatProperties(\nVkPhysicalDevice physicalDevice,\nVkFormat format,\nVkImageType type,\nVkSampleCountFlagBits samples,\nVkImageUsageFlags usage,\nVkImageTiling tiling,\nuint32_t* pPropertyCount,\nVkSparseImageFormatProperties* pProperties);"];
+	vkQueueBindSparse                              [fillcolor=skyblue, style=filled, label="VkResult vkQueueBindSparse(\nVkQueue queue,\nuint32_t bindInfoCount,\nconst VkBindSparseInfo* pBindInfo,\nVkFence fence);"];
+	vkGetPhysicalDeviceMemoryProperties            [fillcolor=skyblue, style=filled, label="void vkGetPhysicalDeviceMemoryProperties(\nVkPhysicalDevice physicalDevice,\nVkPhysicalDeviceMemoryProperties* pMemoryProperties);\nSee CH1"];
+
+	// parameters
+	Allocation                               -> VkAllocationCallbacks                          [label="pfnAllocation"];
+	Reallocation                             -> VkAllocationCallbacks                          [label="pfnRealloction"];
+	Free                                     -> VkAllocationCallbacks                          [label="pfnFree"];
+	InternalAllocationNotification           -> VkAllocationCallbacks                          [label="pfnInternalAllocation"];
+	InternalFreeNotification                 -> VkAllocationCallbacks                          [label="pfnInternalFree"];
+	VkSystemAllocationScope                  -> Allocation                                     [label="allocationScope"];
+	VkSystemAllocationScope                  -> Reallocation                                   [label="allocationScope"];
+	VkSystemAllocationScope                  -> InternalAllocationNotification                 [label="allocationScope"];
+	VkSystemAllocationScope                  -> InternalFreeNotification                       [label="allocationScope"];
+	VkAllocationCallbacks                    -> pAllocator                                     [label="pAllocator"];
+	VkBufferCreateInfo                       -> vkCreateBuffer                                 [label="pCreateInfo"];
+	vkCreateBuffer                           -> VkBuffer                                       [label="pBuffer"];
+	VkBufferUsageFlags                       -> VkBufferCreateInfo                             [label="usage"];
+	VkSharingMode                            -> VkBufferCreateInfo                             [label="sharingMode"];
+	vkGetPhysicalDeviceFormatProperties      -> VkFormatProperties                             [label="pFormatProperties"];
+	VkFormatFeatureFlags                     -> VkFormatProperties                             [label="linearTilingFeatures\noptimalTilingFeatures\nbufferFeatures"];
+	vkGetPhysicalDeviceImageFormatProperties -> VkImageFormatProperties                        [label="pImageFormatProperties"];
+	VkImageType                              -> vkGetPhysicalDeviceImageFormatProperties       [label="type"];
+	VkImageType                              -> VkImageCreateInfo                              [label="imageType"];
+	VkImageTiling                            -> VkImageCreateInfo                              [label="tiling"];
+	VkImageTiling                            -> vkGetPhysicalDeviceImageFormatProperties       [label="tiling"];
+	VkImageUsageFlags                        -> vkGetPhysicalDeviceImageFormatProperties       [label="usage"];
+	VkImageCreateInfo                        -> vkCreateImage                                  [label="pCreateInfo"];
+	VkImageCreateFlags                       -> VkImageCreateInfo                              [label="flags"];
+	VkImageUsageFlags                        -> VkImageCreateInfo                              [label="usage"];
+	VkSharingMode                            -> VkImageCreateInfo                              [label="sharingMode"];
+	VkImageLayout                            -> VkImageCreateInfo                              [label="initialLayout"];
+	vkCreateImage                            -> VkImage                                        [label="pImage"];
+	VkImage                                  -> vkGetImageSubresourceLayout                    [label="image"];
+	VkImageSubresource                       -> vkGetImageSubresourceLayout                    [label="pSubresource"];
+	VkImageAspectFlags                       -> VkImageSubresource                             [label="aspectMask"];
+	VkImageAspectFlags                       -> VkImageSubresourceRange                        [label="aspectMask"];
+	VkImageAspectFlags                       -> VkSparseImageFormatProperties                  [label="aspectMask"];
+	vkGetImageSubresourceLayout              -> VkSubresourceLayout                            [label="pLayout"];
+	vkCreateBufferView                       -> VkBufferView                                   [label="pView"];
+	VkBufferViewCreateInfo                   -> vkCreateBufferView                             [label="pCreateInfo"];
+	VkImageViewCreateInfo                    -> vkCreateImageView                              [label="pCreateInfo"];
+	vkCreateImageView                        -> VkImageView                                    [label="pView"];
+	VkComponentMapping                       -> VkImageViewCreateInfo                          [label="components"]
+	VkImageSubresourceRange                  -> VkImageViewCreateInfo                          [label="subresourceRange"];
+	VkBuffer                                 -> vkDestroyBuffer                                [label="buffer"];
+	VkBufferView                             -> vkDestroyBufferView                            [label="bufferView"];
+	VkImage                                  -> vkDestroyImage                                 [label="image"];
+	VkImageView                              -> vkDestroyImageView                             [label="imageView"];
+	VkMemoryAllocateInfo                     -> vkAllocateMemory                               [label="pAllocateInfo"];
+	vkAllocateMemory                         -> VkDeviceMemory                                 [label="pMemory"];
+	VkDeviceMemory                           -> vkFreeMemory                                   [label="memory"];
+	VkDeviceMemory                           -> vkGetDeviceMemoryCommitment                    [label="memory"];
+	VkDeviceMemory                           -> vkMapMemory                                    [label="memory"];
+	VkDeviceMemory                           -> vkUnmapMemory                                  [label="memory"];
+	VkDeviceMemory                           -> VkMappedMemoryRange                            [label="memory"];
+	VkMappedMemoryRange                      -> vkFlushMappedMemoryRanges                      [label="pMemoryRanges"];
+	VkMappedMemoryRange                      -> vkInvalidateMappedMemoryRanges                 [label="pMemoryRanges"];
+	vkGetBufferMemoryRequirements            -> VkMemoryRequirements                           [label="pMemoryRequirements"];
+	VkBuffer                                 -> vkGetBufferMemoryRequirements                  [label="buffer"];
+	vkGetImageMemoryRequirements             -> VkMemoryRequirements                           [label="pMemoryRequirements"];
+	VkImage                                  -> vkGetImageMemoryRequirements                   [label="image"];
+	VkBuffer                                 -> vkBindBufferMemory                             [label="buffer"];
+	VkDeviceMemory                           -> vkBindBufferMemory                             [label="memory"];
+	VkImage                                  -> vkBindImageMemory                              [label="image"];
+	VkDeviceMemory                           -> vkBindImageMemory                              [label="memory"];
+	VkImage                                  -> vkGetImageSparseMemoryRequirements             [label="image"];
+	vkGetImageSparseMemoryRequirements       -> VkSparseImageMemoryRequirements                [label="pSparseMemoryRequirements"];
+	VkImageType                              -> vkGetPhysicalDeviceSparseImageFormatProperties [label="type"];
+	VkImageUsageFlags                        -> vkGetPhysicalDeviceSparseImageFormatProperties [label="usage"];
+	VkImageTiling                            -> vkGetPhysicalDeviceSparseImageFormatProperties [label="tiling"];
+	VkSparseImageFormatProperties            -> VkSparseImageMemoryRequirements                [label="formatProperties"];
+	VkBindSparseInfo                         -> vkQueueBindSparse                              [label="pBindInfo"];
+	VkSparseBufferMemoryBindInfo             -> VkBindSparseInfo                               [label="pBufferBinds"];
+	VkBuffer                                 -> VkSparseBufferMemoryBindInfo                   [label="buffer"];
+	VkBuffer                                 -> VkBufferViewCreateInfo                         [label="buffer"];
+	VkDeviceMemory                           -> VkSparseMemoryBind                             [label="memory"];
+	VkSparseMemoryBind                       -> VkSparseBufferMemoryBindInfo                   [label="pBinds"];
+	VkImage                                  -> VkSparseImageMemoryBindInfo                    [label="image"];
+	VkSparseImageMemoryBind                  -> VkSparseImageMemoryBindInfo                    [label="pBinds"];
+	VkImageSubresource                       -> VkSparseImageMemoryBind                        [label="subresource"];
+	VkDeviceMemory                           -> VkSparseImageMemoryBind                        [label="memory"];
+	VkSparseImageMemoryBindInfo              -> VkBindSparseInfo                               [label="pImageBinds"];
+	VkImage                                  -> VkSparseImageOpaqueMemoryBindInfo              [label="image"];
+	VkSparseMemoryBind                       -> VkSparseImageOpaqueMemoryBindInfo              [label="pBinds"];
+	VkSparseImageOpaqueMemoryBindInfo        -> VkBindSparseInfo                               [label="pImageOpaqueBinds"];
+	VkMemoryMapFlags                         -> vkMapMemory                                    [label="flags"];
+	VkSparseMemoryBindFlagBits               -> VkSparseMemoryBind                             [label="flags"];
+	VkSparseMemoryBindFlagBits               -> VkSparseImageMemoryBind                        [label="flags"];
+	VkSemaphore                              -> VkBindSparseInfo                               [label="pWaitSemaphores, pSignalSemaphores"];
+	VkFence                                  -> vkQueueBindSparse                              [label="fence"];
+	VkQueue                                  -> vkQueueBindSparse                              [label="queue"];
+	VkSparseImageFormatFlagBits              -> VkSparseImageFormatProperties                  [label="flags"];
+	VkSampleCountFlagBits                    -> VkImageFormatProperties                        [label="sampleCounts"];
+	VkSampleCountFlagBits                    -> VkImageCreateInfo                              [label="samples"];
+	VkSampleCountFlagBits                    -> vkGetPhysicalDeviceSparseImageFormatProperties [label="samples"];
+	VkComponentSwizzle                       -> VkComponentMapping                             [label="r, g, b, a"];
+	VkImage                                  -> VkImageViewCreateInfo                          [label="image"];
+	VkImageViewType                          -> VkImageViewCreateInfo                          [label="viewType"];
+	vkGetPhysicalDeviceMemoryProperties      -> VkMemoryAllocateInfo                           [style=dashed, label="memoryTypeIndex"];
+	// VkFormat                                 -> VkImageCreateInfo                              [label="format"];
+	// VkFormat                                 -> VkBufferViewCreateInfo                         [label="format"];
+	// VkFormat                                 -> VkImageViewCreateInfo                          [label="format"];
+	// VkFormat                                 -> vkGetPhysicalDeviceFormatProperties            [label="format"];
+	// VkFormat                                 -> vkGetPhysicalDeviceImageFormatProperties       [label="format"];
+	// VkFormat                                 -> vkGetPhysicalDeviceSparseImageFormatProperties [label="format"];
+}

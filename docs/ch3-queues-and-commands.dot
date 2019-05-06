@@ -1,0 +1,97 @@
+// Copyright (c) 2019 Jeff Boody
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+// sudo apt-get install graphviz
+// xdot ch3-queues-and-commands.dot
+digraph QUEUES
+{
+	label="Chapter 3. Queues and Commands";
+	fontsize=20;
+	size="2,1";
+	ratio=fill;
+
+	// handles
+	VkBuffer        [shape=box, fillcolor=yellow, style=filled, label="VkBuffer\nSee CH2"];
+	VkFence         [shape=box, fillcolor=yellow, style=filled, label="VkFence\nSee CH11"];
+	VkSemaphore     [shape=box, fillcolor=yellow, style=filled, label="VkSemaphore\nSee CH11"];
+	VkQueue         [shape=box, fillcolor=yellow, style=filled, label="VkQueue\nA queue is used to submit commands to its corresponding logical device."];
+	VkCommandPool   [shape=box, fillcolor=yellow, style=filled, label="VkCommandPool\nCommand pools are used to optimize allocations of command buffers.\nOperations involving command pools are NOT thread safe."];
+	VkCommandBuffer [shape=box, fillcolor=yellow, style=filled, label="VkCommandBuffer\nCommand buffers are used to record commands that can subsequently be submitted to a device queue."];
+
+	// enums
+	VkCommandBufferLevel      [shape=box, fillcolor=salmon, style=filled, label="VkCommandBufferLevel\n(VK_COMMAND_BUFFER_LEVEL_)\nPRIMARY\nSECONDARY"];
+	VkCommandBufferUsageFlags [shape=box, fillcolor=salmon, style=filled, label="VkCommandBufferUsageFlags\n(VK_COMMAND_BUFFER_USAGE_*_BIT)\nONE_TIME_SUBMIT\nRENDER_PASS_CONTINUE\nSIMULTANEOUS_USE"];
+	VkCommandBufferResetFlags [shape=box, fillcolor=salmon, style=filled, label="VkCommandBufferResetFlags\n(VK_COMMAND_BUFFER_RESET_*_BIT)\nRELEASE_RESOURCES"];
+	VkCommandPoolResetFlags   [shape=box, fillcolor=salmon, style=filled, label="VkCommandPoolResetFlags\n(VK_COMMAND_POOL_RESET_*_BIT)\nRELEASE_RESOURCES"];
+	VkPipelineStageFlagBits   [shape=box, fillcolor=salmon, style=filled, label="VkPipelineStageFlagBits\n(VK_PIPELINE_STAGE_*_BIT)\nTOP_OF_PIPE\nDRAW_INDIRECT\nVERTEX_INPUT\nVERTEX_SHADER\nTESSELLATION_CONTROL_SHADER\nTESSELLATION_EVALUATION_SHADER\nGEOMETRY_SHADER\nFRAGMENT_SHADER\nEARLY_FRAGMENT_TESTS\nLATE_FRAGMENT_TESTS\nCOLOR_ATTACHMENT_OUTPUT\nCOMPUTE_SHADER\nTRANSFER\nBOTTOM_OF_PIPE\nHOST\nALL_GRAPHICS\nALL_COMMANDS"];
+
+	// structures
+	VkCommandPoolCreateInfo        [shape=box, fillcolor=orange, style=filled, label="VkCommandPoolCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkCommandPoolCreateFlags flags;\nuint32_t queueFamilyIndex;"];
+	VkCommandBufferAllocateInfo    [shape=box, fillcolor=orange, style=filled, label="VkCommandBufferAllocateInfo\nsType\nVkStructureType sType;\nconst void* pNext;\nVkCommandPool commandPool;\nVkCommandBufferLevel level;\nuint32_t commandBufferCount;"];
+	VkCommandBufferBeginInfo       [shape=box, fillcolor=orange, style=filled, label="VkCommandBufferBeginInfo\nVkStructureType sType;\nconst void* pNext;\nVkCommandBufferUsageFlags flags;\nconst VkCommandBufferInheritanceInfo* pInheritanceInfo;"];
+	VkBufferCopy                   [shape=box, fillcolor=orange, style=filled, label="VkBufferCopy\nVkDeviceSize(uint64_t) srcOffset;\nVkDeviceSize(uint64_t) dstOffset;\nVkDeviceSize(uint64_t) size;"];
+	VkSubmitInfo                   [shape=box, fillcolor=orange, style=filled, label="VkSubmitInfo\nVkStructureType sType;\nconst void* pNext;\nuint32_t waitSemaphoreCount;\nconst VkSemaphore* pWaitSemaphores;\nconst VkPipelineStageFlags* pWaitDstStageMask;\nuint32_t commandBufferCount;\nconst VkCommandBuffer* pCommandBuffers;\nuint32_t signalSemaphoreCount;\nconst VkSemaphore* pSignalSemaphores;"];
+	VkCommandBufferInheritanceInfo [shape=box, fillcolor=orange, style=filled, label="VkCommandBufferInheritanceInfo\nVkStructureType sType;\nconst void* pNext;\nVkRenderPass renderPass;\nuint32_t subpass;\nVkFramebuffer framebuffer;\nVkBool32 occlusionQueryEnable;\nVkQueryControlFlags queryFlags;\nVkQueryPipelineStatisticFlags pipelineStatistics;"];
+
+	// functions
+	vkGetDeviceQueue         [fillcolor=skyblue, style=filled, label="void vkGetDeviceQueue(\nVkDevice device,\nuint32_t queueFamilyIndex,\nuint32_t queueIndex,\nVkQueue* pQueue);"]
+	vkCreateCommandPool      [fillcolor=skyblue, style=filled, label="VkResult vkCreateCommandPool(\nVkDevice device,\nconst VkCommandPoolCreateInfo* pCreateInfo,\nconst VkAllocationCallbacks* pAllocator,\nVkCommandPool* pCommandPool);"];
+	vkAllocateCommandBuffers [fillcolor=skyblue, style=filled, label="VkResult vkAllocateCommandBuffers(\nVkDevice device,\nconst VkCommandBufferAllocateInfo* pAllocateInfo,\nVkCommandBuffer* pCommandBuffers);"];
+	vkFreeCommandBuffers     [fillcolor=skyblue, style=filled, label="void vkFreeCommandBuffers(\nVkDevice device,\nVkCommandPool commandPool,\nuint32_t commandBufferCount,\nconst VkCommandBuffer* pCommandBuffers);"];
+	vkDestroyCommandPool     [fillcolor=skyblue, style=filled, label="void vkDestroyCommandPool(\nVkDevice device,\nVkCommandPool commandPool,\nconst VkAllocationCallbacks* pAllocator);"];
+	vkBeginCommandBuffer     [fillcolor=skyblue, style=filled, label="VkResult vkBeginCommandBuffer(\nVkCommandBuffer commandBuffer,\nconst VkCommandBufferBeginInfo* pBeginInfo);"];
+	vkCmdCopyBuffer          [fillcolor=skyblue, style=filled, label="void vkCmdCopyBuffer(\nVkCommandBuffer commandBuffer,\nVkBuffer srcBuffer,\nVkBuffer dstBuffer,\nuint32_t regionCount,\nconst VkBufferCopy* pRegions);"];
+	vkEndCommandBuffer       [fillcolor=skyblue, style=filled, label="VkResult vkEndCommandBuffer(\nVkCommandBuffer commandBuffer);"];
+	vkResetCommandBuffer     [fillcolor=skyblue, style=filled, label="VkResult vkResetCommandBuffer(\nVkCommandBuffer commandBuffer,\nVkCommandBufferResetFlags flags);"];
+	vkResetCommandPool       [fillcolor=skyblue, style=filled, label="VkResult vkResetCommandPool(\nVkDevice device,\nVkCommandPool commandPool,\nVkCommandPoolResetFlags flags);"];
+	vkQueueSubmit            [fillcolor=skyblue, style=filled, label="VkResult vkQueueSubmit(\nVkQueue queue,\nuint32_t submitCount,\nconst VkSubmitInfo* pSubmits,\nVkFence fence);"];
+	vkQueueWaitIdle          [fillcolor=skyblue, style=filled, label="VkResult vkQueueWaitIdle(\nVkQueue queue);"];
+
+	// parameters
+	vkGetDeviceQueue               -> VkQueue                     [label="pQueue"];
+	VkCommandPoolCreateInfo        -> vkCreateCommandPool         [label="pCreateInfo"];
+	vkCreateCommandPool            -> VkCommandPool               [label="pCommandPool"];
+	vkAllocateCommandBuffers       -> VkCommandBuffer             [label="pCommandBuffers"];
+	VkCommandBufferAllocateInfo    -> vkAllocateCommandBuffers    [label="pAllocateInfo"];
+	VkCommandPool                  -> VkCommandBufferAllocateInfo [label="commandPool"];
+	VkCommandBufferLevel           -> VkCommandBufferAllocateInfo [label="level"];
+	VkCommandPool                  -> vkFreeCommandBuffers        [label="commandPool"];
+	VkCommandBuffer                -> vkFreeCommandBuffers        [label="pCommandBuffers"];
+	VkCommandPool                  -> vkDestroyCommandPool        [label="commandPool"];
+	VkCommandBuffer                -> vkBeginCommandBuffer        [label="commandBuffer"];
+	VkCommandBufferBeginInfo       -> vkBeginCommandBuffer        [label="pBeginInfo"];
+	VkCommandBufferUsageFlags      -> VkCommandBufferBeginInfo    [label="flags"];
+	VkCommandBuffer                -> vkCmdCopyBuffer             [label="commandBuffer"];
+	vkCmdCopyBuffer                -> VkBufferCopy                [label="pRegions"];
+	VkCommandBuffer                -> vkEndCommandBuffer          [label="commandBuffer"];
+	VkCommandBuffer                -> vkResetCommandBuffer        [label="commandBuffer"];
+	VkCommandBufferResetFlags      -> vkResetCommandBuffer        [label="flags"];
+	VkCommandPool                  -> vkResetCommandPool          [label="commandPool"];
+	VkCommandPoolResetFlags        -> vkResetCommandPool          [label="flags"];
+	VkQueue                        -> vkQueueSubmit               [label="queue"];
+	VkSubmitInfo                   -> vkQueueSubmit               [label="pSubmits"];
+	VkCommandBuffer                -> VkSubmitInfo                [label="pCommandBuffers"];
+	VkQueue                        -> vkQueueWaitIdle             [label="queue"];
+	VkFence                        -> vkQueueSubmit               [label="fence"];
+	VkPipelineStageFlagBits        -> VkSubmitInfo                [label="pWaitDstStageMask"];
+	VkSemaphore                    -> VkSubmitInfo                [label="pWaitSemaphores, pSignalSemaphores"];
+	VkBuffer                       -> vkCmdCopyBuffer             [label="srcBuffer, dstBuffer"];
+	VkCommandBufferInheritanceInfo -> VkCommandBufferBeginInfo    [label="pInheritanceInfo"];
+}

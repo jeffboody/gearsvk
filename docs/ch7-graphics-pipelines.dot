@@ -1,0 +1,165 @@
+// Copyright (c) 2019 Jeff Boody
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+// sudo apt-get install graphviz
+// dot -Tpdf graphics-pipelines.dot -o graphics-pipelines.pdf
+// xdot ch7-graphics-pipelines.dot
+digraph GRAPHICS_PIPELINES
+{
+	label="Chapter 7. Graphics Pipelines";
+	fontsize=20;
+	size="2,1";
+	ratio=fill;
+
+	// handles
+	VkDevice         [shape=box, fillcolor=yellow, style=filled, label="VkDevice\nSee CH1"];
+	VkImageView      [shape=box, fillcolor=yellow, style=filled, label="VkImageView\nSee CH2"];
+	VkPipeline       [shape=box, fillcolor=yellow, style=filled, label="VkPipeline\nSee CH6"];
+	VkPipelineCache  [shape=box, fillcolor=yellow, style=filled, label="VkPipelineCache\nSee CH6"];
+	VkShaderModule   [shape=box, fillcolor=yellow, style=filled, label="VkShaderModule\nSee CH6"];
+	VkPipelineLayout [shape=box, fillcolor=yellow, style=filled, label="VkPipelineLayout\nSee CH6"];
+	VkRenderPass     [shape=box, fillcolor=yellow, style=filled, label="VkRenderPass\nA render pass describes how the collection of framebuffer attachments\nare used across the rendering subpasses."];
+	VkFramebuffer    [shape=box, fillcolor=yellow, style=filled, label="VkFramebuffer\nFramebuffers represent a collection of specific image attachments that\na render pass uses."];
+
+	// enums
+	VkPrimitiveTopology      [shape=box, fillcolor=salmon, style=filled, label="VkPrimitiveTopology\n(VK_PRIMITIVE_TOPOLOGY_)\nPOINT_LIST\nLINE_LIST\nTRIANGLE_LIST\nLINE_STRIP\nTRIANGLE_STRIP\nTRIANGLE_FAN\nLINE_LIST_WITH_ADJACENCY\nTRIANGLE_LIST_WITH_ADJACENCY\nTRIANGLE_STRIP_WITH_ADJACENCY\nPATCH_LIST"];
+	VkPolygonMode            [shape=box, fillcolor=salmon, style=filled, label="VkPolygonMode\n(VK_POLYGON_MODE_)\nFILL\nLINE\nPOINT"];
+	VkCullModeFlags          [shape=box, fillcolor=salmon, style=filled, label="VkCullModeFlags\n(VK_CULL_MODE_)\nFRONT_BIT\nBACK_BIT\nFRONT_AND_BACK"];
+	VkFrontFace              [shape=box, fillcolor=salmon, style=filled, label="VkFrontFace\n(VK_FRONT_FACE_)\nCOUNTER_CLOCKWISE\nCLOCKWISE"];
+	VkColorComponentFlagBits [shape=box, fillcolor=salmon, style=filled, label="VkColorComponentFlagBits\n(VK_COLOR_COMPONENT_)\nR_BIT\nG_BIT\nB_BIT\nA_BIT"];
+	VkDynamicState           [shape=box, fillcolor=salmon, style=filled, label="VkDynamicState\n(VK_DYNAMIC_STATE_)\nVIEWPORT\nSCISSOR\nLINE_WIDTH\nDEPTH_BIAS\nBLEND_CONSTANTS\nDEPTH_BOUNDS\nSTENCIL_COMPARE_MASK\nSTENCIL_WRITE_MASK\nSTENCIL_REFERENCE"];
+	VkImageLayout            [shape=box, fillcolor=salmon, style=filled, label="VkImageLayout\n(VK_IMAGE_LAYOUT_)\nUNDEFINED\nGENERAL\nCOLOR_ATTACHMENT\nDEPTH_STENCIL_ATTACHMENT_OPTIMAL\nDEPTH_STENCIL_READ_ONLY_OPTIMAL\nSHADER_READ_ONLY_OPTIMAL\nTRANSFER_SRC_OPTIMAL\nTRANSFER_DST_OPTIMAL\nPREINITIALIZED\nPRESENT_SRC_KHR"];
+	VkPipelineBindPoint      [shape=box, fillcolor=salmon, style=filled, label="VkPipelineBindPoint\n(VK_PIPELINE_BIND_POINT_*)\nGRAPHICS\nCOMPUTE"];
+	VkPipelineStageFlagBits  [shape=box, fillcolor=salmon, style=filled, label="VkPipelineStageFlagBits\n(VK_PIPELINE_STAGE_*_BIT)\nTOP_OF_PIPE\nDRAW_INDIRECT\nVERTEX_INPUT\nVERTEX_SHADER\nTESSELLATION_CONTROL_SHADER\nTESSELLATION_EVALUATION_SHADER\nGEOMETRY_SHADER\nFRAGMENT_SHADER\nEARLY_FRAGMENT_TESTS\nLATE_FRAGMENT_TESTS\nCOLOR_ATTACHMENT_OUTPUT\nCOMPUTE_SHADER\nTRANSFER\nBOTTOM_OF_PIPE\nHOST\nALL_GRAPHICS\nALL_COMMANDS"];
+	VkAccessFlags            [shape=box, fillcolor=salmon, style=filled, label="VkAccessFlags\n(VK_ACCESS_*_BIT)\nINDIRECT_COMMAND_READ\nINDEX_READ\nVERTEX_ATTRIBUTE_READ\nUNIFORM_READ\nINPUT_ATTACHMENT_READ\nSHADER_READ\nSHADER_WRITE\nCOLOR_ATTACHMENT_READ\nCOLOR_ATTACHMENT_WRITE\nDEPTH_STENCIL_ATTACHMENT_READ\nDEPTH_STENCIL_ATTACHMENT_WRITE\nTRANSFER_READ\nTRANSFER_WRITE\nHOST_READ\nHOST_WRITE\nMEMORY_READ\nMEMORY_WRITE"];
+	VkDependencyFlags        [shape=box, fillcolor=salmon, style=filled, label="VkDependencyFlags\n(VK_DEPENDENCY_*_BIT)\nBY_REGION\nDEVICE_GROUP\nVIEW_LOCAL"];
+	VkFormat                 [shape=box, fillcolor=salmon, style=filled, label="VkFormat\n(too many to list)"];
+	VkSampleCountFlagBits    [shape=box, fillcolor=salmon, style=filled, label="VkSampleCountFlagBits\n(VK_SAMPLE_COUNT_*_BIT)\n1\n2\n4\n8\n16\n32\n64"];
+	VkAttachmentLoadOp       [shape=box, fillcolor=salmon, style=filled, label="VkAttachmentLoadOp\n(VK_ATTACHMENT_LOAD_OP_*)\nLOAD\nCLEAR\nDONT_CARE"];
+	VkAttachmentStoreOp      [shape=box, fillcolor=salmon, style=filled, label="VkAttachmentStoreOp\n(VK_ATTACHMENT_STORE_OP_*)\nSTORE\nDONT_CARE"];
+	VkCompareOp              [shape=box, fillcolor=salmon, style=filled, label="VkCompareOp\nVK_COMPARE_OP_*\nNEVER\nLESS\nEQUAL\nLESS_OR_EQUAL\nGREATER\nNOT_EQUAL\nGREATER_OR_EQUAL\nALWAYS"];
+	VkStencilOp              [shape=box, fillcolor=salmon, style=filled, label="VkStencilOp\nVK_STENCIL_OP_*\nZERO\nREPLACE\nINCREMENT_AND_CLAMP\nDECREMENT_AND_CLAMP\nINVERT\nINCREMENT_AND_WRAP\nDECREMENT_AND_WRAP"];
+	VkBlendFactor            [shape=box, fillcolor=salmon, style=filled, label="VkBlendFactor\nVK_BLEND_FACTOR_*\nZERO\nONE\nSRC_COLOR\nONE_MINUS_SRC_COLOR\nDST_COLOR\nONE_MINUS_DST_COLOR\nSRC_ALPHA\nONE_MINUS_SRC_ALPHA\nDST_ALPHA\nONE_MINUS_DST_ALPHA\nCONSTANT_COLOR\nONE_MINUS_CONSTANT_COLOR\nCONSTANT_ALPHA\nONE_MINUS_CONSTANT_ALPHA\nSRC_ALPHA_SATURATE\nSRC1_COLOR\nONE_MINUS_SRC1_COLOR\nSRC1_ALPHA\nONE_MINUS_SRC1_ALPHA"];
+	VkBlendOp                [shape=box, fillcolor=salmon, style=filled, label="VkBlendOp\nVK_BLEND_OP_*\nADD\nSUBTRACT\nREVERSE_SUBTRACT\nMIN\nMAX"];
+	VkLogicOp                [shape=box, fillcolor=salmon, style=filled, label="VkLogicOp\nVK_LOGIC_OP_*\nCLEAR\nAND\nAND_REVERSE\nCOPY\nAND_INVERTED\nNO_OP\nXOR\nOR\nNOR\nEQUIVALENT\nINVERT\nOR_REVERSE\nCOPY_INVERTED\nOR_INVERTED\nNAND\nSET"];
+	VkShaderStageFlagBits    [shape=box, fillcolor=salmon, style=filled, label="VkShaderStageFlagBits\n(VK_SHADER_STAGE_*)\nVERTEX_BIT\nTESSELLATION_CONTROL_BIT\nTESSELLATION_EVALUATION_BIT\nGEOMETRY_BIT\nFRAGMENT_BIT\nCOMPUTE_BIT\nALL_GRAPHICS\nALL"];
+	VkVertexInputRate        [shape=box, fillcolor=salmon, style=filled, label="VkVertexInputRate\nVK_VERTEX_IMPUT_RATE_*\nVERTEX\nINSTANCE"];
+
+	// structures
+	VkRenderPassCreateInfo                 [shape=box, fillcolor=orange, style=filled, label="VkRenderPassCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkRenderPassCreateFlags flags;\nuint32_t attachmentCount;\nconst VkAttachmentDescription* pAttachments;\nuint32_t subpassCount;\nconst VkSubpassDescription* pSubpasses;\nuint32_t dependencyCount;\nconst VkSubpassDependency* pDependencies;"];
+	VkAttachmentDescription                [shape=box, fillcolor=orange, style=filled, label="VkAttachmentDescription\nVkAttachmentDescriptionFlags flags;\nVkFormat format;\nVkSampleCountFlagBits samples;\nVkAttachmentLoadOp loadOp;\nVkAttachmentStoreOp storeOp;\nVkAttachmentLoadOp stencilLoadOp;\nVkAttachmentStoreOp stencilStoreOp;\nVkImageLayout initialLayout;\nVkImageLayout finalLayout;"];
+	VkSubpassDescription                   [shape=box, fillcolor=orange, style=filled, label="VkSubpassDescription\nVkSubpassDescriptionFlags flags;\nVkPipelineBindPoint pipelineBindPoint;\nuint32_t inputAttachmentCount;\nconst VkAttachmentReference* pInputAttachments;\nuint32_t colorAttachmentCount;\nconst VkAttachmentReference* pColorAttachments;\nconst VkAttachmentReference* pResolveAttachments;\nconst VkAttachmentReference* pDepthStencilAttachment;\nuint32_t preserveAttachmentCount;\nconst uint32_t* pPreserveAttachments;"];
+	VkAttachmentReference                  [shape=box, fillcolor=orange, style=filled, label="VkAttachmentReference\nuint32_t attachment; (index into framebuffer attachments)\nVkImageLayout layout;"];
+	VkSubpassDependency                    [shape=box, fillcolor=orange, style=filled, label="VkSubpassDependency\nuint32_t srcSubpass;\nuint32_t dstSubpass;\nVkPipelineStageFlags srcStageMask;\nVkPipelineStageFlags dstStageMask;\nVkAccessFlags srcAccessMask;\nVkAccessFlags dstAccessMask;\nVkDependencyFlags dependencyFlags;"];
+	VkFramebufferCreateInfo                [shape=box, fillcolor=orange, style=filled, label="VkFramebufferCreateInfo\nsType\nVkStructureType sType;\nconst void* pNext;\nVkFramebufferCreateFlags flags;\nVkRenderPass renderPass;\nuint32_t attachmentCount;\nconst VkImageView* pAttachments;\nuint32_t width;\nuint32_t height;\nuint32_t layers;"];
+	VkGraphicsPipelineCreateInfo           [shape=box, fillcolor=orange, style=filled, label="VkGraphicsPipelineCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkPipelineCreateFlags flags;\nuint32_t stageCount;\nconst VkPipelineShaderStageCreateInfo* pStages;\nconst VkPipelineVertexInputStateCreateInfo* pVertexInputState;\nconst VkPipelineInputAssemblyStateCreateInfo* pInputAssemblyState;\nconst VkPipelineTessellationStateCreateInfo* pTessellationState;\nconst VkPipelineViewportStateCreateInfo* pViewportState;\nconst VkPipelineRasterizationStateCreateInfo* pRasterizationState;\nconst VkPipelineMultisampleStateCreateInfo* pMultisampleState;\nconst VkPipelineDepthStencilStateCreateInfo* pDepthStencilState;\nconst VkPipelineColorBlendStateCreateInfo* pColorBlendState;\nconst VkPipelineDynamicStateCreateInfo* pDynamicState;\nVkPipelineLayout layout;\nVkRenderPass renderPass;\nuint32_t subpass;\nVkPipeline basePipelineHandle;\nint32_t basePipelineIndex;"];
+	VkPipelineShaderStageCreateInfo        [shape=box, fillcolor=orange, style=filled, label="VkPipelineShaderStageCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkPipelineShaderStageCreateFlags flags;\nVkShaderStageFlagBits stage;\nVkShaderModule module;\nconst char* pName;\nconst VkSpecializationInfo* pSpecializationInfo;"];
+	VkPipelineVertexInputStateCreateInfo   [shape=box, fillcolor=orange, style=filled, label="VkPipelineVertexInputStateCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkPipelineVertexInputStateCreateFlags flags;\nuint32_t vertexBindingDescriptionCount;\nconst VkVertexInputBindingDescription* pVertexBindingDescriptions;\nuint32_t vertexAttributeDescriptionCount;\nconst VkVertexInputAttributeDescription* pVertexAttributeDescriptions;"];
+	VkVertexInputBindingDescription        [shape=box, fillcolor=orange, style=filled, label="VkVertexInputBindingDescription\nuint32_t binding;\nuint32_t stride;\nVkVertexInputRate inputRate;"];
+	VkVertexInputAttributeDescription      [shape=box, fillcolor=orange, style=filled, label="VkVertexInputAttributeDescription\nuint32_t location;\nuint32_t binding;\nVkFormat format;\nuint32_t offset;"];
+	VkPipelineInputAssemblyStateCreateInfo [shape=box, fillcolor=orange, style=filled, label="VkPipelineInputAssemblyStateCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkPipelineInputAssemblyStateCreateFlags flags;\nVkPrimitiveTopology topology;\nVkBool32 primitiveRestartEnable;"];
+	VkPipelineTessellationStateCreateInfo  [shape=box, fillcolor=orange, style=filled, label="VkPipelineTessellationStateCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkPipelineTessellationStateCreateFlags flags;\nuint32_t patchControlPoints;"];
+	VkPipelineViewportStateCreateInfo      [shape=box, fillcolor=orange, style=filled, label="VkPipelineViewportStateCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkPipelineViewportStateCreateFlags flags;\nuint32_t viewportCount;\nconst VkViewport* pViewports;\nuint32_t scissorCount;\nconst VkRect2D* pScissors;"];
+	VkViewport                             [shape=box, fillcolor=orange, style=filled, label="VkViewport\nfloat x;\nfloat y;\nfloat width;\nfloat height;\nfloat minDepth;\nfloat maxDepth;"];
+	VkRect2D                               [shape=box, fillcolor=orange, style=filled, label="VkRect2D\nVkOffset2D offset;\nVkExtent2D extent;"];
+	VkPipelineRasterizationStateCreateInfo [shape=box, fillcolor=orange, style=filled, label="VkPipelineRasterizationStateCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkPipelineRasterizationStateCreateFlags flags;\nVkBool32 depthClampEnable;\nVkBool32 rasterizerDiscardEnable;\nVkPolygonMode polygonMode;\nVkCullModeFlags cullMode;\nVkFrontFace frontFace;\nVkBool32 depthBiasEnable;\nfloat depthBiasConstantFactor;\nfloat depthBiasClamp;\nfloat depthBiasSlopeFactor;\nfloat lineWidth;"];
+	VkPipelineMultisampleStateCreateInfo   [shape=box, fillcolor=orange, style=filled, label="VkPipelineMultisampleStateCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkPipelineMultisampleStateCreateFlags flags;\nVkSampleCountFlagBits rasterizationSamples;\nVkBool32 sampleShadingEnable;\nfloat minSampleShading;\nconst VkSampleMask(uint32_t)* pSampleMask;\nVkBool32 alphaToCoverageEnable;\nVkBool32 alphaToOneEnable;"];
+	VkPipelineDepthStencilStateCreateInfo  [shape=box, fillcolor=orange, style=filled, label="VkPipelineDepthStencilStateCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkPipelineDepthStencilStateCreateFlags flags;\nVkBool32 depthTestEnable;\nVkBool32 depthWriteEnable;\nVkCompareOp depthCompareOp;\nVkBool32 depthBoundsTestEnable;\nVkBool32 stencilTestEnable;\nVkStencilOpState front;\nVkStencilOpState back;\nfloat minDepthBounds;\nfloat maxDepthBounds;"];
+	VkPipelineColorBlendStateCreateInfo    [shape=box, fillcolor=orange, style=filled, label="VkPipelineColorBlendStateCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkPipelineColorBlendStateCreateFlags flags;\nVkBool32 logicOpEnable;\nVkLogicOp logicOp;\nuint32_t attachmentCount;\nconst VkPipelineColorBlendAttachmentState* pAttachments;\nfloat blendConstants[4];"];
+	VkPipelineColorBlendAttachmentState    [shape=box, fillcolor=orange, style=filled, label="VkPipelineColorBlendAttachmentState\nVkBool32 blendEnable;\nVkBlendFactor srcColorBlendFactor;\nVkBlendFactor dstColorBlendFactor;\nVkBlendOp colorBlendOp;\nVkBlendFactor srcAlphaBlendFactor;\nVkBlendFactor dstAlphaBlendFactor;\nVkBlendOp alphaBlendOp;\nVkColorComponentFlags colorWriteMask;"];
+	VkPipelineDynamicStateCreateInfo       [shape=box, fillcolor=orange, style=filled, label="VkPipelineDynamicStateCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkPipelineDynamicStateCreateFlags flags;\nuint32_t dynamicStateCount;\nconst VkDynamicState* pDynamicStates;"];
+	VkStencilOpState                       [shape=box, fillcolor=orange, style=filled, label="VkStencilOpState\nVkStencilOp failOp;\nVkStencilOp passOp;\nVkStencilOp depthFailOp;\nVkCompareOp compareOp;\nuint32_t compareMask;\nuint32_t writeMask;\nuint32_t reference;"];
+	VkSpecializationInfo                   [shape=box, fillcolor=orange, style=filled, label="VkSpecializationInfo\nuint32_t mapEntryCount;\nconst VkSpecializationMapEntry* pMapEntries;\nsize_t dataSize;\nconst void* pData;"];
+	VkSpecializationMapEntry               [shape=box, fillcolor=orange, style=filled, label="VkSpecializationMapEntry\nuint32_t constantID;\nuint32_t offset;\nsize_t size;"];
+
+	// functions
+	vkCreateRenderPass        [fillcolor=skyblue, style=filled, label="VkResult vkCreateRenderPass(\nVkDevice device,\nconst VkRenderPassCreateInfo* pCreateInfo,\nconst VkAllocationCallbacks* pAllocator,\nVkRenderPass* pRenderPass);"];
+	vkDestroyRenderPass       [fillcolor=skyblue, style=filled, label="void vkDestroyRenderPass(\nVkDevice device,\nVkRenderPass renderPass,\nconst VkAllocationCallbacks* pAllocator);"];
+	vkCreateFramebuffer       [fillcolor=skyblue, style=filled, label="VkResult vkCreateFramebuffer(\nVkDevice device,\nconst VkFramebufferCreateInfo* pCreateInfo,\nconst VkAllocationCallbacks* pAllocator,\nVkFramebuffer* pFramebuffer);"];
+	vkDestroyFramebuffer      [fillcolor=skyblue, style=filled, label="void vkDestroyFramebuffer(\nVkDevice device,\nVkFramebuffer framebuffer,\nconst VkAllocationCallbacks* pAllocator);"];
+	vkCreateGraphicsPipelines [fillcolor=skyblue, style=filled, label="VkResult vkCreateGraphicsPipelines(\nVkDevice device,\nVkPipelineCache pipelineCache,\nuint32_t createInfoCount,\nconst VkGraphicsPipelineCreateInfo* pCreateInfos,\nconst VkAllocationCallbacks* pAllocator,\nVkPipeline* pPipelines);"];
+	vkDestroyPipeline         [fillcolor=skyblue, style=filled, label="void vkDestroyPipeline(\nVkDevice device,\nVkPipeline pipeline,\nconst VkAllocationCallbacks* pAllocator);"];
+
+	// parameters
+	vkCreateRenderPass                     -> VkRenderPass                           [label="pRenderPass"];
+	VkRenderPassCreateInfo                 -> vkCreateRenderPass                     [label="pCreateInfo"];
+	VkRenderPass                           -> vkDestroyRenderPass                    [label="renderPass"];
+	VkRenderPass                           -> VkFramebufferCreateInfo                [label="renderPass"];
+	VkRenderPass                           -> VkGraphicsPipelineCreateInfo           [label="renderPass"];
+	VkFramebufferCreateInfo                -> vkCreateFramebuffer                    [label="pCreateInfo"];
+	vkCreateFramebuffer                    -> VkFramebuffer                          [label="pFramebuffer"];
+	VkFramebuffer                          -> vkDestroyFramebuffer                   [label="framebuffer"];
+	VkGraphicsPipelineCreateInfo           -> vkCreateGraphicsPipelines              [label="pCreateInfos"];
+	vkCreateGraphicsPipelines              -> VkPipeline                             [label="pPipelines"];
+	VkPipelineCache                        -> vkCreateGraphicsPipelines              [label="pipelineCache"];
+	VkPipelineShaderStageCreateInfo        -> VkGraphicsPipelineCreateInfo           [label="pStages"];
+	VkPipelineVertexInputStateCreateInfo   -> VkGraphicsPipelineCreateInfo           [label="pVertexInputState"];
+	VkVertexInputBindingDescription        -> VkPipelineVertexInputStateCreateInfo   [label="pVertexBindingDescriptions"];
+	VkVertexInputAttributeDescription      -> VkPipelineVertexInputStateCreateInfo   [label="pVertexAttributeDescriptions"];
+	VkPipelineInputAssemblyStateCreateInfo -> VkGraphicsPipelineCreateInfo           [label="pInputAssemblyState"];
+	VkPrimitiveTopology                    -> VkPipelineInputAssemblyStateCreateInfo [label="topology"];
+	VkPipelineTessellationStateCreateInfo  -> VkGraphicsPipelineCreateInfo           [label="pTesselationState"];
+	VkPipelineViewportStateCreateInfo      -> VkGraphicsPipelineCreateInfo           [label="pViewportState"];
+	VkViewport                             -> VkPipelineViewportStateCreateInfo      [label="pViewports"];
+	VkRect2D                               -> VkPipelineViewportStateCreateInfo      [label="pScissors"];
+	VkPipelineRasterizationStateCreateInfo -> VkGraphicsPipelineCreateInfo           [label="pRasterizationState"];
+	VkPolygonMode                          -> VkPipelineRasterizationStateCreateInfo [label="polygonMode"];
+	VkCullModeFlags                        -> VkPipelineRasterizationStateCreateInfo [label="cullMode"];
+	VkFrontFace                            -> VkPipelineRasterizationStateCreateInfo [label="frontFace"];
+	VkPipelineMultisampleStateCreateInfo   -> VkGraphicsPipelineCreateInfo           [label="pMultisampleState"];
+	VkPipelineDepthStencilStateCreateInfo  -> VkGraphicsPipelineCreateInfo           [label="pDepthStencilState"];
+	VkPipelineColorBlendStateCreateInfo    -> VkGraphicsPipelineCreateInfo           [label="pColorBlendState"];
+	VkPipelineColorBlendAttachmentState    -> VkPipelineColorBlendStateCreateInfo    [label="pAttachments"];
+	VkColorComponentFlagBits               -> VkPipelineColorBlendAttachmentState    [label="colorWriteMask"];
+	VkPipelineDynamicStateCreateInfo       -> VkGraphicsPipelineCreateInfo           [label="pDynamicState"];
+	VkDynamicState                         -> VkPipelineDynamicStateCreateInfo       [label="pDynamicStates"];
+	VkPipeline                             -> vkDestroyPipeline                      [label="pipeline"];
+	VkImageView                            -> VkFramebufferCreateInfo                [label="pAttachments"];
+	VkAttachmentDescription                -> VkRenderPassCreateInfo                 [label="pAttachments"];
+	VkSubpassDescription                   -> VkRenderPassCreateInfo                 [label="pSubpasses"];
+	VkAttachmentReference                  -> VkSubpassDescription                   [label="pInputAttachments, pColorAttachments,\npResolveAttachments, pDepthStencilAttachment"]
+	VkSubpassDependency                    -> VkRenderPassCreateInfo                 [label="pDependencies"];
+	VkImageLayout                          -> VkAttachmentDescription                [label="initialLayout, finalLayout"];
+	VkImageLayout                          -> VkAttachmentReference                  [label="layout"];
+	VkPipelineBindPoint                    -> VkSubpassDescription                   [label="pipelineBindPoint"];
+	VkPipelineStageFlagBits                -> VkSubpassDependency                    [label="srcStageMask, dstStageMask"];
+	VkAccessFlags                          -> VkSubpassDependency                    [label="srcAccessMask, dstAccessMask"];
+	VkDependencyFlags                      -> VkSubpassDependency                    [label="dependencyFlags"];
+	VkFormat                               -> VkAttachmentDescription                [label="format"];
+	VkFormat                               -> VkVertexInputAttributeDescription      [label="format"];
+	VkSampleCountFlagBits                  -> VkAttachmentDescription                [label="samples"];
+	VkSampleCountFlagBits                  -> VkPipelineMultisampleStateCreateInfo   [label="rasterizationSamples"];
+	VkAttachmentLoadOp                     -> VkAttachmentDescription                [label="loadOp, stencilLoadOp"];
+	VkAttachmentStoreOp                    -> VkAttachmentDescription                [label="storeOp, stencilStoreOp"];
+	VkCompareOp                            -> VkPipelineDepthStencilStateCreateInfo  [label="depthCompareOp"];
+	VkCompareOp                            -> VkStencilOpState                       [label="compareOp"];
+	VkStencilOpState                       -> VkPipelineDepthStencilStateCreateInfo  [label="front, back"];
+	VkStencilOp                            -> VkStencilOpState                       [label="failOp, passOp, depthFailOp"];
+	VkBlendFactor                          -> VkPipelineColorBlendAttachmentState    [label="srcColorBlendFactor, dstColorBlendFactor,\nsrcAlphaBlendFactor, dstAlphaBlendFactor"];
+	VkBlendOp                              -> VkPipelineColorBlendAttachmentState    [label="colorBlendOp, alphaBlendOp"];
+	VkLogicOp                              -> VkPipelineColorBlendStateCreateInfo    [label="logicOp"];
+	VkShaderModule                         -> VkPipelineShaderStageCreateInfo        [label="module"];
+	VkShaderStageFlagBits                  -> VkPipelineShaderStageCreateInfo        [label="stage"];
+	VkSpecializationInfo                   -> VkPipelineShaderStageCreateInfo        [label="pSpecializationInfo"];
+	VkPipelineLayout                       -> VkGraphicsPipelineCreateInfo           [label="layout"];
+	VkPipeline                             -> VkGraphicsPipelineCreateInfo           [label="basePipelineHandle"];
+	VkVertexInputRate                      -> VkVertexInputBindingDescription        [label="inputRate"];
+	VkSpecializationMapEntry               -> VkSpecializationInfo                   [label="pMapEntries"];
+}

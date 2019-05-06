@@ -1,0 +1,111 @@
+// Copyright (c) 2019 Jeff Boody
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+// sudo apt-get install graphviz
+// xdot ch4-moving-data.dot
+digraph MOVING
+{
+	label="Chapter 4. Moving Data";
+	fontsize=20;
+	size="2,1";
+	ratio=fill;
+
+	// handles
+	VkImage         [shape=box, fillcolor=yellow, style=filled, label="VkImage\nSee CH2"];
+	VkBuffer        [shape=box, fillcolor=yellow, style=filled, label="VkBuffer\nSee CH2"];
+	VkCommandBuffer [shape=box, fillcolor=yellow, style=filled, label="VkCommandBuffer\nSee CH3"];
+
+	// enums
+	VkPipelineStageFlags [shape=box, fillcolor=salmon, style=filled, label="VkPipelineStageFlags\n(VK_PIPELINE_STAGE_*_BIT)\nTOP_OF_PIPE\nDRAW_INDIRECT\nVERTEX_INPUT\nVERTEX_SHADER\nTESSELLATION_CONTROL_SHADER\nTESSELATION_EVALUATION_SHADER\nGEOMETRY_SHADER\nFRAGMENT_SHADER\nEARLY_FRAGMENT_TESTS\nLATE_FRAGMENT_TESTS\nCOLOR_ATTACHMENT_OUTPUT\nCOMPUTE_SHADER\nBOTTOM_OF_PIPE\nALL_GRAPHICS\nALL_COMMANDS"];
+	VkDependencyFlags    [shape=box, fillcolor=salmon, style=filled, label="VkDependencyFlags\n(VK_DEPENDENCY_*_BIT)\nBY_REGION\nDEVICE_GROUP\nVIEW_LOCAL"];
+	VkAccessFlags        [shape=box, fillcolor=salmon, style=filled, label="VkAccessFlags\n(VK_ACCESS_*_BIT)\nINDIRECT_COMMAND_READ\nINDEX_READ\nVERTEX_ATTRIBUTE_READ\nUNIFORM_READ\nINPUT_ATTACHMENT_READ\nSHADER_READ\nSHADER_WRITE\nCOLOR_ATTACHMENT_READ\nCOLOR_ATTACHMENT_WRITE\nDEPTH_STENCIL_ATTACHMENT_READ\nDEPTH_STENCIL_ATTACHMENT_WRITE\nTRANSFER_READ\nTRANSFER_WRITE\nHOST_READ\nHOST_WRITE\nMEMORY_READ\nMEMORY_WRITE"];
+	VkImageAspectFlags   [shape=box, fillcolor=salmon, style=filled, label="VkImageAspectFlags\n(VK_IMAGE_ASPECT_*_BIT)\nCOLOR\nDEPTH\nSTENCIL"];
+	VkImageLayout        [shape=box, fillcolor=salmon, style=filled, label="VkImageLayout\n(VK_IMAGE_LAYOUT_)\nUNDEFINED\nGENERAL\nCOLOR_ATTACHMENT\nDEPTH_STENCIL_ATTACHMENT_OPTIMAL\nDEPTH_STENCIL_READ_ONLY_OPTIMAL\nSHADER_READ_ONLY_OPTIMAL\nTRANSFER_SRC_OPTIMAL\nTRANSFER_DST_OPTIMAL\nPREINITIALIZED\nPRESENT_SRC_KHR"];
+	VkFilter             [shape=box, fillcolor=salmon, style=filled, label="VkFilter\n(VK_FILTER_*)\nNEAREST\nLINEAR"];
+
+	// union
+	VkClearColorValue [shape=box, fillcolor=darkorange, style=filled, label="VkClearColorValue\nfloat32\nint32\nuint32"];
+
+	// structures
+	VkMemoryBarrier          [shape=box, fillcolor=orange, style=filled, label="VkMemoryBarrier\nVkStructureType sType;\nconst void* pNext;\nVkAccessFlags srcAccessMask;\nVkAccessFlags dstAccessMask;"];
+	VkBufferMemoryBarrier    [shape=box, fillcolor=orange, style=filled, label="VkBufferMemoryBarrier\nVkStructureType sType;\nconst void* pNext;\nVkAccessFlags srcAccessMask;\nVkAccessFlags dstAccessMask;\nuint32_t srcQueueFamilyIndex;\nuint32_t dstQueueFamilyIndex;\nVkBuffer buffer;\nVkDeviceSize(uint64_t) offset;\nVkDeviceSize(uint64_t) size;"];
+	VkImageMemoryBarrier     [shape=box, fillcolor=orange, style=filled, label="VkImageMemoryBarrier\nVkStructureType sType;\nconst void* pNext;\nVkAccessFlags srcAccessMask;\nVkAccessFlags dstAccessMask;\nVkImageLayout oldLayout;\nVkImageLayout newLayout;\nuint32_t srcQueueFamilyIndex;\nuint32_t dstQueueFamilyIndex;\nVkImage image;\nVkImageSubresourceRange subresourceRange;"];
+	VkImageSubresourceRange  [shape=box, fillcolor=orange, style=filled, label="VkImageSubresourceRange\nVkImageAspectFlags aspectMask;\nuint32_t baseMipLevel;\nuint32_t levelCount;\nuint32_t baseArrayLayer;\nuint32_t layerCount;"];
+	VkClearDepthStencilValue [shape=box, fillcolor=orange, style=filled, label="VkClearDepthStencilValue\nfloat depth;\nuint32_t stencil;"];
+	VkBufferImageCopy        [shape=box, fillcolor=orange, style=filled, label="VkBufferImageCopy\nVkDeviceSize(uint64_t) bufferOffset;\nuint32_t bufferRowLength;\nuint32_t bufferImageHeight;\nVkImageSubresourceLayers imageSubresource;\nVkOffset3D imageOffset;\nVkExtent3D imageExtent;"];
+	VkImageSubresourceLayers [shape=box, fillcolor=orange, style=filled, label="VkImageSubresourceLayers\nVkImageAspectFlags aspectMask;\nuint32_t mipLevel;\nuint32_t baseArrayLayer;\nuint32_t layerCount;"];
+	VkImageCopy              [shape=box, fillcolor=orange, style=filled, label="VkImageCopy\nVkImageSubresourceLayers srcSubresource;\nVkOffset3D srcOffset;\nVkImageSubresourceLayers dstSubresource;\nVkOffset3D dstOffset;\nVkExtent3D extent;"];
+	VkImageBlit              [shape=box, fillcolor=orange, style=filled, label="VkImageBlit\nVkImageSubresourceLayers srcSubresource;\nVkOffset3D srcOffsets[2];\nVkImageSubresourceLayers dstSubresource;\nVkOffset3D dstOffsets[2];"];
+
+	// functions
+	vkCmdPipelineBarrier        [fillcolor=skyblue, style=filled, label="void vkCmdPipelineBarrier(\nVkCommandBuffer commandBuffer,\nVkPipelineStageFlags srcStageMask,\nVkPipelineStageFlags dstStageMask,\nVkDependencyFlags dependencyFlags,\nuint32_t memoryBarrierCount,\nconst VkMemoryBarrier* pMemoryBarriers,\nuint32_t bufferMemoryBarrierCount,\nconst VkBufferMemoryBarrier* pBufferMemoryBarriers,\nuint32_t imageMemoryBarrierCount,\nconst VkImageMemoryBarrier* pImageMemoryBarriers);"];
+	vkCmdFillBuffer             [fillcolor=skyblue, style=filled, label="void vkCmdFillBuffer(\nVkCommandBuffer commandBuffer,\nVkBuffer dstBuffer,\nVkDeviceSize(uint64_t) dstOffset,\nVkDeviceSize(uint64_t) size,\nuint32_t data);"];
+	vkCmdUpdateBuffer           [fillcolor=skyblue, style=filled, label="void vkCmdUpdateBuffer(\nVkCommandBuffer commandBuffer,\nVkBuffer dstBuffer,\nVkDeviceSize(uint64_t) dstOffset,\nVkDeviceSize(uint64_t) dataSize,\nconst void* pData);"];
+	vkCmdClearColorImage        [fillcolor=skyblue, style=filled, label="void vkCmdClearColorImage(\nVkCommandBuffer commandBuffer,\nVkImage image,\nVkImageLayout imageLayout,\nconst VkClearColorValue* pColor,\nuint32_t rangeCount,\nconst VkImageSubresourceRange* pRanges);"];
+	vkCmdClearDepthStencilImage [fillcolor=skyblue, style=filled, label="void vkCmdClearDepthStencilImage(\nVkCommandBuffer commandBuffer,\nVkImage image,\nVkImageLayout imageLayout,\nconst VkClearDepthStencilValue* pDepthStencil,\nuint32_t rangeCount,\nconst VkImageSubresourceRange* pRanges);"];
+	vkCmdCopyBufferToImage      [fillcolor=skyblue, style=filled, label="void vkCmdCopyBufferToImage(\nVkCommandBuffer commandBuffer,\nVkBuffer srcBuffer,\nVkImage dstImage,\nVkImageLayout dstImageLayout,\nuint32_t regionCount,\nconst VkBufferImageCopy* pRegions);"];
+	vkCmdCopyImageToBuffer      [fillcolor=skyblue, style=filled, label="void vkCmdCopyImageToBuffer(\nVkCommandBuffer commandBuffer,\nVkImage srcImage,\nVkImageLayout srcImageLayout,\nVkBuffer dstBuffer,\nuint32_t regionCount,\nconst VkBufferImageCopy* pRegions);"];
+	vkCmdCopyImage              [fillcolor=skyblue, style=filled, label="void vkCmdCopyImage(\nVkCommandBuffer commandBuffer,\nVkImage srcImage,\nVkImageLayout srcImageLayout,\nVkImage dstImage,\nVkImageLayout dstImageLayout,\nuint32_t regionCount,\nconst VkImageCopy* pRegions);"];
+	vkCmdBlitImage              [fillcolor=skyblue, style=filled, label="void vkCmdBlitImage(\nVkCommandBuffer commandBuffer,\nVkImage srcImage,\nVkImageLayout srcImageLayout,\nVkImage dstImage,\nVkImageLayout dstImageLayout,\nuint32_t regionCount,\nconst VkImageBlit* pRegions,\nVkFilter filter);"];
+
+	// parameters
+	VkPipelineStageFlags     -> vkCmdPipelineBarrier        [label="srcStageMask, dstStageMask"];
+	VkDependencyFlags        -> vkCmdPipelineBarrier        [label="dependencyFlags"];
+	VkMemoryBarrier          -> vkCmdPipelineBarrier        [label="pMemoryBarriers"];
+	VkAccessFlags            -> VkMemoryBarrier             [label="srcAccessMask, dstAccessMask"];
+	VkAccessFlags            -> VkBufferMemoryBarrier       [label="srcAccessMask, dstAccessMask"];
+	VkAccessFlags            -> VkImageMemoryBarrier        [label="srcAccessMask, dstAccessMask"];
+	VkBufferMemoryBarrier    -> vkCmdPipelineBarrier        [label="pBufferMemoryBarriers"];
+	VkImageMemoryBarrier     -> vkCmdPipelineBarrier        [label="pImageMemoryBarriers"];
+	VkImageSubresourceRange  -> VkImageMemoryBarrier        [label="subresourceRange"];
+	VkImageSubresourceRange  -> vkCmdClearColorImage        [label="pRanges"];
+	VkImageSubresourceRange  -> vkCmdClearDepthStencilImage [label="pRanges"];
+	VkClearColorValue        -> vkCmdClearColorImage        [label="pColor"];
+	VkClearDepthStencilValue -> vkCmdClearDepthStencilImage [label="pDepthStencil"];
+	VkBufferImageCopy        -> vkCmdCopyBufferToImage      [label="pRegions"];
+	VkBufferImageCopy        -> vkCmdCopyImageToBuffer      [label="pRegions"];
+	VkImageCopy              -> vkCmdCopyImage              [label="pRegions"];
+	VkImageSubresourceLayers -> VkBufferImageCopy           [label="imageSubresource"];
+	VkImageBlit              -> vkCmdBlitImage              [label="pRegions"];
+	VkImageSubresourceLayers -> VkImageBlit                 [label="srcSubresource, dstSubresource"];
+	VkImageSubresourceLayers -> VkImageCopy                 [label="srcSubresource, dstSubresource"];
+	// VkImage                  -> VkImageMemoryBarrier        [label="image"];
+	// VkImage                  -> vkCmdClearColorImage        [label="image"];
+	// VkImage                  -> vkCmdClearDepthStencilImage [label="image"];
+	// VkImage                  -> vkCmdCopyBufferToImage      [label="dstImage"];
+	// VkImage                  -> vkCmdCopyImageToBuffer      [label="srcImage"];
+	// VkImage                  -> vkCmdCopyImage              [label="srcImage, dstImage"];
+	// VkImage                  -> vkCmdBlitImage              [label="srcImage, dstImage"];
+	// VkBuffer                 -> VkBufferMemoryBarrier       [label="buffer"];
+	// VkBuffer                 -> vkCmdFillBuffer             [label="dstBuffer"];
+	// VkBuffer                 -> vkCmdUpdateBuffer           [label="dstBuffer"];
+	// VkBuffer                 -> vkCmdCopyBufferToImage      [label="srcBuffer"];
+	// VkBuffer                 -> vkCmdCopyImageToBuffer      [label="dstBuffer"];
+	VkImageAspectFlags       -> VkImageSubresourceRange     [label="aspectMask"];
+	VkImageAspectFlags       -> VkImageSubresourceLayers    [label="aspectMask"];
+	VkImageLayout            -> VkImageMemoryBarrier        [label="oldLayout, newLayout"];
+	VkImageLayout            -> vkCmdClearColorImage        [label="imageLayout"];
+	VkImageLayout            -> vkCmdClearDepthStencilImage [label="imageLayout"];
+	VkImageLayout            -> vkCmdCopyBufferToImage      [label="dstImageLayout"];
+	VkImageLayout            -> vkCmdCopyImageToBuffer      [label="srcImageLayout"];
+	VkImageLayout            -> vkCmdCopyImage              [label="srcImageLayout, dstImageLayout"];
+	VkImageLayout            -> vkCmdBlitImage              [label="srcImageLayout, dstImageLayout"];
+	VkFilter                 -> vkCmdBlitImage              [label="filter"];
+}

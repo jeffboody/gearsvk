@@ -1,0 +1,148 @@
+// Copyright (c) 2019 Jeff Boody
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+// sudo apt-get install graphviz
+// xdot ch5-presentation.dot
+digraph PRESENTATION
+{
+	label="Chapter 5. Presentation";
+	fontsize=20;
+	size="1,1";
+	ratio=fill;
+
+	// handles
+	VkInstance       [shape=box, fillcolor=yellow, style=filled, label="VkInstance\nSee CH1"];
+	VkPhysicalDevice [shape=box, fillcolor=yellow, style=filled, label="VkPhysicalDevice\nSee CH1"];
+	VkDevice         [shape=box, fillcolor=yellow, style=filled, label="VkDevice\nSee CH1"];
+	VkImage          [shape=box, fillcolor=yellow, style=filled, label="VkImage\nSee CH2"];
+	VkQueue          [shape=box, fillcolor=yellow, style=filled, label="VkQueue\nSee CH3"];
+	VkSemaphore      [shape=box, fillcolor=yellow, style=filled, label="VkSemaphore\nSee CH11"];
+	VkFence          [shape=box, fillcolor=yellow, style=filled, label="VkFence\nSee CH11"];
+	VkSwapchainKHR   [shape=box, fillcolor=yellow, style=filled, label="VkSwapchainKHR\nA collection of framebuffer images that can be presented\nto a display corresponding to a native platform surface."];
+	VkDisplayKHR     [shape=box, fillcolor=yellow, style=filled];
+	VkDisplayModeKHR [shape=box, fillcolor=yellow, style=filled];
+	VkSurfaceKHR     [shape=box, fillcolor=yellow, style=filled, label="VkSurfaceKHR\nThe native platform surface used by the swapchain to provide\nframebuffer images that can be presented on the display.\nSee SDL"];
+
+	// enums
+	VkSharingMode                 [shape=box, fillcolor=salmon, style=filled, label="VkSharingMode\n(VK_SHARING_MODE_)\nEXCLUSIVE\nCONCURRENT"];
+	VkDisplayPlaneAlphaFlagsKHR   [shape=box, fillcolor=salmon, style=filled, label="VkDisplayPlaneAlphaFlagsKHR\n(VK_DISPLAY_PLANE_ALPHA_*_BIT_KHR)\nOPAQUE\nGLOBAL\nPER_PIXEL"];
+	VkSurfaceTransformFlagBitsKHR [shape=box, fillcolor=salmon, style=filled, label="VkSurfaceTransformFlagBitsKHR\n(VK_SURFACE_TRANSFORM_*_BIT_KHR)\nIDENTITY\nROTATE_90\nROTATE_180\nROTATE_270\nHORIZONTAL_MIRROR\nHORIZONTAL_MIRROR_ROTATE_90\nHORIZONTAL_MIRROR_ROTATE_180\nHORIZONTAL_MIRROR_ROTATE_270\nINHERIT"];
+	VkImageUsageFlagBits          [shape=box, fillcolor=salmon, style=filled, label="VkImageUsageFlagBits\n(VK_IMAGE_USAGE_*_BIT_KHR)\nTRANSFER_SRC\nTRANSFER_DST\nSAMPLED\nSTORAGE\nCOLOR_ATTACHMENT\nDEPTH_STENCIL_ATTACHMENT\nTRANSIENT_ATTACHMENT\nINPUT_ATTACHMENT"];
+	VkColorSpaceKHR               [shape=box, fillcolor=salmon, style=filled, label="VkColorSpaceKHR\n(VK_COLOR_SPACE_)\nSRGB_NONLINEAR_KHR\nVK_COLORSPACE_SRGB_NONLINEAR_KHR"];
+	VkCompositeAlphaFlagBitsKHR   [shape=box, fillcolor=salmon, style=filled, label="VkCompositeAlphaFlagBitsKHR\n(VK_COMPOSITE_ALPHA_*_BIT_KHR)\nOPAQUE_BIT_KHR\nPRE_MULTIPLIED_BIT_KHR\nPOST_MULTIPLIED_BIT_KHR\nINHERIT_BIT_KHR"];
+	VkPresentModeKHR              [shape=box, fillcolor=salmon, style=filled, label="VkPresentModeKHR\n(VK_PRESENT_MODE_*_KHR)\nIMMEDIATE\nMAILBOX\nFIFO\nFIFO_RELAXED\nSHARED_DEMAND_REFRESH\nSHARED_CONTINUOUS_REFRESH"];
+
+	// structures
+	VkSwapchainCreateInfoKHR           [shape=box, fillcolor=orange, style=filled, label="VkSwapchainCreateInfoKHR\nVkStructureType sType;\nconst void* pNext;\nVkSwapchainCreateFlagsKHR flags;\nVkSurfaceKHR surface;\nuint32_t minImageCount;\nVkFormat imageFormat;\nVkColorSpaceKHR imageColorSpace;\nVkExtent2D imageExtent;\nuint32_t imageArrayLayers;\nVkImageUsageFlags imageUsage;\nVkSharingMode imageSharingMode;\nuint32_t queueFamilyIndexCount;\nconst uint32_t* pQueueFamilyIndices;\nVkSurfaceTransformFlagBitsKHR preTransform;\nVkCompositeAlphaFlagBitsKHR compositeAlpha;\nVkPresentModeKHR presentMode;\nVkBool32 clipped;\nVkSwapchainKHR oldSwapchain;"];
+	VkSurfaceCapabilitiesKHR           [shape=box, fillcolor=orange, style=filled, label="VkSurfaceCapabilitiesKHR\nuint32_t minImageCount;\nuint32_t maxImageCount;\nVkExtent2D currentExtent;\nVkExtent2D minImageExtent;\nVkExtent2D maxImageExtent;\nuint32_t maxImageArrayLayers;\nVkSurfaceTransformFlagsKHR supportedTransforms;\nVkSurfaceTransformFlagBitsKHR currentTransform;\nVkCompositeAlphaFlagsKHR supportedCompositeAlpha;\nVkImageUsageFlags supportedUsageFlags;"];
+	VkSurfaceFormatKHR                 [shape=box, fillcolor=orange, style=filled, label="VkSurfaceFormatKHR\nVkFormat format;\nVkColorSpaceKHR colorSpace;"];
+	VkDisplayPropertiesKHR             [shape=box, fillcolor=orange, style=filled, label="VkDisplayPropertiesKHR\nVkDisplayKHR display;\nconst char* displayName;\nVkExtent2D physicalDimensions;\nVkExtent2D physicalResolution;\nVkSurfaceTransformFlagsKHR supportedTransforms;\nVkBool32 planeReorderPossible;\nVkBool32 persistentContent;"];
+	VkDisplayPlanePropertiesKHR        [shape=box, fillcolor=orange, style=filled, label="VkDisplayPlanePropertiesKHR\nVkDisplayKHR currentDisplay;\nuint32_t currentStackIndex;"];
+	VkDisplayPlaneCapabilitiesKHR      [shape=box, fillcolor=orange, style=filled, label="VkDisplayPlaneCapabilitiesKHR\nVkDisplayPlaneAlphaFlagsKHR supportedAlpha;\nVkOffset2D minSrcPosition;\nVkOffset2D maxSrcPosition;\nVkExtent2D minSrcExtent;\nVkExtent2D maxSrcExtent;\nVkOffset2D minDstPosition;\nVkOffset2D maxDstPosition;\nVkExtent2D minDstExtent;\nVkExtent2D maxDstExtent;"];
+	VkDisplayModePropertiesKHR         [shape=box, fillcolor=orange, style=filled, label="VkDisplayModePropertiesKHR\nVkDisplayModeKHR displayMode;\nVkDisplayModeParametersKHR parameters;"];
+	VkDisplayModeParametersKHR         [shape=box, fillcolor=orange, style=filled, label="VkDisplayModeParametersKHR\nVkExtent2D visibleRegion;\nuint32_t refreshRate;"];
+	VkDisplayModeCreateInfoKHR         [shape=box, fillcolor=orange, style=filled, label="VkDisplayModeCreateInfoKHR\nVkStructureType sType;\nconst void* pNext;\nVkDisplayModeCreateFlagsKHR flags;\nVkDisplayModeParametersKHR parameters;"];
+	VkDisplaySurfaceCreateInfoKHR      [shape=box, fillcolor=orange, style=filled, label="VkDisplaySurfaceCreateInfoKHR\nVkStructureType sType;\nconst void* pNext;\nVkDisplaySurfaceCreateFlagsKHR flags;\nVkDisplayModeKHR displayMode;\nuint32_t planeIndex;\nuint32_t planeStackIndex;\nVkSurfaceTransformFlagBitsKHR transform;\nfloat globalAlpha;\nVkDisplayPlaneAlphaFlagBitsKHR alphaMode;\nVkExtent2D imageExtent;"];
+	VkPresentInfoKHR                   [shape=box, fillcolor=orange, style=filled, label="VkPresentInfoKHR\nVkStructureType sType;\nconst void* pNext;\nuint32_t waitSemaphoreCount;\nconst VkSemaphore* pWaitSemaphores;\nuint32_t swapchainCount;\nconst VkSwapchainKHR* pSwapchains;\nconst uint32_t* pImageIndices;\nVkResult* pResults;"];
+
+	// functions
+	vkCreateSwapchainKHR                         [fillcolor=skyblue, style=filled, label="VkResult vkCreateSwapchainKHR(\nVkDevice device,\nconst VkSwapchainCreateInfoKHR* pCreateInfo,\nconst VkAllocationCallbacks* pAllocator,\nVkSwapchainKHR* pSwapchain);"];
+	vkGetPhysicalDeviceSurfaceCapabilitiesKHR    [fillcolor=skyblue, style=filled, label="VkResult vkGetPhysicalDeviceSurfaceCapabilitiesKHR(\nVkPhysicalDevice physicalDevice,\nVkSurfaceKHR surface,\nVkSurfaceCapabilitiesKHR* pSurfaceCapabilities);"];
+	vkGetSwapchainImagesKHR                      [fillcolor=skyblue, style=filled, label="VkResult vkGetSwapchainImagesKHR(\nVkDevice device,\nVkSwapchainKHR swapchain,\nuint32_t* pSwapchainImageCount,\nVkImage* pSwapchainImages);"];
+	vkGetPhysicalDeviceSurfaceFormatsKHR         [fillcolor=skyblue, style=filled, label="VkResult vkGetPhysicalDeviceSurfaceFormatsKHR(\nVkPhysicalDevice physicalDevice,\nVkSurfaceKHR surface,\nuint32_t* pSurfaceFormatCount,\nVkSurfaceFormatKHR* pSurfaceFormats);"];
+	vkAcquireNextImageKHR                        [fillcolor=skyblue, style=filled, label="VkResult vkAcquireNextImageKHR(\nVkDevice device,\nVkSwapchainKHR swapchain,\nuint64_t timeout,\nVkSemaphore semaphore,\nVkFence fence,\nuint32_t* pImageIndex);"];
+	vkGetPhysicalDeviceDisplayPropertiesKHR      [fillcolor=skyblue, style=filled, label="VkResult vkGetPhysicalDeviceDisplayPropertiesKHR(\nVkPhysicalDevice physicalDevice,\nuint32_t* pPropertyCount,\nVkDisplayPropertiesKHR* pProperties);"];
+	vkGetPhysicalDeviceDisplayPlanePropertiesKHR [fillcolor=skyblue, style=filled, label="VkResult vkGetPhysicalDeviceDisplayPlanePropertiesKHR(\nVkPhysicalDevice physicalDevice,\nuint32_t* pPropertyCount,\nVkDisplayPlanePropertiesKHR* pProperties);"];
+	vkGetPhysicalDeviceSurfacePresentModesKHR    [fillcolor=skyblue, style=filled, label="VkResult vkGetPhysicalDeviceSurfacePresentModesKHR(\nVkPhysicalDevice physicalDevice,\nVkSurfaceKHR surface,\nuint32_t* pPresentModeCount,\nVkPresentModeKHR* pPresentModes);"];
+	vkGetDisplayPlaneSupportedDisplaysKHR        [fillcolor=skyblue, style=filled, label="VkResult vkGetDisplayPlaneSupportedDisplaysKHR(\nVkPhysicalDevice physicalDevice,\nuint32_t planeIndex,\nuint32_t* pDisplayCount,\nVkDisplayKHR* pDisplays);"];
+	vkGetDisplayPlaneCapabilitiesKHR             [fillcolor=skyblue, style=filled, label="VkResult vkGetDisplayPlaneCapabilitiesKHR(\nVkPhysicalDevice physicalDevice,\nVkDisplayModeKHR mode,\nuint32_t planeIndex,\nVkDisplayPlaneCapabilitiesKHR* pCapabilities);"];
+	vkGetDisplayModePropertiesKHR                [fillcolor=skyblue, style=filled, label="VkResult vkGetDisplayModePropertiesKHR(\nVkPhysicalDevice physicalDevice,\nVkDisplayKHR display,\nuint32_t* pPropertyCount,\nVkDisplayModePropertiesKHR* pProperties);"];
+	vkCreateDisplayModeKHR                       [fillcolor=skyblue, style=filled, label="VkResult vkCreateDisplayModeKHR(\nVkPhysicalDevice physicalDevice,\nVkDisplayKHR display,\nconst VkDisplayModeCreateInfoKHR* pCreateInfo,\nconst VkAllocationCallbacks* pAllocator,\nVkDisplayModeKHR* pMode);"];
+	vkCreateDisplayPlaneSurfaceKHR               [fillcolor=skyblue, style=filled, label="VkResult vkCreateDisplayPlaneSurfaceKHR(\nVkInstance instance,\nconst VkDisplaySurfaceCreateInfoKHR* pCreateInfo,\nconst VkAllocationCallbacks* pAllocator,\nVkSurfaceKHR* pSurface);"];
+	vkGetPhysicalDeviceSurfaceSupportKHR         [fillcolor=skyblue, style=filled, label="VkResult vkGetPhysicalDeviceSurfaceSupportKHR(\nVkPhysicalDevice physicalDevice,\nuint32_t queueFamilyIndex,\nVkSurfaceKHR surface,\nVkBool32* pSupported);"];
+	vkQueuePresentKHR                            [fillcolor=skyblue, style=filled, label="VkResult vkQueuePresentKHR(\nVkQueue queue,\nconst VkPresentInfoKHR* pPresentInfo);"];
+	vkDestroySwapchainKHR                        [fillcolor=skyblue, style=filled, label="void vkDestroySwapchainKHR(\nVkDevice device,\nVkSwapchainKHR swapchain,\nconst VkAllocationCallbacks* pAllocator);"];
+
+	// parameters
+	vkCreateSwapchainKHR                         -> VkSwapchainKHR                               [label="pSwapchain"];
+	VkSwapchainCreateInfoKHR                     -> vkCreateSwapchainKHR                         [label="pCreateInfo"];
+	VkSharingMode                                -> VkSwapchainCreateInfoKHR                     [label="imageSharingMode"];
+	VkPresentModeKHR                             -> VkSwapchainCreateInfoKHR                     [style=dashed, label="presentMode"];
+	vkGetPhysicalDeviceSurfaceCapabilitiesKHR    -> VkSurfaceCapabilitiesKHR                     [label="pSurfaceCapabilities"];
+	VkSurfaceKHR                                 -> vkGetPhysicalDeviceSurfaceCapabilitiesKHR    [label="surface"];
+	VkSurfaceKHR                                 -> vkGetPhysicalDeviceSurfaceFormatsKHR         [label="surface"];
+	VkSurfaceKHR                                 -> VkSwapchainCreateInfoKHR                     [label="surface"];
+	VkSurfaceKHR                                 -> vkGetPhysicalDeviceSurfaceSupportKHR         [label="surface"];
+	vkCreateDisplayPlaneSurfaceKHR               -> VkSurfaceKHR                                 [label="surface"];
+	vkGetPhysicalDeviceSurfaceFormatsKHR         -> VkSurfaceFormatKHR                           [label="pSurfaceFormats"];
+	VkSurfaceFormatKHR                           -> VkSwapchainCreateInfoKHR                     [style=dashed, label="imageFormat, imageColorSpace"];
+	VkSurfaceCapabilitiesKHR                     -> VkSwapchainCreateInfoKHR                     [style=dashed, label="minImageCount, imageExtent"];
+	VkSwapchainKHR                               -> vkGetSwapchainImagesKHR                      [label="swapchain"];
+	VkSwapchainKHR                               -> vkAcquireNextImageKHR                        [label="swapchain"];
+	vkGetPhysicalDeviceDisplayPropertiesKHR      -> VkDisplayPropertiesKHR                       [label="pProperties"];
+	vkGetPhysicalDeviceDisplayPlanePropertiesKHR -> VkDisplayPlanePropertiesKHR                  [label="pProperties"];
+	vkGetDisplayPlaneCapabilitiesKHR             -> VkDisplayPlaneCapabilitiesKHR                [label="pCapabilities"];
+	VkDisplayPlaneAlphaFlagsKHR                  -> VkDisplayPlaneCapabilitiesKHR                [label="supportedAlpha"];
+	VkDisplayModeParametersKHR                   -> VkDisplayModePropertiesKHR                   [label="parameters"];
+	vkGetDisplayModePropertiesKHR                -> VkDisplayModePropertiesKHR                   [label="pProperties"];
+	VkDisplayModeCreateInfoKHR                   -> vkCreateDisplayModeKHR                       [label="pCreateInfo"];
+	VkDisplayModeParametersKHR                   -> VkDisplayModeCreateInfoKHR                   [label="parameters"];
+	VkDisplaySurfaceCreateInfoKHR                -> vkCreateDisplayPlaneSurfaceKHR               [label="pCreateInfo"];
+	VkPresentInfoKHR                             -> vkQueuePresentKHR                            [label="pPresentInfo"];
+	VkSwapchainKHR                               -> VkPresentInfoKHR                             [label="pSwapchains"];
+	VkSwapchainKHR                               -> vkDestroySwapchainKHR                        [label="swapchain"];
+	VkQueue                                      -> vkQueuePresentKHR                            [label="queue"];
+	VkSemaphore                                  -> VkPresentInfoKHR                             [label="pWaitSemaphores"];
+	VkSemaphore                                  -> vkAcquireNextImageKHR                        [label="semaphore"];
+	VkFence                                      -> vkAcquireNextImageKHR                        [label="fence"];
+	VkImage                                      -> vkGetSwapchainImagesKHR                      [label="pSwapchainImages"];
+	// VkPhysicalDevice                             -> vkGetPhysicalDeviceSurfaceCapabilitiesKHR    [label="physicalDevice"];
+	// VkPhysicalDevice                             -> vkGetPhysicalDeviceSurfaceFormatsKHR         [label="physicalDevice"];
+	// VkPhysicalDevice                             -> vkGetPhysicalDeviceDisplayPropertiesKHR      [label="physicalDevice"];
+	// VkPhysicalDevice                             -> vkGetPhysicalDeviceDisplayPlanePropertiesKHR [label="physicalDevice"];
+	// VkPhysicalDevice                             -> vkGetDisplayPlaneSupportedDisplaysKHR        [label="physicalDevice"];
+	// VkPhysicalDevice                             -> vkGetDisplayPlaneCapabilitiesKHR             [label="physicalDevice"];
+	// VkPhysicalDevice                             -> vkGetDisplayModePropertiesKHR                [label="physicalDevice"];
+	// VkPhysicalDevice                             -> vkCreateDisplayModeKHR                       [label="physicalDevice"];
+	// VkPhysicalDevice                             -> vkGetPhysicalDeviceSurfaceSupportKHR         [label="physicalDevice"];
+	VkInstance                                   -> vkCreateDisplayPlaneSurfaceKHR               [label="instance"];
+	VkDisplayKHR                                 -> VkDisplayPropertiesKHR                       [label="display"];
+	VkDisplayKHR                                 -> VkDisplayPlanePropertiesKHR                  [label="currentDisplay"];
+	vkGetDisplayPlaneSupportedDisplaysKHR        -> VkDisplayKHR                                 [label="pDisplays"];
+	VkDisplayKHR                                 -> vkGetDisplayModePropertiesKHR                [label="display"];
+	VkDisplayKHR                                 -> vkCreateDisplayModeKHR                       [label="display"];
+	vkCreateDisplayModeKHR                       -> VkDisplayModeKHR                             [label="pMode"];
+	VkDisplayModeKHR                             -> VkDisplayModePropertiesKHR                   [label="displayMode"];
+	VkDisplayModeKHR                             -> VkDisplaySurfaceCreateInfoKHR                [label="displayMode"];
+	VkDisplayModeKHR                             -> vkGetDisplayPlaneCapabilitiesKHR             [label="mode"];
+	VkSurfaceTransformFlagBitsKHR                -> VkDisplayPropertiesKHR                       [label="supportedTransforms"];
+	VkSurfaceTransformFlagBitsKHR                -> VkSwapchainCreateInfoKHR                     [label="preTransform"];
+	VkSurfaceTransformFlagBitsKHR                -> VkSurfaceCapabilitiesKHR                     [label="supportedTransforms, currentTransform"];
+	VkSurfaceTransformFlagBitsKHR                -> VkDisplaySurfaceCreateInfoKHR                [label="transform"];
+	VkImageUsageFlagBits                         -> VkSwapchainCreateInfoKHR                     [label="imageUsage"];
+	VkImageUsageFlagBits                         -> VkSurfaceCapabilitiesKHR                     [label="supportedUsageFlags"];
+	VkSwapchainKHR                               -> VkSwapchainCreateInfoKHR                     [label="oldSwapchain"];
+	VkColorSpaceKHR                              -> VkSwapchainCreateInfoKHR                     [label="imageColorSpace"];
+	VkColorSpaceKHR                              -> VkSurfaceFormatKHR                           [label="colorSpace"];
+	VkCompositeAlphaFlagBitsKHR                  -> VkSwapchainCreateInfoKHR                     [label="compositeAlpha"];
+	VkCompositeAlphaFlagBitsKHR                  -> VkSurfaceCapabilitiesKHR                     [label="supportedCompositeAlpha"];
+	vkGetPhysicalDeviceSurfacePresentModesKHR    -> VkPresentModeKHR                             [label="pPresentModes"];
+	VkSurfaceKHR                                 -> vkGetPhysicalDeviceSurfacePresentModesKHR    [label="surface"];
+}

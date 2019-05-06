@@ -1,0 +1,119 @@
+// Copyright (c) 2019 Jeff Boody
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+// sudo apt-get install graphviz
+// xdot ch1-overview-of-vulkan.dot
+digraph OVERVIEW
+{
+	label="Chapter 1. Overview of Vulkan";
+	fontsize=20;
+	size="1,1";
+	ratio=fill;
+
+	// handles
+	VkInstance       [shape=box, fillcolor=yellow, style=filled, label="VkInstance\nAn instance is the top level handle to the Vulkan API which\nis used to enumerate physical devices attached and\nto create the window surface."];
+	VkPhysicalDevice [shape=box, fillcolor=yellow, style=filled, label="VkPhysicalDevice\nA physical device is a handle to the GPU that can be used to\nquery physical device properties, features and extensions\nand to create a logical device."];
+	VkDevice         [shape=box, fillcolor=yellow, style=filled, label="VkDevice\nThe logical device for a particular physical device that\nrepresents a particular configuration of the physical device\nand queue(s) for submitting commands."];
+
+	// enums
+	VkMemoryPropertyFlags [shape=box, fillcolor=salmon, style=filled, label="VkMemoryPropertyFlags\n(VK_MEMORY_PROPERTY_*_BIT)\nDEVICE\nHOST_VISIBLE\nHOST_COHERENT\nHOST_CACHED\nLAZILY_ALLOCATED"];
+	VkQueueFlags          [shape=box, fillcolor=salmon, style=filled, label="VkQueueFlags\n(VK_QUEUE_*_BIT)\nGRAPHICS\nCOMPUTE\nTRANSFER\nSPARSE_BINDING"];
+	VkMemoryHeapFlagBits  [shape=box, fillcolor=salmon, style=filled, label="VkMemoryHeapFlagBits\n(VK_MEMORY_HEAP_*_BIT)\nDEVICE_LOCAL\nMULTI_INSTANCE"];
+	VkPhysicalDeviceType  [shape=box, fillcolor=salmon, style=filled, label="VkPhysicalDeviceType\n(VK_PHYSICAL_DEVICE_TYPE_*)\nOTHER\nINTEGRATED_GPU\nDISCRETE_GPU\nVIRTUAL_GPU\nCPU"];
+	VkSampleCountFlagBits [shape=box, fillcolor=salmon, style=filled, label="VkSampleCountFlagBits\n(VK_SAMPLE_COUNT_*_BIT)\n1\n2\n4\n8\n16\n32\n64"];
+
+	// structures
+	VkInstanceCreateInfo             [shape=box, fillcolor=orange, style=filled, label="VkInstanceCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkInstanceCreateFlags flags;\nconst VkApplicationInfo* pApplicationInfo;\nuint32_t enabledLayerCount;\nconst char* const* ppEnabledLayerNames;\nuint32_t enabledExtensionCount;\nconst char* const* ppEnabledExtensionNames;"];
+	VkApplicationInfo                [shape=box, fillcolor=orange, style=filled, label="VkApplicationInfo\nVkStructureType sType;\nconst void* pNext;\nconst char* pApplicationName;\nuint32_t applicationVersion;\nconst char* pEngineName;\nuint32_t engineVersion;\nuint32_t apiVersion;"];
+	VkPhysicalDeviceProperties       [shape=box, fillcolor=orange, style=filled, label="VkPhysicalDeviceProperties\nuint32_t apiVersion;\nuint32_t driverVersion;\nuint32_t vendorID;\nuint32_t deviceID;\nVkPhysicalDeviceType deviceType;\nchar deviceName[VK_MAX_PHYSICAL_DEVICE_NAME_SIZE];\nuint8_t pipelineCacheUUID[VK_UUID_SIZE];\nVkPhysicalDeviceLimits limits;\nVkPhysicalDeviceSparseProperties sparseProperties;"];
+	VkPhysicalDeviceFeatures         [shape=box, fillcolor=orange, style=filled, label="VkPhysicalDeviceFeatures\nSee expanded"];
+	VkPhysicalDeviceFeaturesLong     [shape=box, fillcolor=orange, style=filled, label="VkPhysicalDeviceFeatures\nVkBool32 robustBufferAccess;\nVkBool32 fullDrawIndexUint32;\nVkBool32 imageCubeArray;\nVkBool32 independentBlend;\nVkBool32 geometryShader;\nVkBool32 tessellationShader;\nVkBool32 sampleRateShading;\nVkBool32 dualSrcBlend;\nVkBool32 logicOp;\nVkBool32 multiDrawIndirect;\nVkBool32 drawIndirectFirstInstance;\nVkBool32 depthClamp;\nVkBool32 depthBiasClamp;\nVkBool32 fillModeNonSolid;\nVkBool32 depthBounds;\nVkBool32 wideLines;\nVkBool32 largePoints;\nVkBool32 alphaToOne;\nVkBool32 multiViewport;\nVkBool32 samplerAnisotropy;\nVkBool32 textureCompressionETC2;\nVkBool32 textureCompressionASTC_LDR;\nVkBool32 textureCompressionBC;\nVkBool32 occlusionQueryPrecise;\nVkBool32 pipelineStatisticsQuery;\nVkBool32 vertexPipelineStoresAndAtomics;\nVkBool32 fragmentStoresAndAtomics;\nVkBool32 shaderTessellationAndGeometryPointSize;\nVkBool32 shaderImageGatherExtended;\nVkBool32 shaderStorageImageExtendedFormats;\nVkBool32 shaderStorageImageMultisample;\nVkBool32 shaderStorageImageReadWithoutFormat;\nVkBool32 shaderStorageImageWriteWithoutFormat;\nVkBool32 shaderUniformBufferArrayDynamicIndexing;\nVkBool32 shaderSampledImageArrayDynamicIndexing;\nVkBool32 shaderStorageBufferArrayDynamicIndexing;\nVkBool32 shaderStorageImageArrayDynamicIndexing;\nVkBool32 shaderClipDistance;\nVkBool32 shaderCullDistance;\nVkBool32 shaderFloat64;\nVkBool32 shaderInt64;\nVkBool32 shaderInt16;\nVkBool32 shaderResourceResidency;\nVkBool32 shaderResourceMinLod;\nVkBool32 sparseBinding;\nVkBool32 sparseResidencyBuffer;\nVkBool32 sparseResidencyImage2D;\nVkBool32 sparseResidencyImage3D;\nVkBool32 sparseResidency2Samples;\nVkBool32 sparseResidency4Samples;\nVkBool32 sparseResidency8Samples;\nVkBool32 sparseResidency16Samples;\nVkBool32 sparseResidencyAliased;\nVkBool32 variableMultisampleRate;\nVkBool32 inheritedQueries;"];
+	VkPhysicalDeviceMemoryProperties [shape=box, fillcolor=orange, style=filled, label="VkPhysicalDeviceMemoryProperties\nuint32_t memoryTypeCount;\nVkMemoryType memoryTypes[VK_MAX_MEMORY_TYPES];\nuint32_t memoryHeapCount;\nVkMemoryHeap memoryHeaps[VK_MAX_MEMORY_HEAPS];"]
+	VkMemoryType                     [shape=box, fillcolor=orange, style=filled, label="VkMemoryType\nVkMemoryPropertyFlags propertyFlags;\nuint32_t heapIndex;"];
+	VkMemoryHeap                     [shape=box, fillcolor=orange, style=filled, label="VkMemoryHeap\nVkDeviceSize(uint64_t) size;\nVkMemoryHeapFlags flags;"];
+	VkQueueFamilyProperties          [shape=box, fillcolor=orange, style=filled, label="VkQueueFamilyProperties\nVkQueueFlags queueFlags;\nuint32_t queueCount;\nuint32_t timestampValidBits;\nVkExtent3D minImageTransferGranularity;"];
+	VkDeviceCreateInfo               [shape=box, fillcolor=orange, style=filled, label="VkDeviceCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkDeviceCreateFlags flags;\nuint32_t queueCreateInfoCount;\nconst VkDeviceQueueCreateInfo* pQueueCreateInfos;\nuint32_t enabledLayerCount;\nconst char* const* ppEnabledLayerNames;\nuint32_t enabledExtensionCount;\nconst char* const* ppEnabledExtensionNames;\nconst VkPhysicalDeviceFeatures* pEnabledFeatures;"];
+	VkDeviceQueueCreateInfo          [shape=box, fillcolor=orange, style=filled, label="VkDeviceQueueCreateInfo\nVkStructureType sType;\nconst void* pNext;\nVkDeviceQueueCreateFlags flags;\nuint32_t queueFamilyIndex;\nuint32_t queueCount;\nconst float* pQueuePriorities;"];
+	VkLayerProperties                [shape=box, fillcolor=orange, style=filled, label="VkLayerProperties\nchar layerName[VK_MAX_EXTENSION_NAME_SIZE];\nuint32_t specVersion;\nuint32_t implementationVersion;\nchar description[VK_MAX_DESCRIPTION_SIZE];"];
+	VkExtensionProperties            [shape=box, fillcolor=orange, style=filled, label="VkExtensionProperties\nchar extensionName[VK_MAX_EXTENSION_NAME_SIZE];\nuint32_t specVersion;"];
+	VkPhysicalDeviceLimits           [shape=box, fillcolor=orange, style=filled, label="VkPhysicalDeviceLimits\nSee expanded"];
+	VkPhysicalDeviceLimitsLong       [shape=box, fillcolor=orange, style=filled, label="VkPhysicalDeviceLimits\nuint32_t maxImageDimension1D;\nuint32_t maxImageDimension2D;\nuint32_t maxImageDimension3D;\nuint32_t maxImageDimensionCube;\nuint32_t maxImageArrayLayers;\nuint32_t maxTexelBufferElements;\nuint32_t maxUniformBufferRange;\nuint32_t maxStorageBufferRange;\nuint32_t maxPushConstantsSize;\nuint32_t maxMemoryAllocationCount;\nuint32_t maxSamplerAllocationCount;\nVkDeviceSize(uint64_t) bufferImageGranularity;\nVkDeviceSize(uint64_t) sparseAddressSpaceSize;\nuint32_t maxBoundDescriptorSets;\nuint32_t maxPerStageDescriptorSamplers;\nuint32_t maxPerStageDescriptorUniformBuffers;\nuint32_t maxPerStageDescriptorStorageBuffers;\nuint32_t maxPerStageDescriptorSampledImages;\nuint32_t maxPerStageDescriptorStorageImages;\nuint32_t maxPerStageDescriptorInputAttachments;\nuint32_t maxPerStageResources;\nuint32_t maxDescriptorSetSamplers;\nuint32_t maxDescriptorSetUniformBuffers;\nuint32_t maxDescriptorSetUniformBuffersDynamic;\nuint32_t maxDescriptorSetStorageBuffers;\nuint32_t maxDescriptorSetStorageBuffersDynamic;\nuint32_t maxDescriptorSetSampledImages;\nuint32_t maxDescriptorSetStorageImages;\nuint32_t maxDescriptorSetInputAttachments;\nuint32_t maxVertexInputAttributes;\nuint32_t maxVertexInputBindings;\nuint32_t maxVertexInputAttributeOffset;\nuint32_t maxVertexInputBindingStride;\nuint32_t maxVertexOutputComponents;\nuint32_t maxTessellationGenerationLevel;\nuint32_t maxTessellationPatchSize;\nuint32_t maxTessellationControlPerVertexInputComponents;\nuint32_t maxTessellationControlPerVertexOutputComponents;\nuint32_t maxTessellationControlPerPatchOutputComponents;\nuint32_t maxTessellationControlTotalOutputComponents;\nuint32_t maxTessellationEvaluationInputComponents;\nuint32_t maxTessellationEvaluationOutputComponents;\nuint32_t maxGeometryShaderInvocations;\nuint32_t maxGeometryInputComponents;\nuint32_t maxGeometryOutputComponents;\nuint32_t maxGeometryOutputVertices;\nuint32_t maxGeometryTotalOutputComponents;\nuint32_t maxFragmentInputComponents;\nuint32_t maxFragmentOutputAttachments;\nuint32_t maxFragmentDualSrcAttachments;\nuint32_t maxFragmentCombinedOutputResources;\nuint32_t maxComputeSharedMemorySize;\nuint32_t maxComputeWorkGroupCount[3];\nuint32_t maxComputeWorkGroupInvocations;\nuint32_t maxComputeWorkGroupSize[3];\nuint32_t subPixelPrecisionBits;\nuint32_t subTexelPrecisionBits;\nuint32_t mipmapPrecisionBits;\nuint32_t maxDrawIndexedIndexValue;\nuint32_t maxDrawIndirectCount;\nfloat maxSamplerLodBias;\nfloat maxSamplerAnisotropy;\nuint32_t maxViewports;\nuint32_t maxViewportDimensions[2];\nfloat viewportBoundsRange[2];\nuint32_t viewportSubPixelBits;\nsize_t minMemoryMapAlignment;\nVkDeviceSize(uint64_t) minTexelBufferOffsetAlignment;\nVkDeviceSize(uint64_t) minUniformBufferOffsetAlignment;\nVkDeviceSize(uint64_t) minStorageBufferOffsetAlignment;\nint32_t minTexelOffset;\nuint32_t maxTexelOffset;\nint32_t minTexelGatherOffset;\nuint32_t maxTexelGatherOffset;\nfloat minInterpolationOffset;\nfloat maxInterpolationOffset;\nuint32_t subPixelInterpolationOffsetBits;\nuint32_t maxFramebufferWidth;\nuint32_t maxFramebufferHeight;\nuint32_t maxFramebufferLayers;\nVkSampleCountFlags framebufferColorSampleCounts;\nVkSampleCountFlags framebufferDepthSampleCounts;\nVkSampleCountFlags framebufferStencilSampleCounts;\nVkSampleCountFlags framebufferNoAttachmentsSampleCounts;\nuint32_t maxColorAttachments;\nVkSampleCountFlags sampledImageColorSampleCounts;\nVkSampleCountFlags sampledImageIntegerSampleCounts;\nVkSampleCountFlags sampledImageDepthSampleCounts;\nVkSampleCountFlags sampledImageStencilSampleCounts;\nVkSampleCountFlags storageImageSampleCounts;\nuint32_t maxSampleMaskWords;\nVkBool32 timestampComputeAndGraphics;\nfloat timestampPeriod;\nuint32_t maxClipDistances;\nuint32_t maxCullDistances;\nuint32_t maxCombinedClipAndCullDistances;\nuint32_t discreteQueuePriorities;\nfloat pointSizeRange[2];\nfloat lineWidthRange[2];\nfloat pointSizeGranularity;\nfloat lineWidthGranularity;\nVkBool32 strictLines;\nVkBool32 standardSampleLocations;\nVkDeviceSize(uint64_t) optimalBufferCopyOffsetAlignment;\nVkDeviceSize(uint64_t) optimalBufferCopyRowPitchAlignment;\nVkDeviceSize(uint64_t) nonCoherentAtomSize;"];
+	VkPhysicalDeviceSparseProperties [shape=box, fillcolor=orange, style=filled, label="VkPhysicalDeviceSparseProperties\nVkBool32 residencyStandard2DBlockShape;\nVkBool32 residencyStandard2DMultisampleBlockShape;\nVkBool32 residencyStandard3DBlockShape;\nVkBool32 residencyAlignedMipSize;\nVkBool32 residencyNonResidentStrict;"];
+	VkExtent3D                       [shape=box, fillcolor=orange, style=filled, label="VkExtent3D\nuint32_t width;\nuint32_t height;\nuint32_t depth;"];
+
+	// functions
+	vkCreateInstance                         [fillcolor=skyblue, style=filled, label="VkResult vkCreateInstance(\nconst VkInstanceCreateInfo* pCreateInfo,\nconst VkAllocationCallbacks* pAllocator,\nVkInstance* pInstance);"];
+	vkEnumeratePhysicalDevices               [fillcolor=skyblue, style=filled, label="VkResult vkEnumeratePhysicalDevices(\nVkInstance instance,\nuint32_t* pPhysicalDeviceCount,\nVkPhysicalDevice* pPhysicalDevices);"];
+	vkGetPhysicalDeviceProperties            [fillcolor=skyblue, style=filled, label="void vkGetPhysicalDeviceProperties(\nVkPhysicalDevice physicalDevice,\nVkPhysicalDeviceProperties* pProperties);"];
+	vkGetPhysicalDeviceFeatures              [fillcolor=skyblue, style=filled, label="void vkGetPhysicalDeviceFeatures(\nVkPhysicalDevice physicalDevice,\nVkPhysicalDeviceFeatures* pFeatures);"];
+	vkGetPhysicalDeviceMemoryProperties      [fillcolor=skyblue, style=filled, label="void vkGetPhysicalDeviceMemoryProperties(\nVkPhysicalDevice physicalDevice,\nVkPhysicalDeviceMemoryProperties* pMemoryProperties);"];
+	vkGetPhysicalDeviceQueueFamilyProperties [fillcolor=skyblue, style=filled, label="void vkGetPhysicalDeviceQueueFamilyProperties(\nVkPhysicalDevice physicalDevice,\nuint32_t* pQueueFamilyPropertyCount,\nVkQueueFamilyProperties* pQueueFamilyProperties);"];
+	vkCreateDevice                           [fillcolor=skyblue, style=filled, label="VkResult vkCreateDevice(\nVkPhysicalDevice physicalDevice,\nconst VkDeviceCreateInfo* pCreateInfo,\nconst VkAllocationCallbacks* pAllocator,\nVkDevice* pDevice);"];
+	vkEnumerateInstanceLayerProperties       [fillcolor=skyblue, style=filled, label="VkResult vkEnumerateInstanceLayerProperties(\nuint32_t* pPropertyCount,\nVkLayerProperties* pProperties);"];
+	vkEnumerateDeviceLayerProperties         [fillcolor=skyblue, style=filled, label="VkResult vkEnumerateDeviceLayerProperties(\nVkPhysicalDevice physicalDevice,\nuint32_t* pPropertyCount,\nVkLayerProperties* pProperties);"];
+	vkEnumerateInstanceExtensionProperties   [fillcolor=skyblue, style=filled, label="VkResult vkEnumerateInstanceExtensionProperties(\nconst char* pLayerName,\nuint32_t* pPropertyCount,\nVkExtensionProperties* pProperties);"];
+	vkEnumerateDeviceExtensionProperties     [fillcolor=skyblue, style=filled, label="VkResult vkEnumerateDeviceExtensionProperties(\nVkPhysicalDevice physicalDevice,\nconst char* pLayerName,\nuint32_t* pPropertyCount,\nVkExtensionProperties* pProperties);"];
+	vkGetInstanceProcAddr                    [fillcolor=skyblue, style=filled, label="PFN_vkVoidFunction vkGetInstanceProcAddr(\nVkInstance instance,\nconst char* pName);"];
+	vkGetDeviceProcAddr                      [fillcolor=skyblue, style=filled, label="PFN_vkVoidFunction vkGetDeviceProcAddr(\nVkDevice device,\nconst char* pName);"];
+	vkDeviceWaitIdle                         [fillcolor=skyblue, style=filled, label="VkResult vkDeviceWaitIdle(\nVkDevice device);"];
+	vkDestroyDevice                          [fillcolor=skyblue, style=filled, label="void vkDestroyDevice(\nVkDevice device,\nconst VkAllocationCallbacks* pAllocator);"];
+	vkDestroyInstance                        [fillcolor=skyblue, style=filled, label="void vkDestroyInstance(\nVkInstance instance,\nconst VkAllocationCallbacks* pAllocator);"];
+
+	// parameters
+	vkCreateInstance                         -> VkInstance                               [label="pInstance"];
+	VkInstanceCreateInfo                     -> vkCreateInstance                         [label="pCreateInfo"];
+	VkApplicationInfo                        -> VkInstanceCreateInfo                     [label="pApplicationInfo"];
+	vkEnumeratePhysicalDevices               -> VkPhysicalDevice                         [label="pPhysicalDevices"];
+	VkInstance                               -> vkEnumeratePhysicalDevices               [label="instance"];
+	VkPhysicalDevice                         -> vkGetPhysicalDeviceProperties            [label="physicalDevice"];
+	VkPhysicalDevice                         -> vkGetPhysicalDeviceFeatures              [label="physicalDevice"];
+	VkPhysicalDevice                         -> vkGetPhysicalDeviceMemoryProperties      [label="physicalDevice"];
+	VkPhysicalDevice                         -> vkGetPhysicalDeviceQueueFamilyProperties [label="physicalDevice"];
+	VkPhysicalDevice                         -> vkCreateDevice                           [label="physicalDevice"];
+	VkPhysicalDevice                         -> vkEnumerateDeviceLayerProperties         [label="physicalDevice"];
+	VkPhysicalDevice                         -> vkEnumerateDeviceExtensionProperties     [label="physicalDevice"];
+	vkGetPhysicalDeviceProperties            -> VkPhysicalDeviceProperties               [label="pProperties"];
+	vkGetPhysicalDeviceFeatures              -> VkPhysicalDeviceFeatures                 [label="pFeatures"];
+	vkGetPhysicalDeviceMemoryProperties      -> VkPhysicalDeviceMemoryProperties         [label="pMemoryProperties"];
+	VkMemoryType                             -> VkPhysicalDeviceMemoryProperties         [label="memoryTypes"];
+	VkMemoryPropertyFlags                    -> VkMemoryType                             [label="propertyFlags"];
+	VkMemoryHeap                             -> VkPhysicalDeviceMemoryProperties         [label="memoryHeaps"];
+	vkGetPhysicalDeviceQueueFamilyProperties -> VkQueueFamilyProperties                  [label="pQueueFamilyProperties"];
+	VkQueueFlags                             -> VkQueueFamilyProperties                  [label="queueFlags"];
+	VkDeviceCreateInfo                       -> vkCreateDevice                           [label="pCreateInfo"];
+	vkCreateDevice                           -> VkDevice                                 [label="pDevice"];
+	VkDeviceQueueCreateInfo                  -> VkDeviceCreateInfo                       [label="pQueueCreateInfos"];
+	vkEnumerateInstanceLayerProperties       -> VkLayerProperties                        [label="pProperties"];
+	vkEnumerateDeviceLayerProperties         -> VkLayerProperties                        [label="pProperties"];
+	vkEnumerateInstanceExtensionProperties   -> VkExtensionProperties                    [label="pProperties"];
+	vkEnumerateDeviceExtensionProperties     -> VkExtensionProperties                    [label="pProperties"];
+	VkInstance                               -> vkGetInstanceProcAddr                    [label="instance"];
+	VkDevice                                 -> vkGetDeviceProcAddr                      [label="device"];
+	VkDevice                                 -> vkDeviceWaitIdle                         [label="device"];
+	VkDevice                                 -> vkDestroyDevice                          [label="device"];
+	VkInstance                               -> vkDestroyInstance                        [label="instance"];
+	VkMemoryHeapFlagBits                     -> VkMemoryHeap                             [label="flags"];
+	VkPhysicalDeviceType                     -> VkPhysicalDeviceProperties               [label="deviceType"];
+	VkPhysicalDeviceLimits                   -> VkPhysicalDeviceProperties               [label="limits"];
+	VkPhysicalDeviceSparseProperties         -> VkPhysicalDeviceProperties               [label="sparseProperties"];
+	VkPhysicalDeviceFeatures                 -> VkDeviceCreateInfo                       [label="pEnabledFeatures"];
+	VkSampleCountFlagBits                    -> VkPhysicalDeviceLimits                   [label="framebufferColorSampleCounts\nframebufferDepthSampleCounts\nframebufferStencilSampleCounts\nframebufferNoAttachmentsSampleCounts\nsampledImageColorSampleCounts\nsampledImageIntegerSampleCounts\nsampledImageDepthSampleCounts\nsampledImageStencilSampleCounts\nstorageImageSampleCounts"];
+	VkExtent3D                               -> VkQueueFamilyProperties                  [label="minImageTransferGranularity"];
+}
