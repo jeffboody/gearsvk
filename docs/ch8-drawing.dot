@@ -49,9 +49,10 @@ digraph DRAWING
 	VkExtent2D               [shape=box, fillcolor=orange, style=filled, label="VkExtent2D\nuint32_t width;\nuint32_t height;"];
 
 	// functions
-	vkCmdDraw                [fillcolor=skyblue, style=filled, label="void vkCmdDraw(\nVkCommandBuffer commandBuffer,\nuint32_t vertexCount,\nuint32_t instanceCount,\nuint32_t firstVertex,\nuint32_t firstInstance);"];
 	vkCmdBeginRenderPass     [fillcolor=skyblue, style=filled, label="void vkCmdBeginRenderPass(\nVkCommandBuffer commandBuffer,\nconst VkRenderPassBeginInfo* pRenderPassBegin,\nVkSubpassContents contents);"];
+	vkCmdNextSubpass         [fillcolor=skyblue, style=filled, label="void vkCmdNextSubpass(\nVkCommandBuffer commandBuffer,\nVkSubpassContents contents);"];
 	vkCmdEndRenderPass       [fillcolor=skyblue, style=filled, label="void vkCmdEndRenderPass(\nVkCommandBuffer commandBuffer);"];
+	vkCmdDraw                [fillcolor=skyblue, style=filled, label="void vkCmdDraw(\nVkCommandBuffer commandBuffer,\nuint32_t vertexCount,\nuint32_t instanceCount,\nuint32_t firstVertex,\nuint32_t firstInstance);"];
 	vkCmdBindVertexBuffers   [fillcolor=skyblue, style=filled, label="void vkCmdBindVertexBuffers(\nVkCommandBuffer commandBuffer,\nuint32_t firstBinding,\nuint32_t bindingCount,\nconst VkBuffer* pBuffers,\nconst VkDeviceSize(uint64_t)* pOffsets);"];
 	vkCmdDrawIndexed         [fillcolor=skyblue, style=filled, label="void vkCmdDrawIndexed(\nVkCommandBuffer commandBuffer,\nuint32_t indexCount,\nuint32_t instanceCount,\nuint32_t firstIndex,\nint32_t vertexOffset,\nuint32_t firstInstance);"];
 	vkCmdBindIndexBuffer     [fillcolor=skyblue, style=filled, label="void vkCmdBindIndexBuffer(\nVkCommandBuffer commandBuffer,\nVkBuffer buffer,\nVkDeviceSize(uint64_t) offset,\nVkIndexType indexType);"];
@@ -64,19 +65,21 @@ digraph DRAWING
 	VkRenderPassBeginInfo    -> vkCmdBeginRenderPass     [label="pRenderPassBegin"];
 	VkClearValue             -> VkRenderPassBeginInfo    [label="pClearValues"];
 	VkIndexType              -> vkCmdBindIndexBuffer     [label="indexType"];
-	VkCommandBuffer          -> vkCmdDraw                [label="commandBuffer"];
 	VkCommandBuffer          -> vkCmdBeginRenderPass     [label="commandBuffer"];
 	VkCommandBuffer          -> vkCmdEndRenderPass       [label="commandBuffer"];
+	VkCommandBuffer          -> vkCmdDraw                [label="commandBuffer"];
 	VkCommandBuffer          -> vkCmdBindVertexBuffers   [label="commandBuffer"];
 	VkCommandBuffer          -> vkCmdDrawIndexed         [label="commandBuffer"];
 	VkCommandBuffer          -> vkCmdBindIndexBuffer     [label="commandBuffer"];
 	VkCommandBuffer          -> vkCmdDrawIndirect        [label="commandBuffer"];
 	VkCommandBuffer          -> vkCmdDrawIndexedIndirect [label="commandBuffer"];
+	VkCommandBuffer          -> vkCmdNextSubpass         [label="commandBuffer"];
 	VkBuffer                 -> vkCmdBindVertexBuffers   [label="pBuffers"];
 	VkBuffer                 -> vkCmdBindIndexBuffer     [label="buffer"];
 	VkBuffer                 -> vkCmdDrawIndirect        [label="buffer"];
 	VkBuffer                 -> vkCmdDrawIndexedIndirect [label="buffer"];
 	VkSubpassContents        -> vkCmdBeginRenderPass     [label="contents"];
+	VkSubpassContents        -> vkCmdNextSubpass         [label="contents"];
 	VkRect2D                 -> VkRenderPassBeginInfo    [label="renderArea"];
 	VkClearColorValue        -> VkClearValue             [label="color"];
 	VkClearDepthStencilValue -> VkClearValue             [label="depthStencil"]
