@@ -11,7 +11,7 @@ set(CMAKE_SHARED_LINKER_FLAGS
     "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")
 
 # Compiler options
-add_compile_options(-Wall -DVK_USE_PLATFORM_ANDROID_KHR)
+add_compile_options(-Wall -DVK_USE_PLATFORM_ANDROID_KHR -DA3D_GLESv2)
 
 # Main library
 add_library(gearsvk
@@ -22,9 +22,14 @@ add_library(gearsvk
 
             # Source
             android_main.c
-            a3d_math.c
-            a3d_log.c
-            vk_engine.c)
+            gears_renderer.c
+            gear.c)
+
+# Submodules
+add_subdirectory("a3d")
+add_subdirectory("libexpat/expat/lib")
+add_subdirectory("libpak")
+add_subdirectory("texgz")
 
 target_include_directories(gearsvk
                            PRIVATE
@@ -36,6 +41,12 @@ target_include_directories(gearsvk
 
 # Linking
 target_link_libraries(gearsvk
+
+                      # Submodule libraries
+                      a3d
+                      expat
+                      pak
+                      texgz
 
                       # NDK libraries
                       android

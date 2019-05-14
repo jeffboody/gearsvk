@@ -25,10 +25,10 @@
 #include <assert.h>
 #include <vulkan_wrapper.h>
 #include <android_native_app_glue.h>
-#include "vk_engine.h"
+#include "gears_renderer.h"
 
 #define LOG_TAG "gearsvk"
-#include "a3d_log.h"
+#include "a3d/a3d_log.h"
 
 /***********************************************************
 * platform                                                 *
@@ -39,7 +39,7 @@ typedef struct
 	struct android_app* app;
 	int focus;
 
-	vk_engine_t* engine;
+	gears_renderer_t* renderer;
 } platform_t;
 
 static void onAppCmd(struct android_app* app, int32_t cmd);
@@ -72,7 +72,7 @@ platform_termWindow(platform_t* self)
 {
 	assert(self);
 
-	vk_engine_delete(&self->engine);
+	gears_renderer_delete(&self->renderer);
 }
 
 static void
@@ -80,17 +80,18 @@ platform_initWindow(platform_t* self)
 {
 	assert(self);
 
-	if(self->engine)
+	if(self->renderer)
 	{
-		LOGW("engine already exists");
+		LOGW("renderer already exists");
 		return;
 	}
 
 	LOGI("InitVulkan=%i", InitVulkan());
 
 	uint32_t version = VK_MAKE_VERSION(1,0,0);
-	self->engine = vk_engine_new(self->app, "gearsvk",
-	                             version);
+	self->renderer = gears_renderer_new(self->app,
+	                                    "gearsvk",
+	                                    version);
 }
 
 static void platform_delete(platform_t** _self)
@@ -110,9 +111,9 @@ static void platform_draw(platform_t* self)
 {
 	assert(self);
 
-	if(self->engine)
+	if(self->renderer)
 	{
-		vk_engine_draw(self->engine);
+		gears_renderer_draw(self->renderer);
 	}
 }
 
@@ -120,7 +121,7 @@ static int platform_rendering(platform_t* self)
 {
 	assert(self);
 
-	if(self->focus && self->engine)
+	if(self->focus && self->renderer)
 	{
 		return 1;
 	}
