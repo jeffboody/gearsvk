@@ -10,7 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:hasCode="false">
-        <activity android:name="android.app.NativeActivity">
+        <activity android:name=".GearsVK">
             <meta-data android:name="android.app.lib_name" android:value="gearsvk" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

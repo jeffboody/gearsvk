@@ -21,14 +21,66 @@
  *
  */
 
+#include <jni.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <vulkan_wrapper.h>
 #include <android_native_app_glue.h>
+#include "a3d/widget/a3d_key.h"
 #include "gears_renderer.h"
 
-#define LOG_TAG "gearsvk"
+#define LOG_TAG "gears"
 #include "a3d/a3d_log.h"
+
+/***********************************************************
+* private - cmd_fn callback                                *
+***********************************************************/
+
+// java state required for cmd_fn
+static JavaVM* g_vm    = NULL;
+static jobject g_clazz;
+
+static void cmd_fn(int cmd, const char* msg)
+{
+	if(g_vm == NULL)
+	{
+		LOGE("g_vm is NULL");
+		return;
+	}
+
+	JNIEnv* env = NULL;
+	if((*g_vm)->AttachCurrentThread(g_vm, &env, NULL) != 0)
+	{
+		LOGE("AttachCurrentThread failed");
+		return;
+	}
+
+	jclass cls = (*env)->GetObjectClass(env, g_clazz);
+	if(cls == NULL)
+	{
+		LOGE("FindClass failed");
+		return;
+	}
+
+	jmethodID mid = (*env)->GetStaticMethodID(env, cls,
+	                                          "CallbackCmd",
+	                                          "(ILjava/lang/String;)V");
+	if(mid == NULL)
+	{
+		LOGE("GetStaticMethodID failed");
+		return;
+	}
+
+	jstring jmsg = (*env)->NewStringUTF(env, msg);
+	if(jmsg == NULL)
+	{
+		LOGE("NewStringUTF failed");
+		return;
+	}
+
+	(*env)->CallStaticVoidMethod(env, cls, mid, cmd, jmsg);
+	(*env)->DeleteLocalRef(env, jmsg);
+}
 
 /***********************************************************
 * platform                                                 *
@@ -64,6 +116,9 @@ platform_new(struct android_app* app)
 	app->onAppCmd     = onAppCmd;
 	app->onInputEvent = onInputEvent;
 
+	g_vm    = app->activity->vm;
+	g_clazz = app->activity->clazz;
+
 	return self;
 }
 
@@ -91,7 +146,8 @@ platform_initWindow(platform_t* self)
 	uint32_t version = VK_MAKE_VERSION(1,0,0);
 	self->renderer = gears_renderer_new(self->app,
 	                                    "gearsvk",
-	                                    version);
+	                                    version,
+	                                    cmd_fn);
 }
 
 static void platform_delete(platform_t** _self)
@@ -168,7 +224,99 @@ static int32_t
 onInputEvent(struct android_app* app,
              AInputEvent* event)
 {
-	// ignore input events
+	assert(app);
+	assert(event);
+
+	platform_t*       platform = (platform_t*) app->userData;
+	gears_renderer_t* renderer = platform->renderer;
+
+	int32_t type = AInputEvent_getType(event);
+	if(type == AINPUT_EVENT_TYPE_KEY)
+	{
+		int32_t action  = AKeyEvent_getAction(event);
+		int32_t keycode = AKeyEvent_getKeyCode(event);
+
+		if((action == AKEY_EVENT_ACTION_UP) &&
+		   (keycode == AKEYCODE_BACK))
+		{
+			gears_renderer_keyPress(renderer,
+			                        A3D_KEY_ESCAPE, 0);
+		}
+		return 1;
+	}
+	else if(type == AINPUT_EVENT_TYPE_MOTION)
+	{
+		int     action = (int) AMotionEvent_getAction(event) &
+		                       AMOTION_EVENT_ACTION_MASK;
+		int64_t ns     = AMotionEvent_getEventTime(event);
+		double  ts     = ((double) ns)/1000000000.0;
+		int     count  = (int) AMotionEvent_getPointerCount(event);
+
+		if(count < 1)
+		{
+			// ignore
+			return 0;
+		}
+
+		// get points
+		float x0;
+		float y0;
+		float x1;
+		float y1;
+		float x2;
+		float y2;
+		float x3;
+		float y3;
+		if(count >= 1)
+		{
+			x0 = AMotionEvent_getX(event, 0);
+			y0 = AMotionEvent_getY(event, 0);
+		}
+		if(count >= 2)
+		{
+			x1 = AMotionEvent_getX(event, 1);
+			y1 = AMotionEvent_getY(event, 1);
+		}
+		if(count >= 3)
+		{
+			x2 = AMotionEvent_getX(event, 2);
+			y2 = AMotionEvent_getY(event, 2);
+		}
+		if(count >= 4)
+		{
+			count = 4;
+			x3 = AMotionEvent_getX(event, 3);
+			y3 = AMotionEvent_getY(event, 3);
+		}
+
+		// translate the action
+		if(action <= AMOTION_EVENT_ACTION_DOWN)
+		{
+			action = GEARS_TOUCH_ACTION_DOWN;
+		}
+		else if(action == AMOTION_EVENT_ACTION_UP)
+		{
+			action = GEARS_TOUCH_ACTION_UP;
+		}
+		else if(action == AMOTION_EVENT_ACTION_MOVE)
+		{
+			action = GEARS_TOUCH_ACTION_MOVE;
+		}
+		else
+		{
+			// ignore
+			return 0;
+		}
+
+		gears_renderer_touch(renderer,
+		                     action, count, ts,
+		                     x0, y0,
+		                     x1, y1,
+		                     x2, y2,
+		                     x3, y3);
+		return 1;
+	}
+
 	return 0;
 }
 
