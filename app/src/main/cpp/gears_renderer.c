@@ -32,6 +32,7 @@
 #include <string.h>
 #include <math.h>
 #include "gears_renderer.h"
+#include "a3d/widget/a3d_key.h"
 #include "a3d/a3d_timestamp.h"
 
 #define LOG_TAG "gears"
@@ -45,6 +46,14 @@
 static const a3d_vec4f_t RED   = { .r=0.8f, .g=0.1f, .b=0.0f, .a=1.0f };
 static const a3d_vec4f_t GREEN = { .r=0.0f, .g=0.8f, .b=0.2f, .a=1.0f };
 static const a3d_vec4f_t BLUE  = { .r=0.2f, .g=0.2f, .b=1.0f, .a=1.0f };
+
+static void gears_renderer_exit(gears_renderer_t* self)
+{
+	assert(self);
+
+	gears_renderer_cmd_fn cmd_fn = self->cmd_fn;
+	(*cmd_fn)(GEARS_CMD_EXIT, "");
+}
 
 static void gears_renderer_step(gears_renderer_t* self)
 {
@@ -135,6 +144,37 @@ static void gears_renderer_step(gears_renderer_t* self)
 		}
 	}
 	self->t_last = t;
+}
+
+static void gears_renderer_rotate(gears_renderer_t* self,
+                                  float dx, float dy)
+{
+	assert(self);
+
+	// rotating around x-axis is equivalent to moving up-and-down on touchscreen
+	// rotating around y-axis is equivalent to moving left-and-right on touchscreen
+	// 360 degrees is equivalent to moving completly across the touchscreen
+	float   w  = (float) self->swapchain_extent.width;
+	float   h  = (float) self->swapchain_extent.height;
+	GLfloat rx = 360.0f * dy / h;
+	GLfloat ry = 360.0f * dx / w;
+	a3d_quaternion_t q;
+	a3d_quaternion_loadeuler(&q, rx, ry, 0.0f);
+	a3d_quaternion_rotateq(&self->view_q, &q);
+}
+
+static void gears_renderer_scale(gears_renderer_t* self,
+                                 float scale)
+{
+	assert(self);
+
+	// scale range
+	float min = 0.25f;
+	float max = 2.0f;
+
+	self->view_scale *= scale;
+	if(self->view_scale < min)  self->view_scale = min;
+	if(self->view_scale >= max) self->view_scale = max;
 }
 
 static int
@@ -1821,7 +1861,8 @@ gears_renderer_nextSemaphore(gears_renderer_t* self,
 
 gears_renderer_t* gears_renderer_new(void* app,
                                      const char* app_name,
-                                     uint32_t app_version)
+                                     uint32_t app_version,
+                                     gears_renderer_cmd_fn cmd_fn)
 {
 	#ifdef ANDROID
 		assert(app);
@@ -1970,6 +2011,8 @@ gears_renderer_t* gears_renderer_new(void* app,
 	{
 		goto fail_stack;
 	}
+
+	self->cmd_fn = cmd_fn;
 
 	// success
 	return self;
@@ -2387,6 +2430,81 @@ void gears_renderer_draw(gears_renderer_t* self)
 	{
 		LOGE("vkQueuePresentKHR failed");
 		return;
+	}
+}
+
+void gears_renderer_touch(gears_renderer_t* self,
+                          int action, int count, double ts,
+                          float x0, float y0,
+                          float x1, float y1,
+                          float x2, float y2,
+                          float x3, float y3)
+{
+	assert(self);
+
+	if(action == GEARS_TOUCH_ACTION_UP)
+	{
+		// Do nothing
+		self->touch_state = GEARS_TOUCH_STATE_INIT;
+	}
+	else if(count == 1)
+	{
+		if(self->touch_state == GEARS_TOUCH_STATE_ROTATE)
+		{
+			float dx = x0 - self->touch_x1;
+			float dy = y0 - self->touch_y1;
+			gears_renderer_rotate(self, dx, dy);
+			self->touch_x1 = x0;
+			self->touch_y1 = y0;
+		}
+		else if(action == GEARS_TOUCH_ACTION_DOWN)
+		{
+			self->touch_x1    = x0;
+			self->touch_y1    = y0;
+			self->touch_state = GEARS_TOUCH_STATE_ROTATE;
+		}
+	}
+	else if(count == 2)
+	{
+		if(self->touch_state == GEARS_TOUCH_STATE_ZOOM)
+		{
+			float dx = fabsf(x1 - x0);
+			float dy = fabsf(y1 - y0);
+			float ds = sqrtf(dx*dx + dy*dy);
+
+			gears_renderer_scale(self, ds/self->touch_ds);
+
+			self->touch_ds = ds;
+		}
+		else
+		{
+			float dx = fabsf(x1 - x0);
+			float dy = fabsf(y1 - y0);
+			float ds = sqrtf(dx*dx + dy*dy);
+
+			self->touch_ds    = ds;
+			self->touch_state = GEARS_TOUCH_STATE_ZOOM;
+		}
+	}
+}
+
+void gears_renderer_keyPress(gears_renderer_t* self,
+                             int keycode, int meta)
+{
+	assert(self);
+
+	if(keycode == A3D_KEY_ESCAPE)
+	{
+		// double tap back to exit
+		double t1 = a3d_timestamp();
+		if((t1 - self->escape_t0) < 0.5)
+		{
+			gears_renderer_exit(self);
+		}
+		else
+		{
+			self->escape_t0 = t1;
+		}
 	}
 }
 

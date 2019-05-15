@@ -43,6 +43,20 @@
 #include "a3d/math/a3d_stack4f.h"
 #include "gear.h"
 
+#define GEARS_TOUCH_ACTION_DOWN 0
+#define GEARS_TOUCH_ACTION_UP   1
+#define GEARS_TOUCH_ACTION_MOVE 2
+
+#define GEARS_TOUCH_STATE_INIT   0
+#define GEARS_TOUCH_STATE_ROTATE 1
+#define GEARS_TOUCH_STATE_ZOOM   2
+
+#define GEARS_CMD_PLAY_CLICK 1
+#define GEARS_CMD_EXIT       2
+#define GEARS_CMD_LOADURL    3
+
+typedef void (*gears_renderer_cmd_fn)(int cmd, const char* msg);
+
 /***********************************************************
 * public                                                   *
 ***********************************************************/
@@ -132,17 +146,38 @@ typedef struct gears_renderer_s
 	int    frames;
 	float  last_fps;
 
+	// touch state
+	int   touch_state;
+	float touch_x1;
+	float touch_y1;
+	float touch_ds;
+
+	// escape state
+	double escape_t0;
+
 	// per-gear state
 	gear_t* gear1;
 	gear_t* gear2;
 	gear_t* gear3;
+
+	// JNI callback(s)
+	gears_renderer_cmd_fn cmd_fn;
 } gears_renderer_t;
 
 gears_renderer_t* gears_renderer_new(void* app,
                                      const char* app_name,
-                                     uint32_t app_version);
+                                     uint32_t app_version,
+                                     gears_renderer_cmd_fn cmd_fn);
 void              gears_renderer_delete(gears_renderer_t** _self);
 void              gears_renderer_draw(gears_renderer_t* self);
+void              gears_renderer_touch(gears_renderer_t* self,
+                                       int action, int count, double ts,
+                                       float x0, float y0,
+                                       float x1, float y1,
+                                       float x2, float y2,
+                                       float x3, float y3);
+void              gears_renderer_keyPress(gears_renderer_t* self,
+                                          int keycode, int meta);
 int               gears_renderer_getMemoryTypeIndex(gears_renderer_t* self,
                                                     uint32_t mt_bits,
                                                     VkFlags mp_flags,

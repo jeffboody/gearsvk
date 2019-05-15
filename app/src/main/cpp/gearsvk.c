@@ -24,6 +24,8 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include "a3d/a3d_timestamp.h"
+#include "a3d/widget/a3d_key.h"
 #include "gears_renderer.h"
 
 #define LOG_TAG "gears"
@@ -32,6 +34,280 @@
 /***********************************************************
 * private                                                  *
 ***********************************************************/
+
+static int gRunning = 1;
+
+static void cmd_fn(int cmd, const char* msg)
+{
+	if(cmd == GEARS_CMD_EXIT)
+	{
+		gRunning = 0;
+	}
+}
+
+static int keyPress(SDL_Keysym* keysym,
+                    int* keycode, int* meta)
+{
+	assert(keysym);
+	assert(keycode);
+	assert(meta);
+
+	// convert the keycode
+	// TODO - INSERT
+	*keycode = 0;
+	*meta    = 0;
+	if((keysym->sym >= SDLK_a) &&
+	   (keysym->sym <= SDLK_z))
+	{
+		int a = (int) 'a';
+		*keycode = a + (keysym->sym - SDLK_a);
+	}
+	else if((keysym->sym >= SDLK_0) &&
+	        (keysym->sym <= SDLK_9))
+	{
+		int z = (int) '0';
+		*keycode = z + (keysym->sym - SDLK_0);
+	}
+	else if((keysym->sym >= SDLK_KP_0) &&
+	        (keysym->sym <= SDLK_KP_9))
+	{
+		int z = (int) '0';
+		*keycode = z + (keysym->sym - SDLK_KP_0);
+	}
+	else if((keysym->sym == SDLK_RETURN) ||
+	        (keysym->sym == SDLK_KP_ENTER))
+	{
+		*keycode = A3D_KEY_ENTER;
+	}
+	else if(keysym->sym == SDLK_ESCAPE)
+	{
+		*keycode = A3D_KEY_ESCAPE;
+	}
+	else if(keysym->sym == SDLK_BACKSPACE)
+	{
+		*keycode = A3D_KEY_BACKSPACE;
+	}
+	else if(keysym->sym == SDLK_DELETE)
+	{
+		*keycode = A3D_KEY_DELETE;
+	}
+	else if(keysym->sym == SDLK_UP)
+	{
+		*keycode = A3D_KEY_UP;
+	}
+	else if(keysym->sym == SDLK_DOWN)
+	{
+		*keycode = A3D_KEY_DOWN;
+	}
+	else if(keysym->sym == SDLK_LEFT)
+	{
+		*keycode = A3D_KEY_LEFT;
+	}
+	else if(keysym->sym == SDLK_RIGHT)
+	{
+		*keycode = A3D_KEY_RIGHT;
+	}
+	else if(keysym->sym == SDLK_HOME)
+	{
+		*keycode = A3D_KEY_HOME;
+	}
+	else if(keysym->sym == SDLK_END)
+	{
+		*keycode = A3D_KEY_END;
+	}
+	else if(keysym->sym == SDLK_PAGEUP)
+	{
+		*keycode = A3D_KEY_PGUP;
+	}
+	else if(keysym->sym == SDLK_PAGEDOWN)
+	{
+		*keycode = A3D_KEY_PGDOWN;
+	}
+	else if(keysym->sym == SDLK_ESCAPE)
+	{
+		*keycode = A3D_KEY_ESCAPE;
+	}
+	else if(keysym->sym == SDLK_BACKSPACE)
+	{
+		*keycode = (int) '\b';
+	}
+	else if(keysym->sym == SDLK_TAB)
+	{
+		*keycode = (int) '\t';
+	}
+	else if(keysym->sym == SDLK_SPACE)
+	{
+		*keycode = (int) ' ';
+	}
+	else if(keysym->sym == SDLK_EXCLAIM)
+	{
+		*keycode = (int) '!';
+	}
+	else if(keysym->sym == SDLK_QUOTEDBL)
+	{
+		*keycode = (int) '"';
+	}
+	else if(keysym->sym == SDLK_HASH)
+	{
+		*keycode = (int) '#';
+	}
+	else if(keysym->sym == SDLK_DOLLAR)
+	{
+		*keycode = (int) '$';
+	}
+	else if(keysym->sym == SDLK_AMPERSAND)
+	{
+		*keycode = (int) '&';
+	}
+	else if(keysym->sym == SDLK_QUOTE)
+	{
+		*keycode = (int) '\'';
+	}
+	else if(keysym->sym == SDLK_LEFTPAREN)
+	{
+		*keycode = (int) '(';
+	}
+	else if(keysym->sym == SDLK_RIGHTPAREN)
+	{
+		*keycode = (int) ')';
+	}
+	else if((keysym->sym == SDLK_ASTERISK) ||
+	        (keysym->sym == SDLK_KP_MULTIPLY))
+	{
+		*keycode = (int) '*';
+	}
+	else if((keysym->sym == SDLK_PLUS) ||
+	        (keysym->sym == SDLK_KP_PLUS))
+	{
+		*keycode = (int) '+';
+	}
+	else if(keysym->sym == SDLK_COMMA)
+	{
+		*keycode = (int) ',';
+	}
+	else if((keysym->sym == SDLK_MINUS) ||
+	        (keysym->sym == SDLK_KP_MINUS))
+	{
+		*keycode = (int) '-';
+	}
+	else if((keysym->sym == SDLK_PERIOD) ||
+	        (keysym->sym == SDLK_KP_PERIOD))
+	{
+		*keycode = (int) '.';
+	}
+	else if((keysym->sym == SDLK_SLASH) ||
+	        (keysym->sym == SDLK_KP_DIVIDE))
+	{
+		*keycode = (int) '/';
+	}
+	else if(keysym->sym == SDLK_COLON)
+	{
+		*keycode = (int) ':';
+	}
+	else if(keysym->sym == SDLK_SEMICOLON)
+	{
+		*keycode = (int) ';';
+	}
+	else if(keysym->sym == SDLK_LESS)
+	{
+		*keycode = (int) '<';
+	}
+	else if((keysym->sym == SDLK_EQUALS) ||
+	        (keysym->sym == SDLK_KP_EQUALS))
+	{
+		*keycode = (int) '=';
+	}
+	else if(keysym->sym == SDLK_GREATER)
+	{
+		*keycode = (int) '>';
+	}
+	else if(keysym->sym == SDLK_QUESTION)
+	{
+		*keycode = (int) '?';
+	}
+	else if(keysym->sym == SDLK_AT)
+	{
+		*keycode = (int) '@';
+	}
+	else if(keysym->sym == SDLK_LEFTBRACKET)
+	{
+		*keycode = (int) '[';
+	}
+	else if(keysym->sym == SDLK_BACKSLASH)
+	{
+		*keycode = (int) '\\';
+	}
+	else if(keysym->sym == SDLK_RIGHTBRACKET)
+	{
+		*keycode = (int) ']';
+	}
+	else if(keysym->sym == SDLK_CARET)
+	{
+		*keycode = (int) '^';
+	}
+	else if(keysym->sym == SDLK_UNDERSCORE)
+	{
+		*keycode = (int) '_';
+	}
+	else if(keysym->sym == SDLK_BACKQUOTE)
+	{
+		*keycode = (int) '`';
+	}
+	else if(keysym->sym == SDLK_BACKQUOTE)
+	{
+		*keycode = (int) '`';
+	}
+	else
+	{
+		// ignore
+		LOGD("sym=0x%X", keysym->sym);
+		return 0;
+	}
+
+	// convert the meta
+	if(keysym->mod & KMOD_ALT)
+	{
+		*meta |= A3D_KEY_ALT;
+	}
+	if(keysym->mod & KMOD_LALT)
+	{
+		*meta |= A3D_KEY_ALT_L;
+	}
+	if(keysym->mod & KMOD_RALT)
+	{
+		*meta |= A3D_KEY_ALT_R;
+	}
+	if(keysym->mod & KMOD_CTRL)
+	{
+		*meta |= A3D_KEY_CTRL;
+	}
+	if(keysym->mod & KMOD_LCTRL)
+	{
+		*meta |= A3D_KEY_CTRL_L;
+	}
+	if(keysym->mod & KMOD_RCTRL)
+	{
+		*meta |= A3D_KEY_CTRL_R;
+	}
+	if(keysym->mod & KMOD_SHIFT)
+	{
+		*meta |= A3D_KEY_SHIFT;
+	}
+	if(keysym->mod & KMOD_LSHIFT)
+	{
+		*meta |= A3D_KEY_SHIFT_L;
+	}
+	if(keysym->mod & KMOD_RSHIFT)
+	{
+		*meta |= A3D_KEY_SHIFT_R;
+	}
+	if(keysym->mod & KMOD_CAPS)
+	{
+		*meta |= A3D_KEY_CAPS;
+	}
+
+	return 1;
+}
 
 /***********************************************************
 * main                                                     *
@@ -43,28 +319,68 @@ int main(int argc, char** argv)
 	gears_renderer_t* renderer;
 	renderer = gears_renderer_new(NULL,
 	                              "GearsVK",
-	                              version);
+	                              version,
+	                              cmd_fn);
 	if(renderer == NULL)
 	{
 		return EXIT_FAILURE;
 	}
 
-	int running = 1;
-	while(running)
+	while(gRunning)
 	{
 		SDL_Event e;
 		while(SDL_PollEvent(&e))
 		{
-			if(e.type == SDL_KEYUP)
+			int keycode = 0;
+			int meta    = 0;
+			if((e.type == SDL_KEYUP) ||
+			   ((e.type == SDL_KEYDOWN) && (e.key.repeat)))
 			{
-				if(e.key.keysym.sym == SDLK_ESCAPE)
+				if(keyPress(&e.key.keysym, &keycode, &meta))
 				{
-					running = 0;
+					gears_renderer_keyPress(renderer,
+					                        keycode, meta);
 				}
+			}
+			else if(e.type == SDL_MOUSEBUTTONUP)
+			{
+				float  x  = (float) e.button.x;
+				float  y  = (float) e.button.y;
+				double ts = a3d_timestamp();
+				gears_renderer_touch(renderer,
+				                     GEARS_TOUCH_ACTION_UP,
+				                     1, ts, x, y,
+				                     0.0f, 0.0f,
+				                     0.0f, 0.0f,
+				                     0.0f, 0.0f);
+			}
+			else if(e.type == SDL_MOUSEBUTTONDOWN)
+			{
+				float  x  = (float) e.button.x;
+				float  y  = (float) e.button.y;
+				double ts = a3d_timestamp();
+				gears_renderer_touch(renderer,
+				                     GEARS_TOUCH_ACTION_DOWN,
+				                     1, ts, x, y,
+				                     0.0f, 0.0f,
+				                     0.0f, 0.0f,
+				                     0.0f, 0.0f);
+			}
+			else if(e.type == SDL_MOUSEMOTION)
+			{
+				float  x  = (float) e.button.x;
+				float  y  = (float) e.button.y;
+				double ts = a3d_timestamp();
+				gears_renderer_touch(renderer,
+				                     GEARS_TOUCH_ACTION_MOVE,
+				                     1, ts, x, y,
+				                     0.0f, 0.0f,
+				                     0.0f, 0.0f,
+				                     0.0f, 0.0f);
 			}
 			else if(e.type == SDL_QUIT)
 			{
-				running = 0;
+				gRunning = 0;
 			}
 		}
 
