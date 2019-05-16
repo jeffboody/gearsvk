@@ -1237,7 +1237,7 @@ gears_renderer_createCommandBuffers(gears_renderer_t* self)
 }
 
 static int
-gears_renderer_createSync(gears_renderer_t* self)
+gears_renderer_createSemaphores(gears_renderer_t* self)
 {
 	assert(self);
 
@@ -1941,9 +1941,9 @@ gears_renderer_t* gears_renderer_new(void* app,
 		goto fail_command_buffers;
 	}
 
-	if(gears_renderer_createSync(self) == 0)
+	if(gears_renderer_createSemaphores(self) == 0)
 	{
-		goto fail_sync;
+		goto fail_semaphores;
 	}
 
 	if(gears_renderer_createModules(self) == 0)
@@ -2052,8 +2052,10 @@ gears_renderer_t* gears_renderer_new(void* app,
 			                   self->semaphore_acquire[i],
 			                   NULL);
 		}
+		free(self->semaphore_submit);
+		free(self->semaphore_acquire);
 	}
-	fail_sync:
+	fail_semaphores:
 		vkFreeCommandBuffers(self->device,
 		                     self->command_pool,
 		                     self->swapchain_image_count,
@@ -2160,6 +2162,8 @@ void gears_renderer_delete(gears_renderer_t** _self)
 			                   self->semaphore_acquire[i],
 			                   NULL);
 		}
+		free(self->semaphore_submit);
+		free(self->semaphore_acquire);
 
 		vkFreeCommandBuffers(self->device,
 		                     self->command_pool,
