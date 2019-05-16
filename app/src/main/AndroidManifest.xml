@@ -10,7 +10,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:hasCode="false">
-        <activity android:name=".GearsVK">
+        <activity android:name=".GearsVK"
+            android:configChanges="orientation">
             <meta-data android:name="android.app.lib_name" android:value="gearsvk" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

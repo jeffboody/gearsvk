@@ -170,6 +170,7 @@ gears_renderer_t* gears_renderer_new(void* app,
                                      gears_renderer_cmd_fn cmd_fn);
 void              gears_renderer_delete(gears_renderer_t** _self);
 void              gears_renderer_draw(gears_renderer_t* self);
+int               gears_renderer_resize(gears_renderer_t* self);
 void              gears_renderer_touch(gears_renderer_t* self,
                                        int action, int count, double ts,
                                        float x0, float y0,

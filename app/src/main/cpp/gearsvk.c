@@ -378,6 +378,17 @@ int main(int argc, char** argv)
 				                     0.0f, 0.0f,
 				                     0.0f, 0.0f);
 			}
+			else if(e.type == SDL_WINDOWEVENT)
+			{
+				if(e.window.event == SDL_WINDOWEVENT_RESIZED)
+				{
+					if(gears_renderer_resize(renderer) == 0)
+					{
+						gears_renderer_delete(&renderer);
+						return EXIT_FAILURE;
+					}
+				}
+			}
 			else if(e.type == SDL_QUIT)
 			{
 				gRunning = 0;

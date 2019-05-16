@@ -91,6 +91,10 @@ typedef struct
 	struct android_app* app;
 	int focus;
 
+	int     drawable;
+	int32_t width;
+	int32_t height;
+
 	gears_renderer_t* renderer;
 } platform_t;
 
@@ -148,6 +152,10 @@ platform_initWindow(platform_t* self)
 	                                    "gearsvk",
 	                                    version,
 	                                    cmd_fn);
+
+	self->drawable = 1;
+	self->width    = ANativeWindow_getWidth(self->app->window);
+	self->height   = ANativeWindow_getHeight(self->app->window);
 }
 
 static void platform_delete(platform_t** _self)
@@ -169,7 +177,28 @@ static void platform_draw(platform_t* self)
 
 	if(self->renderer)
 	{
-		gears_renderer_draw(self->renderer);
+		// check if the native window was resized
+		int32_t width;
+		int32_t height;
+		width  = ANativeWindow_getWidth(self->app->window);
+		height = ANativeWindow_getHeight(self->app->window);
+		if((self->width  != width) ||
+		   (self->height != height))
+		{
+			if(gears_renderer_resize(self->renderer) == 0)
+			{
+				self->drawable = 0;
+				return;
+			}
+			self->drawable = 1;
+			self->width    = width;
+			self->height   = height;
+		}
+
+		if(self->drawable)
+		{
+			gears_renderer_draw(self->renderer);
+		}
 	}
 }
 

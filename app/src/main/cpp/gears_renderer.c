@@ -301,7 +301,9 @@ gears_renderer_initSDL(gears_renderer_t* self,
 	}
 
 	int flags = (fullscreen ? SDL_WINDOW_FULLSCREEN : 0) |
-	            SDL_WINDOW_VULKAN | SDL_WINDOW_SHOWN;
+		        SDL_WINDOW_RESIZABLE |
+	            SDL_WINDOW_VULKAN    |
+	            SDL_WINDOW_SHOWN;
 	self->window = SDL_CreateWindow(app_name,
 	                                SDL_WINDOWPOS_UNDEFINED,
 	                                SDL_WINDOWPOS_UNDEFINED,
@@ -793,14 +795,25 @@ gears_renderer_createSwapchain(gears_renderer_t* self)
 		goto fail_swapchain;
 	}
 
+	uint32_t count = 0;
 	if(vkGetSwapchainImagesKHR(self->device,
 	                           self->swapchain,
-	                           &self->swapchain_image_count,
+	                           &count,
 	                           NULL) != VK_SUCCESS)
 	{
 		LOGE("vkGetSwapchainImagesKHR failed");
 		goto fail_get1;
 	}
+
+	// validate swapchain_image_count across resizes
+	if(self->swapchain_image_count &&
+	   (self->swapchain_image_count != count))
+	{
+		LOGE("invalid %u, %u",
+		     self->swapchain_image_count, count);
+		goto fail_count;
+	}
+	self->swapchain_image_count = count;
 
 	self->swapchain_images = (VkImage*)
 	                         calloc(self->swapchain_image_count,
@@ -867,6 +880,7 @@ gears_renderer_createSwapchain(gears_renderer_t* self)
 	fail_fences:
 		free(self->swapchain_images);
 	fail_images:
+	fail_count:
 	fail_get1:
 		vkDestroySwapchainKHR(self->device,
 		                      self->swapchain, NULL);
@@ -1794,13 +1808,18 @@ gears_renderer_createGraphicsPipeline(gears_renderer_t* self)
 		.blendConstants  = { 0.0f, 0.0f, 0.0f, 0.0f }
 	};
 
+	VkDynamicState dynamic_state[2] =
+	{
+		VK_DYNAMIC_STATE_VIEWPORT,
+		VK_DYNAMIC_STATE_SCISSOR
+	};
 	VkPipelineDynamicStateCreateInfo pds_info =
 	{
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
 		.pNext = NULL,
 		.flags = 0,
-		.dynamicStateCount = 0,
-		.pDynamicStates    = NULL,
+		.dynamicStateCount = 2,
+		.pDynamicStates    = dynamic_state,
 	};
 
 	VkGraphicsPipelineCreateInfo gp_info =
@@ -2088,10 +2107,6 @@ gears_renderer_t* gears_renderer_new(void* app,
 		vkDestroyRenderPass(self->device,
 		                    self->render_pass, NULL);
 	fail_renderpass:
-		free(self->swapchain_images);
-		vkDestroySwapchainKHR(self->device,
-		                      self->swapchain, NULL);
-	fail_swapchain:
 	{
 		int j;
 		for(j = 0; j < self->swapchain_image_count; ++j)
@@ -2099,6 +2114,12 @@ gears_renderer_t* gears_renderer_new(void* app,
 			vkDestroyFence(self->device,
 			               self->swapchain_fences[j], NULL);
 		}
+		free(self->swapchain_fences);
+		free(self->swapchain_images);
+		vkDestroySwapchainKHR(self->device,
+		                      self->swapchain, NULL);
+	}
+	fail_swapchain:
 		vkDestroyDescriptorPool(self->device,
 		                        self->descriptor_pool,
 		                        NULL);
@@ -2106,7 +2127,6 @@ gears_renderer_t* gears_renderer_new(void* app,
 		                     self->command_pool, NULL);
 		vkDestroyPipelineCache(self->device,
 		                       self->pipeline_cache, NULL);
-	}
 	fail_cacheAndPools:
 		vkDestroyDevice(self->device, NULL);
 	fail_device:
@@ -2132,7 +2152,7 @@ void gears_renderer_delete(gears_renderer_t** _self)
 	gears_renderer_t* self = *_self;
 	if(self)
 	{
-		vkQueueWaitIdle(self->queue);
+		vkDeviceWaitIdle(self->device);
 
 		gear_delete(&self->gear3);
 		gear_delete(&self->gear2);
@@ -2171,36 +2191,48 @@ void gears_renderer_delete(gears_renderer_t** _self)
 		                     self->command_buffers);
 		free(self->command_buffers);
 
-		for(i = 0; i < self->swapchain_image_count; ++i)
+		if(self->framebuffers)
 		{
-			vkDestroyFramebuffer(self->device,
-			                     self->framebuffers[i],
-			                     NULL);
-			vkDestroyImageView(self->device,
-			                   self->framebuffer_image_views[i],
-			                   NULL);
+			for(i = 0; i < self->swapchain_image_count; ++i)
+			{
+				vkDestroyFramebuffer(self->device,
+				                     self->framebuffers[i],
+				                     NULL);
+				vkDestroyImageView(self->device,
+				                   self->framebuffer_image_views[i],
+				                   NULL);
+			}
+			free(self->framebuffers);
+			free(self->framebuffer_image_views);
 		}
-		free(self->framebuffers);
-		free(self->framebuffer_image_views);
 
-		vkDestroyImageView(self->device,
-		                   self->depth_image_view,
-		                   NULL);
-		vkFreeMemory(self->device,
-		             self->depth_memory, NULL);
-		vkDestroyImage(self->device,
-		               self->depth_image, NULL);
+		if(self->depth_image != VK_NULL_HANDLE)
+		{
+			vkDestroyImageView(self->device,
+			                   self->depth_image_view,
+			                   NULL);
+			vkFreeMemory(self->device,
+			             self->depth_memory, NULL);
+			vkDestroyImage(self->device,
+			               self->depth_image, NULL);
+		}
+
 		vkDestroyRenderPass(self->device,
 		                    self->render_pass, NULL);
 
-		for(i = 0; i < self->swapchain_image_count; ++i)
+		if(self->swapchain != VK_NULL_HANDLE)
 		{
-			vkDestroyFence(self->device,
-			               self->swapchain_fences[i], NULL);
+			for(i = 0; i < self->swapchain_image_count; ++i)
+			{
+				vkDestroyFence(self->device,
+				               self->swapchain_fences[i], NULL);
+			}
+			free(self->swapchain_fences);
+			free(self->swapchain_images);
+			vkDestroySwapchainKHR(self->device,
+			                      self->swapchain, NULL);
 		}
-		free(self->swapchain_images);
-		vkDestroySwapchainKHR(self->device,
-		                      self->swapchain, NULL);
+
 		vkDestroyDescriptorPool(self->device,
 		                        self->descriptor_pool,
 		                        NULL);
@@ -2238,7 +2270,7 @@ void gears_renderer_draw(gears_renderer_t* self)
 	                         VK_NULL_HANDLE,
 	                         &self->swapchain_frame) != VK_SUCCESS)
 	{
-		LOGE("vkAcquireNextImageKHR failed");
+		// failure typically caused by resizes
 		return;
 	}
 
@@ -2346,6 +2378,32 @@ void gears_renderer_draw(gears_renderer_t* self)
 		self->depth_transition = 0;
 	}
 
+	VkViewport viewport =
+	{
+		.x        = 0.0f,
+		.y        = 0.0f,
+		.width    = (float) self->swapchain_extent.width,
+		.height   = (float) self->swapchain_extent.height,
+		.minDepth = 0.0f,
+		.maxDepth = 1.0f
+	};
+	vkCmdSetViewport(command_buffer, 0, 1, &viewport);
+
+	VkRect2D scissor =
+	{
+		.offset =
+		{
+			.x = 0,
+			.y = 0
+		},
+		.extent =
+		{
+			.width  = (uint32_t) self->swapchain_extent.width,
+			.height = (uint32_t) self->swapchain_extent.height,
+		}
+	};
+	vkCmdSetScissor(command_buffer, 0, 1, &scissor);
+
 	VkClearValue cv[2] =
 	{
 		{
@@ -2432,9 +2490,109 @@ void gears_renderer_draw(gears_renderer_t* self)
 	if(vkQueuePresentKHR(self->queue,
 	                     &p_info) != VK_SUCCESS)
 	{
-		LOGE("vkQueuePresentKHR failed");
+		// failure typically caused by resizes
 		return;
 	}
+}
+
+int gears_renderer_resize(gears_renderer_t* self)
+{
+	assert(self);
+
+	vkDeviceWaitIdle(self->device);
+
+	// destroy depth
+	vkDestroyImageView(self->device,
+	                   self->depth_image_view,
+	                   NULL);
+	vkFreeMemory(self->device,
+	             self->depth_memory, NULL);
+	vkDestroyImage(self->device,
+	               self->depth_image, NULL);
+	self->depth_image_view = VK_NULL_HANDLE;
+	self->depth_memory     = VK_NULL_HANDLE;
+	self->depth_image      = VK_NULL_HANDLE;
+
+	// destroy framebuffer
+	int i;
+	for(i = 0; i < self->swapchain_image_count; ++i)
+	{
+		vkDestroyFramebuffer(self->device,
+		                     self->framebuffers[i],
+		                     NULL);
+		vkDestroyImageView(self->device,
+		                   self->framebuffer_image_views[i],
+		                   NULL);
+		self->framebuffers[i]            = VK_NULL_HANDLE;
+		self->framebuffer_image_views[i] = VK_NULL_HANDLE;
+	}
+	free(self->framebuffers);
+	free(self->framebuffer_image_views);
+	self->framebuffers            = NULL;
+	self->framebuffer_image_views = NULL;
+
+	// destroy swapchain
+	for(i = 0; i < self->swapchain_image_count; ++i)
+	{
+		vkDestroyFence(self->device,
+		               self->swapchain_fences[i], NULL);
+		self->swapchain_fences[i] = VK_NULL_HANDLE;
+	}
+	free(self->swapchain_fences);
+	free(self->swapchain_images);
+	vkDestroySwapchainKHR(self->device,
+	                      self->swapchain, NULL);
+	self->swapchain_fences = NULL;
+	self->swapchain_images = NULL;
+	self->swapchain        = VK_NULL_HANDLE;
+
+	if(gears_renderer_createSwapchain(self) == 0)
+	{
+		return 0;
+	}
+
+	if(gears_renderer_createDepth(self) == 0)
+	{
+		goto fail_depth;
+	}
+
+	if(gears_renderer_createFramebuffer(self) == 0)
+	{
+		goto fail_framebuffer;
+	}
+
+	// success
+	return 1;
+
+	// failure
+	fail_framebuffer:
+		vkDestroyImageView(self->device,
+		                   self->depth_image_view,
+		                   NULL);
+		vkFreeMemory(self->device,
+		             self->depth_memory, NULL);
+		vkDestroyImage(self->device,
+		               self->depth_image, NULL);
+		self->depth_image_view = VK_NULL_HANDLE;
+		self->depth_memory     = VK_NULL_HANDLE;
+		self->depth_image      = VK_NULL_HANDLE;
+	fail_depth:
+	{
+		for(i = 0; i < self->swapchain_image_count; ++i)
+		{
+			vkDestroyFence(self->device,
+			               self->swapchain_fences[i], NULL);
+			self->swapchain_fences[i] = VK_NULL_HANDLE;
+		}
+		free(self->swapchain_fences);
+		free(self->swapchain_images);
+		vkDestroySwapchainKHR(self->device,
+		                      self->swapchain, NULL);
+		self->swapchain_fences = NULL;
+		self->swapchain_images = NULL;
+		self->swapchain        = VK_NULL_HANDLE;
+	}
+	return 0;
 }
 
 void gears_renderer_touch(gears_renderer_t* self,
