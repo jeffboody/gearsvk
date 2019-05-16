@@ -2282,9 +2282,10 @@ void gears_renderer_draw(gears_renderer_t* self)
 	                             &semaphore_acquire,
 	                             &semaphore_submit);
 
+	uint64_t timeout = 250000000;
 	if(vkAcquireNextImageKHR(self->device,
 	                         self->swapchain,
-	                         UINT64_MAX,
+	                         timeout,
 	                         semaphore_acquire,
 	                         VK_NULL_HANDLE,
 	                         &self->swapchain_frame) != VK_SUCCESS)
