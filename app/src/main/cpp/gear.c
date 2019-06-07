@@ -46,12 +46,14 @@
 ***********************************************************/
 
 static int
-gear_createBuffer(gear_t* self, size_t size, float* buf,
+gear_createBuffer(gear_t* self,
+                  size_t size, const void* buf,
+                  VkBufferUsageFlags usage,
                   VkBuffer* _buffer,
                   VkDeviceMemory* _memory)
 {
+	// buf may be NULL
 	assert(self);
-	assert(buf);
 	assert(_buffer);
 	assert(_memory);
 
@@ -59,11 +61,11 @@ gear_createBuffer(gear_t* self, size_t size, float* buf,
 
 	VkBufferCreateInfo b_info =
 	{
-		.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
-		.size  = size,
-		.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+		.sType                 = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+		.pNext                 = NULL,
+		.flags                 = 0,
+		.size                  = size,
+		.usage                 = usage,
 		.sharingMode           = VK_SHARING_MODE_EXCLUSIVE,
 		.queueFamilyIndexCount = 1,
 		.pQueueFamilyIndices   = &renderer->queue_family_index
@@ -94,8 +96,8 @@ gear_createBuffer(gear_t* self, size_t size, float* buf,
 
 	VkMemoryAllocateInfo ma_info =
 	{
-		.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-		.pNext = NULL,
+		.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+		.pNext           = NULL,
 		.allocationSize  = mr.size,
 		.memoryTypeIndex = mt_index
 	};
@@ -107,15 +109,18 @@ gear_createBuffer(gear_t* self, size_t size, float* buf,
 		goto fail_allocate;
 	}
 
-	void* data;
-	if(vkMapMemory(renderer->device, *_memory,
-	               0, mr.size, 0, &data) != VK_SUCCESS)
+	if(buf)
 	{
-		LOGE("vkMapMemory failed");
-		goto fail_map;
+		void* data;
+		if(vkMapMemory(renderer->device, *_memory,
+		               0, mr.size, 0, &data) != VK_SUCCESS)
+		{
+			LOGE("vkMapMemory failed");
+			goto fail_map;
+		}
+		memcpy(data, buf, size);
+		vkUnmapMemory(renderer->device, *_memory);
 	}
-	memcpy(data, (const void*) buf, size);
-	vkUnmapMemory(renderer->device, *_memory);
 
 	if(vkBindBufferMemory(renderer->device,
 	                      *_buffer,
@@ -223,7 +228,8 @@ static int gear_generate(gear_t* self,
 	// buffer front face
 	if((a3d_glsm_status(glsm) != A3D_GLSM_COMPLETE) ||
 	   (gear_createBuffer(self, glsm->ec*sizeof(a3d_vec3f_t),
-	                      glsm->vb,
+	                      (const void*) glsm->vb,
+	                      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 	                      &self->frontface_vertex_buffer,
 	                      &self->frontface_vertex_memory) == 0))
 	{
@@ -232,7 +238,8 @@ static int gear_generate(gear_t* self,
 	self->frontface_vc = glsm->ec;
 
 	if(gear_createBuffer(self, glsm->ec*sizeof(a3d_vec3f_t),
-	                     glsm->nb,
+	                     (const void*) glsm->nb,
+	                     VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 	                     &self->frontface_normal_buffer,
 	                     &self->frontface_normal_memory) == 0)
 	{
@@ -263,7 +270,8 @@ static int gear_generate(gear_t* self,
 	// buffer back face
 	if((a3d_glsm_status(glsm) != A3D_GLSM_COMPLETE) ||
 	   (gear_createBuffer(self, glsm->ec*sizeof(a3d_vec3f_t),
-	                      glsm->vb,
+	                      (const void*) glsm->vb,
+	                      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 	                      &self->backface_vertex_buffer,
 	                      &self->backface_vertex_memory) == 0))
 	{
@@ -272,7 +280,8 @@ static int gear_generate(gear_t* self,
 	self->backface_vc = glsm->ec;
 
 	if(gear_createBuffer(self, glsm->ec*sizeof(a3d_vec3f_t),
-	                     glsm->nb,
+	                     (const void*) glsm->nb,
+	                     VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 	                     &self->backface_normal_buffer,
 	                     &self->backface_normal_memory) == 0)
 	{
@@ -331,7 +340,8 @@ static int gear_generate(gear_t* self,
 	// buffer outward faces of teeth
 	if((a3d_glsm_status(glsm) != A3D_GLSM_COMPLETE) ||
 	   (gear_createBuffer(self, glsm->ec*sizeof(a3d_vec3f_t),
-	                      glsm->vb,
+	                      (const void*) glsm->vb,
+	                      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 	                      &self->outward_vertex_buffer,
 	                      &self->outward_vertex_memory) == 0))
 	{
@@ -340,7 +350,8 @@ static int gear_generate(gear_t* self,
 	self->outward_vc = glsm->ec;
 
 	if(gear_createBuffer(self, glsm->ec*sizeof(a3d_vec3f_t),
-	                     glsm->nb,
+	                     (const void*) glsm->nb,
+	                     VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 	                     &self->outward_normal_buffer,
 	                     &self->outward_normal_memory) == 0)
 	{
@@ -366,7 +377,8 @@ static int gear_generate(gear_t* self,
 	// buffer inside radius cylinder
 	if((a3d_glsm_status(glsm) != A3D_GLSM_COMPLETE) ||
 	   (gear_createBuffer(self, glsm->ec*sizeof(a3d_vec3f_t),
-	                      glsm->vb,
+	                      (const void*) glsm->vb,
+	                      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 	                      &self->cylinder_vertex_buffer,
 	                      &self->cylinder_vertex_memory) == 0))
 	{
@@ -375,7 +387,8 @@ static int gear_generate(gear_t* self,
 	self->cylinder_vc = glsm->ec;
 
 	if(gear_createBuffer(self, glsm->ec*sizeof(a3d_vec3f_t),
-	                     glsm->nb,
+	                     (const void*) glsm->nb,
+	                     VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 	                     &self->cylinder_normal_buffer,
 	                     &self->cylinder_normal_memory) == 0)
 	{
@@ -442,92 +455,6 @@ static int gear_generate(gear_t* self,
 }
 
 static int
-gear_createUniformMvp(gear_t* self, int i)
-{
-	assert(self);
-
-	gears_renderer_t* renderer = self->renderer;
-
-	// layout(std140, set=0, binding=0) uniform uniformMvp
-	// {
-	//     mat4 mvp;
-	// };
-	VkBufferCreateInfo b_info =
-	{
-		.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
-		.size  = sizeof(a3d_mat4f_t),
-		.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-		.sharingMode           = VK_SHARING_MODE_EXCLUSIVE,
-		.queueFamilyIndexCount = 1,
-		.pQueueFamilyIndices   = &renderer->queue_family_index
-	};
-
-	if(vkCreateBuffer(renderer->device, &b_info, NULL,
-	                  &self->uniformMvp_buffer[i]) != VK_SUCCESS)
-	{
-		LOGE("vkCreateBuffer failed");
-		return 0;
-	}
-
-	VkMemoryRequirements mr;
-	vkGetBufferMemoryRequirements(renderer->device,
-	                              self->uniformMvp_buffer[i],
-	                              &mr);
-
-	VkFlags mp_flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-	                   VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-	uint32_t mt_index;
-	if(gears_renderer_getMemoryTypeIndex(renderer,
-	                                     mr.memoryTypeBits,
-	                                     mp_flags,
-	                                     &mt_index) == 0)
-	{
-		goto fail_memory_type;
-	}
-
-	VkMemoryAllocateInfo ma_info =
-	{
-		.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-		.pNext = NULL,
-		.allocationSize  = mr.size,
-		.memoryTypeIndex = mt_index
-	};
-
-	if(vkAllocateMemory(renderer->device, &ma_info, NULL,
-	                    &self->uniformMvp_memory[i]) != VK_SUCCESS)
-	{
-		LOGE("vkAllocateMemory failed");
-		goto fail_allocate;
-	}
-
-	if(vkBindBufferMemory(renderer->device,
-	                      self->uniformMvp_buffer[i],
-	                      self->uniformMvp_memory[i],
-	                      0) != VK_SUCCESS)
-	{
-		LOGE("vkBindBufferMemory failed");
-		goto fail_bind;
-	}
-
-	// success
-	return 1;
-
-	// failure
-	fail_bind:
-		vkFreeMemory(renderer->device,
-		             self->uniformMvp_memory[i],
-		             NULL);
-	fail_allocate:
-	fail_memory_type:
-		vkDestroyBuffer(renderer->device,
-		                self->uniformMvp_buffer[i],
-		                NULL);
-	return 0;
-}
-
-static int
 gear_createUniformMvpArray(gear_t* self)
 {
 	assert(self);
@@ -559,7 +486,12 @@ gear_createUniformMvpArray(gear_t* self)
 	int i;
 	for(i = 0; i < count; ++i)
 	{
-		if(gear_createUniformMvp(self, i) == 0)
+		if(gear_createBuffer(self,
+		                     sizeof(a3d_mat4f_t),
+		                     NULL,
+		                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+		                     &self->uniformMvp_buffer[i],
+		                     &self->uniformMvp_memory[i]) == 0)
 		{
 			goto fail_create;
 		}
@@ -585,92 +517,6 @@ gear_createUniformMvpArray(gear_t* self)
 	}
 	fail_memory:
 		free(self->uniformMvp_buffer);
-	return 0;
-}
-
-static int
-gear_createUniformNm(gear_t* self, int i)
-{
-	assert(self);
-
-	gears_renderer_t* renderer = self->renderer;
-
-	// layout(std140, set=0, binding=1) uniform uniformNm
-	// {
-	//     mat4 nm;
-	// };
-	VkBufferCreateInfo b_info =
-	{
-		.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
-		.size  = sizeof(a3d_mat4f_t),
-		.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-		.sharingMode           = VK_SHARING_MODE_EXCLUSIVE,
-		.queueFamilyIndexCount = 1,
-		.pQueueFamilyIndices   = &renderer->queue_family_index
-	};
-
-	if(vkCreateBuffer(renderer->device, &b_info, NULL,
-	                  &self->uniformNm_buffer[i]) != VK_SUCCESS)
-	{
-		LOGE("vkCreateBuffer failed");
-		return 0;
-	}
-
-	VkMemoryRequirements mr;
-	vkGetBufferMemoryRequirements(renderer->device,
-	                              self->uniformNm_buffer[i],
-	                              &mr);
-
-	VkFlags mp_flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-	                   VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-	uint32_t mt_index;
-	if(gears_renderer_getMemoryTypeIndex(renderer,
-	                                     mr.memoryTypeBits,
-	                                     mp_flags,
-	                                     &mt_index) == 0)
-	{
-		goto fail_memory_type;
-	}
-
-	VkMemoryAllocateInfo ma_info =
-	{
-		.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-		.pNext = NULL,
-		.allocationSize  = mr.size,
-		.memoryTypeIndex = mt_index
-	};
-
-	if(vkAllocateMemory(renderer->device, &ma_info, NULL,
-	                    &self->uniformNm_memory[i]) != VK_SUCCESS)
-	{
-		LOGE("vkAllocateMemory failed");
-		goto fail_allocate;
-	}
-
-	if(vkBindBufferMemory(renderer->device,
-	                      self->uniformNm_buffer[i],
-	                      self->uniformNm_memory[i],
-	                      0) != VK_SUCCESS)
-	{
-		LOGE("vkBindBufferMemory failed");
-		goto fail_bind;
-	}
-
-	// success
-	return 1;
-
-	// failure
-	fail_bind:
-		vkFreeMemory(renderer->device,
-		             self->uniformNm_memory[i],
-		             NULL);
-	fail_allocate:
-	fail_memory_type:
-		vkDestroyBuffer(renderer->device,
-		                self->uniformNm_buffer[i],
-		                NULL);
 	return 0;
 }
 
@@ -706,7 +552,12 @@ gear_createUniformNmArray(gear_t* self)
 	int i;
 	for(i = 0; i < count; ++i)
 	{
-		if(gear_createUniformNm(self, i) == 0)
+		if(gear_createBuffer(self,
+		                     sizeof(a3d_mat4f_t),
+		                     NULL,
+		                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+		                     &self->uniformNm_buffer[i],
+		                     &self->uniformNm_memory[i]) == 0)
 		{
 			goto fail_create;
 		}
@@ -732,106 +583,6 @@ gear_createUniformNmArray(gear_t* self)
 	}
 	fail_memory:
 		free(self->uniformNm_buffer);
-	return 0;
-}
-
-static int
-gear_createUniformColor(gear_t* self)
-{
-	assert(self);
-
-	gears_renderer_t* renderer = self->renderer;
-
-	// layout(std140, set=0, binding=2) uniform uniformColor
-	// {
-	//     vec4 color;
-	// };
-	VkBufferCreateInfo b_info =
-	{
-		.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
-		.size  = sizeof(a3d_vec4f_t),
-		.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-		.sharingMode           = VK_SHARING_MODE_EXCLUSIVE,
-		.queueFamilyIndexCount = 1,
-		.pQueueFamilyIndices   = &renderer->queue_family_index
-	};
-
-	if(vkCreateBuffer(renderer->device, &b_info, NULL,
-	                  &self->uniformColor_buffer) != VK_SUCCESS)
-	{
-		LOGE("vkCreateBuffer failed");
-		return 0;
-	}
-
-	VkMemoryRequirements mr;
-	vkGetBufferMemoryRequirements(renderer->device,
-	                              self->uniformColor_buffer,
-	                              &mr);
-
-	VkFlags mp_flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-	                   VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-	uint32_t mt_index;
-	if(gears_renderer_getMemoryTypeIndex(renderer,
-	                                     mr.memoryTypeBits,
-	                                     mp_flags,
-	                                     &mt_index) == 0)
-	{
-		goto fail_memory_type;
-	}
-
-	VkMemoryAllocateInfo ma_info =
-	{
-		.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-		.pNext = NULL,
-		.allocationSize  = mr.size,
-		.memoryTypeIndex = mt_index
-	};
-
-	if(vkAllocateMemory(renderer->device, &ma_info, NULL,
-	                    &self->uniformColor_memory) != VK_SUCCESS)
-	{
-		LOGE("vkAllocateMemory failed");
-		goto fail_allocate;
-	}
-
-	void* data;
-	if(vkMapMemory(renderer->device,
-	               self->uniformColor_memory,
-	               0, mr.size, 0, &data) != VK_SUCCESS)
-	{
-		LOGE("vkMapMemory failed");
-		goto fail_map;
-	}
-	memcpy(data, (const void*) &self->color,
-	       sizeof(a3d_vec4f_t));
-	vkUnmapMemory(renderer->device,
-	              self->uniformColor_memory);
-
-	if(vkBindBufferMemory(renderer->device,
-	                      self->uniformColor_buffer,
-	                      self->uniformColor_memory,
-	                      0) != VK_SUCCESS)
-	{
-		LOGE("vkBindBufferMemory failed");
-		goto fail_bind;
-	}
-
-	// success
-	return 1;
-
-	// failure
-	fail_bind:
-	fail_map:
-		vkFreeMemory(renderer->device,
-		             self->uniformColor_memory,
-		             NULL);
-	fail_allocate:
-	fail_memory_type:
-		vkDestroyBuffer(renderer->device,
-		                self->uniformColor_buffer,
-		                NULL);
 	return 0;
 }
 
@@ -958,7 +709,12 @@ gear_t* gear_new(struct gears_renderer_s* renderer,
 		goto fail_createUniformNm;
 	}
 
-	if(gear_createUniformColor(self) == 0)
+	if(gear_createBuffer(self,
+	                     sizeof(a3d_vec4f_t),
+	                     (const void*) &self->color,
+	                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+	                     &self->uniformColor_buffer,
+	                     &self->uniformColor_memory) == 0)
 	{
 		goto fail_createUniformColor;
 	}
