@@ -542,9 +542,9 @@ gears_renderer_createDevice(gears_renderer_t* self)
 
 	VkDeviceCreateInfo dc_info =
 	{
-		.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
+		.sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+		.pNext                   = NULL,
+		.flags                   = 0,
 		.queueCreateInfoCount    = 1,
 		.pQueueCreateInfos       = &dqc_info,
 		.enabledLayerCount       = 0,
@@ -584,9 +584,9 @@ gears_renderer_createCacheAndPools(gears_renderer_t* self)
 
 	VkPipelineCacheCreateInfo pc_info =
 	{
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
+		.sType           = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO,
+		.pNext           = NULL,
+		.flags           = 0,
 		.initialDataSize = 0,
 		.pInitialData    = NULL
 	};
@@ -600,9 +600,9 @@ gears_renderer_createCacheAndPools(gears_renderer_t* self)
 
 	VkCommandPoolCreateInfo cpc_info =
 	{
-		.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-		.pNext = NULL,
-		.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+		.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+		.pNext            = NULL,
+		.flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
 		.queueFamilyIndex = self->queue_family_index
 	};
 
@@ -621,9 +621,9 @@ gears_renderer_createCacheAndPools(gears_renderer_t* self)
 	};
 	VkDescriptorPoolCreateInfo dp_info =
 	{
-		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
+		.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+		.pNext         = NULL,
+		.flags         = 0,
 		.maxSets       = 64,
 		.poolSizeCount = 1,
 		.pPoolSizes    = &pool_size
@@ -766,10 +766,10 @@ gears_renderer_createSwapchain(gears_renderer_t* self)
 
 	VkSwapchainCreateInfoKHR sc_info =
 	{
-		.sType   = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-		.pNext   = NULL,
-		.flags   = 0,
-		.surface = self->surface,
+		.sType                 = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+		.pNext                 = NULL,
+		.flags                 = 0,
+		.surface               = self->surface,
 		.minImageCount         = minImageCount,
 		.imageFormat           = self->swapchain_format,
 		.imageColorSpace       = self->swapchain_color_space,
@@ -926,9 +926,9 @@ gears_renderer_createDepth(gears_renderer_t* self)
 
 	VkImageCreateInfo i_info =
 	{
-		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
+		.sType       = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+		.pNext       = NULL,
+		.flags       = 0,
 		.imageType   = VK_IMAGE_TYPE_2D,
 		.format      = VK_FORMAT_D16_UNORM,
 		.extent      =
@@ -972,8 +972,8 @@ gears_renderer_createDepth(gears_renderer_t* self)
 
 	VkMemoryAllocateInfo ma_info =
 	{
-		.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-		.pNext = NULL,
+		.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+		.pNext           = NULL,
 		.allocationSize  = mr.size,
 		.memoryTypeIndex = mt_index
 	};
@@ -1133,10 +1133,10 @@ gears_renderer_createFramebuffer(gears_renderer_t* self)
 
 		VkFramebufferCreateInfo f_info =
 		{
-			.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-			.pNext = NULL,
-			.flags = 0,
-			.renderPass = self->render_pass,
+			.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+			.pNext           = NULL,
+			.flags           = 0,
+			.renderPass      = self->render_pass,
 			.attachmentCount = 2,
 			.pAttachments    = attachments,
 			.width           = self->swapchain_extent.width,
@@ -1272,9 +1272,9 @@ gears_renderer_createRenderpass(gears_renderer_t* self)
 
 	VkRenderPassCreateInfo rp_info =
 	{
-		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
+		.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+		.pNext           = NULL,
+		.flags           = 0,
 		.attachmentCount = 2,
 		.pAttachments    = attachments,
 		.subpassCount    = 1,
@@ -1309,10 +1309,10 @@ gears_renderer_createCommandBuffers(gears_renderer_t* self)
 
 	VkCommandBufferAllocateInfo cba_info =
 	{
-		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-		.pNext = NULL,
-		.commandPool = self->command_pool,
-		.level       = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+		.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+		.pNext              = NULL,
+		.commandPool        = self->command_pool,
+		.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 		.commandBufferCount = self->swapchain_image_count
 	};
 
@@ -1543,9 +1543,9 @@ gears_renderer_createModules(gears_renderer_t* self)
 
 	VkShaderModuleCreateInfo sm_info_vert =
 	{
-		.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
+		.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+		.pNext    = NULL,
+		.flags    = 0,
 		.codeSize = size_vert,
 		.pCode    = code_vert
 	};
@@ -1559,9 +1559,9 @@ gears_renderer_createModules(gears_renderer_t* self)
 
 	VkShaderModuleCreateInfo sm_info_frag =
 	{
-		.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
+		.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+		.pNext    = NULL,
+		.flags    = 0,
 		.codeSize = size_frag,
 		.pCode    = code_frag
 	};
@@ -1595,7 +1595,7 @@ gears_renderer_createDescriptorSetLayout(gears_renderer_t* self)
 {
 	assert(self);
 
-	VkDescriptorSetLayoutBinding binding_uniformBuffer[3] =
+	VkDescriptorSetLayoutBinding bindings[3] =
 	{
 		// layout(std140, set=0, binding=0) uniform uniformMvp
 		// {
@@ -1634,11 +1634,11 @@ gears_renderer_createDescriptorSetLayout(gears_renderer_t* self)
 
 	VkDescriptorSetLayoutCreateInfo dsl_info =
 	{
-		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
+		.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+		.pNext        = NULL,
+		.flags        = 0,
 		.bindingCount = 3,
-		.pBindings    = binding_uniformBuffer,
+		.pBindings    = bindings,
 	};
 
 	VkDescriptorSetLayout dsl;
@@ -1661,11 +1661,11 @@ gears_renderer_createPipelineLayout(gears_renderer_t* self)
 
 	VkPipelineLayoutCreateInfo pl_info =
 	{
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
-		.setLayoutCount = 1,
-		.pSetLayouts    = &self->descriptor_set_layout,
+		.sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+		.pNext                  = NULL,
+		.flags                  = 0,
+		.setLayoutCount         = 1,
+		.pSetLayouts            = &self->descriptor_set_layout,
 		.pushConstantRangeCount = 0,
 		.pPushConstantRanges    = NULL
 	};
@@ -1689,23 +1689,23 @@ gears_renderer_createGraphicsPipeline(gears_renderer_t* self)
 	{
 		// vertex stage
 		{
-			.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-			.pNext  = NULL,
-			.flags  = 0,
-			.stage  = VK_SHADER_STAGE_VERTEX_BIT,
-			.module = self->module_vert,
-			.pName  = "main",
+			.sType               = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+			.pNext               = NULL,
+			.flags               = 0,
+			.stage               = VK_SHADER_STAGE_VERTEX_BIT,
+			.module              = self->module_vert,
+			.pName               = "main",
 			.pSpecializationInfo = NULL
 		},
 
 		// fragment stage
 		{
-			.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-			.pNext  = NULL,
-			.flags  = 0,
-			.stage  = VK_SHADER_STAGE_FRAGMENT_BIT,
-			.module = self->module_frag,
-			.pName  = "main",
+			.sType               = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+			.pNext               = NULL,
+			.flags               = 0,
+			.stage               = VK_SHADER_STAGE_FRAGMENT_BIT,
+			.module              = self->module_frag,
+			.pName               = "main",
 			.pSpecializationInfo = NULL
 		}
 	};
@@ -1746,9 +1746,9 @@ gears_renderer_createGraphicsPipeline(gears_renderer_t* self)
 
 	VkPipelineVertexInputStateCreateInfo pvis_info =
 	{
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
+		.sType                           = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+		.pNext                           = NULL,
+		.flags                           = 0,
 		.vertexBindingDescriptionCount   = 2,
 		.pVertexBindingDescriptions      = vib,
 		.vertexAttributeDescriptionCount = 2,
@@ -1757,10 +1757,10 @@ gears_renderer_createGraphicsPipeline(gears_renderer_t* self)
 
 	VkPipelineInputAssemblyStateCreateInfo pias_info =
 	{
-		.sType    = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
-		.pNext    = NULL,
-		.flags    = 0,
-		.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
+		.sType                  = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+		.pNext                  = NULL,
+		.flags                  = 0,
+		.topology               = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
 		.primitiveRestartEnable = VK_FALSE
 	};
 
@@ -1790,9 +1790,9 @@ gears_renderer_createGraphicsPipeline(gears_renderer_t* self)
 
 	VkPipelineViewportStateCreateInfo pvs_info =
 	{
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
+		.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+		.pNext         = NULL,
+		.flags         = 0,
 		.viewportCount = 1,
 		.pViewports    = &viewport,
 		.scissorCount  = 1,
@@ -1801,9 +1801,9 @@ gears_renderer_createGraphicsPipeline(gears_renderer_t* self)
 
 	VkPipelineRasterizationStateCreateInfo prs_info =
 	{
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
+		.sType                   = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+		.pNext                   = NULL,
+		.flags                   = 0,
 		.depthClampEnable        = VK_FALSE,
 		.rasterizerDiscardEnable = VK_FALSE,
 		.polygonMode             = VK_POLYGON_MODE_FILL,
@@ -1818,9 +1818,9 @@ gears_renderer_createGraphicsPipeline(gears_renderer_t* self)
 
 	VkPipelineMultisampleStateCreateInfo pms_info =
 	{
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
+		.sType                 = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
+		.pNext                 = NULL,
+		.flags                 = 0,
 		.rasterizationSamples  = VK_SAMPLE_COUNT_1_BIT,
 		.sampleShadingEnable   = VK_FALSE,
 		.minSampleShading      = 0.0f,
@@ -1831,14 +1831,14 @@ gears_renderer_createGraphicsPipeline(gears_renderer_t* self)
 
 	VkPipelineDepthStencilStateCreateInfo pdss_info =
 	{
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
-		.depthTestEnable        = VK_TRUE,
-		.depthWriteEnable       = VK_TRUE,
-		.depthCompareOp         = VK_COMPARE_OP_LESS,
-		.depthBoundsTestEnable  = VK_FALSE,
-		.stencilTestEnable      = VK_FALSE,
+		.sType                 = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+		.pNext                 = NULL,
+		.flags                 = 0,
+		.depthTestEnable       = VK_TRUE,
+		.depthWriteEnable      = VK_TRUE,
+		.depthCompareOp        = VK_COMPARE_OP_LESS,
+		.depthBoundsTestEnable = VK_FALSE,
+		.stencilTestEnable     = VK_FALSE,
 		.front =
 		{
 			.failOp      = VK_STENCIL_OP_KEEP,
@@ -1872,17 +1872,17 @@ gears_renderer_createGraphicsPipeline(gears_renderer_t* self)
 		.srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
 		.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
 		.alphaBlendOp        = VK_BLEND_OP_ADD,
-		.colorWriteMask = VK_COLOR_COMPONENT_R_BIT |
-		                  VK_COLOR_COMPONENT_G_BIT |
-		                  VK_COLOR_COMPONENT_B_BIT |
-		                  VK_COLOR_COMPONENT_A_BIT,
+		.colorWriteMask      = VK_COLOR_COMPONENT_R_BIT |
+		                       VK_COLOR_COMPONENT_G_BIT |
+		                       VK_COLOR_COMPONENT_B_BIT |
+		                       VK_COLOR_COMPONENT_A_BIT,
 	};
 
 	VkPipelineColorBlendStateCreateInfo pcbs_info =
 	{
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
+		.sType           = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+		.pNext           = NULL,
+		.flags           = 0,
 		.logicOpEnable   = VK_FALSE,
 		.logicOp         = VK_LOGIC_OP_CLEAR,
 		.attachmentCount = 1,
@@ -1897,18 +1897,18 @@ gears_renderer_createGraphicsPipeline(gears_renderer_t* self)
 	};
 	VkPipelineDynamicStateCreateInfo pds_info =
 	{
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
+		.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+		.pNext             = NULL,
+		.flags             = 0,
 		.dynamicStateCount = 2,
 		.pDynamicStates    = dynamic_state,
 	};
 
 	VkGraphicsPipelineCreateInfo gp_info =
 	{
-		.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
+		.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+		.pNext               = NULL,
+		.flags               = 0,
 		.stageCount          = 2,
 		.pStages             = pss_info,
 		.pVertexInputState   = &pvis_info,
@@ -2315,8 +2315,8 @@ void gears_renderer_draw(gears_renderer_t* self)
 
 	VkCommandBufferInheritanceInfo cbi_info =
 	{
-		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO,
-		.pNext = NULL,
+		.sType                = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO,
+		.pNext                = NULL,
 		.renderPass           = self->render_pass,
 		.subpass              = 0,
 		.framebuffer          = framebuffer,
@@ -2327,9 +2327,9 @@ void gears_renderer_draw(gears_renderer_t* self)
 
 	VkCommandBufferBeginInfo cb_info =
 	{
-		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-		.pNext = NULL,
-		.flags = 0,
+		.sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+		.pNext            = NULL,
+		.flags            = 0,
 		.pInheritanceInfo = &cbi_info
 	};
 
@@ -2445,8 +2445,8 @@ void gears_renderer_draw(gears_renderer_t* self)
 	uint32_t height = self->swapchain_extent.height;
 	VkRenderPassBeginInfo rp_info =
 	{
-		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-		.pNext = NULL,
+		.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+		.pNext           = NULL,
 		.renderPass      = self->render_pass,
 		.framebuffer     = self->framebuffers[self->swapchain_frame],
 		.renderArea      = { { .x=0, .y=0 },
@@ -2477,8 +2477,8 @@ void gears_renderer_draw(gears_renderer_t* self)
 
 	VkSubmitInfo s_info =
 	{
-		.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-		.pNext = NULL,
+		.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+		.pNext                = NULL,
 		.waitSemaphoreCount   = 1,
 		.pWaitSemaphores      = &semaphore_acquire,
 		.pWaitDstStageMask    = &wait_dst_stage_mask,
@@ -2497,8 +2497,8 @@ void gears_renderer_draw(gears_renderer_t* self)
 
 	VkPresentInfoKHR p_info =
 	{
-		.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-		.pNext = NULL,
+		.sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+		.pNext              = NULL,
 		.waitSemaphoreCount = 1,
 		.pWaitSemaphores    = &semaphore_submit,
 		.swapchainCount     = 1,

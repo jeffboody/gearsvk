@@ -122,10 +122,8 @@ gear_createBuffer(gear_t* self,
 		vkUnmapMemory(renderer->device, *_memory);
 	}
 
-	if(vkBindBufferMemory(renderer->device,
-	                      *_buffer,
-	                      *_memory,
-	                      0) != VK_SUCCESS)
+	if(vkBindBufferMemory(renderer->device, *_buffer,
+	                      *_memory, 0) != VK_SUCCESS)
 	{
 		LOGE("vkBindBufferMemory failed");
 		goto fail_bind;
@@ -604,8 +602,8 @@ gear_createDescriptorSet(gear_t* self)
 
 	VkDescriptorSetAllocateInfo ds_info =
 	{
-		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-		.pNext = NULL,
+		.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+		.pNext              = NULL,
 		.descriptorPool     = renderer->descriptor_pool,
 		.descriptorSetCount = 1,
 		.pSetLayouts        = &renderer->descriptor_set_layout
@@ -634,9 +632,9 @@ gear_createDescriptorSet(gear_t* self)
 
 		VkWriteDescriptorSet writes =
 		{
-			.sType  = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-			.pNext  = NULL,
-			.dstSet = self->descriptor_sets[i],
+			.sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+			.pNext            = NULL,
+			.dstSet           = self->descriptor_sets[i],
 			.dstBinding       = 0,
 			.dstArrayElement  = 0,
 			.descriptorCount  = 1,
