@@ -35,7 +35,7 @@ digraph PRESENTATION
 	VkQueue          [shape=box, fillcolor=yellow, style=filled, label="VkQueue\nSee CH3"];
 	VkSemaphore      [shape=box, fillcolor=yellow, style=filled, label="VkSemaphore\nSee CH11"];
 	VkFence          [shape=box, fillcolor=yellow, style=filled, label="VkFence\nSee CH11"];
-	VkSwapchainKHR   [shape=box, fillcolor=yellow, style=filled, label="VkSwapchainKHR\nA collection of framebuffer images that can be presented\nto a display corresponding to a native platform surface."];
+	VkSwapchainKHR   [shape=box, fillcolor=yellow, style=filled, label="VkSwapchainKHR\nA collection of color buffer images that can be presented\nto a display corresponding to a native platform surface."];
 	VkDisplayKHR     [shape=box, fillcolor=yellow, style=filled];
 	VkDisplayModeKHR [shape=box, fillcolor=yellow, style=filled];
 	VkSurfaceKHR     [shape=box, fillcolor=yellow, style=filled, label="VkSurfaceKHR\nThe native platform surface used by the swapchain to provide\nframebuffer images that can be presented on the display.\nSee SDL"];
