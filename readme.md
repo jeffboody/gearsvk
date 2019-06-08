@@ -2149,7 +2149,7 @@ in the AndroidManifest.xml file to enable window resizes.
 See the Main section for detecting surface resizes.
 
 getMemoryTypeIndex
-==================
+------------------
 
 The getMemoryTypeIndex() utility function queries the
 physical device memory properties then iterates over the
