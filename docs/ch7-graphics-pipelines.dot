@@ -162,4 +162,5 @@ digraph GRAPHICS_PIPELINES
 	VkPipeline                             -> VkGraphicsPipelineCreateInfo           [label="basePipelineHandle"];
 	VkVertexInputRate                      -> VkVertexInputBindingDescription        [label="inputRate"];
 	VkSpecializationMapEntry               -> VkSpecializationInfo                   [label="pMapEntries"];
+	VkAttachmentDescription                -> VkAttachmentLoadOp                     [label="loadOp\nstencilLoadOp"];
 }
