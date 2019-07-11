@@ -45,107 +45,6 @@
 * private                                                  *
 ***********************************************************/
 
-static int
-gear_createBuffer(gear_t* self,
-                  size_t size, const void* buf,
-                  VkBufferUsageFlags usage,
-                  VkBuffer* _buffer,
-                  VkDeviceMemory* _memory)
-{
-	// buf may be NULL
-	assert(self);
-	assert(_buffer);
-	assert(_memory);
-
-	gears_renderer_t* renderer = self->renderer;
-
-	VkBufferCreateInfo b_info =
-	{
-		.sType                 = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-		.pNext                 = NULL,
-		.flags                 = 0,
-		.size                  = size,
-		.usage                 = usage,
-		.sharingMode           = VK_SHARING_MODE_EXCLUSIVE,
-		.queueFamilyIndexCount = 1,
-		.pQueueFamilyIndices   = &renderer->queue_family_index
-	};
-
-	if(vkCreateBuffer(renderer->device, &b_info, NULL,
-	                  _buffer) != VK_SUCCESS)
-	{
-		LOGE("vkCreateBuffer failed");
-		return 0;
-	}
-
-	VkMemoryRequirements mr;
-	vkGetBufferMemoryRequirements(renderer->device,
-	                              *_buffer,
-	                              &mr);
-
-	VkFlags mp_flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-	                   VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-	uint32_t mt_index;
-	if(gears_renderer_getMemoryTypeIndex(renderer,
-	                                     mr.memoryTypeBits,
-	                                     mp_flags,
-	                                     &mt_index) == 0)
-	{
-		goto fail_memory_type;
-	}
-
-	VkMemoryAllocateInfo ma_info =
-	{
-		.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-		.pNext           = NULL,
-		.allocationSize  = mr.size,
-		.memoryTypeIndex = mt_index
-	};
-
-	if(vkAllocateMemory(renderer->device, &ma_info, NULL,
-	                    _memory) != VK_SUCCESS)
-	{
-		LOGE("vkAllocateMemory failed");
-		goto fail_allocate;
-	}
-
-	if(buf)
-	{
-		void* data;
-		if(vkMapMemory(renderer->device, *_memory,
-		               0, mr.size, 0, &data) != VK_SUCCESS)
-		{
-			LOGE("vkMapMemory failed");
-			goto fail_map;
-		}
-		memcpy(data, buf, size);
-		vkUnmapMemory(renderer->device, *_memory);
-	}
-
-	if(vkBindBufferMemory(renderer->device, *_buffer,
-	                      *_memory, 0) != VK_SUCCESS)
-	{
-		LOGE("vkBindBufferMemory failed");
-		goto fail_bind;
-	}
-
-	// success
-	return 1;
-
-	// failure
-	fail_bind:
-	fail_map:
-		vkFreeMemory(renderer->device,
-		             *_memory,
-		             NULL);
-	fail_allocate:
-	fail_memory_type:
-		vkDestroyBuffer(renderer->device,
-		                *_buffer,
-		                NULL);
-	return 0;
-}
-
 static void gear_angle(int i, int teeth, float* a0, float* a1, float* a2, float* a3)
 {
 	/*
@@ -183,8 +82,6 @@ static int gear_generate(gear_t* self,
                          int teeth, float tooth_depth)
 {
 	assert(self);
-
-	gears_renderer_t* renderer = self->renderer;
 
 	a3d_glsm_t* glsm = a3d_glsm_new();
 	if(glsm == NULL)
@@ -224,22 +121,27 @@ static int gear_generate(gear_t* self,
 	a3d_glsm_end(glsm);
 
 	// buffer front face
-	if((a3d_glsm_status(glsm) != A3D_GLSM_COMPLETE) ||
-	   (gear_createBuffer(self, glsm->ec*sizeof(a3d_vec3f_t),
-	                      (const void*) glsm->vb,
-	                      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-	                      &self->frontface_vertex_buffer,
-	                      &self->frontface_vertex_memory) == 0))
+	if(a3d_glsm_status(glsm) != A3D_GLSM_COMPLETE)
+	{
+		goto fail_createFrontfaceV;
+	}
+
+	vkk_engine_t* engine = self->renderer->engine;
+	self->frontface_vb = vkk_engine_newBuffer(engine, 0,
+	                                          VKK_BUFFER_USAGE_VERTEX,
+	                                          glsm->ec*sizeof(a3d_vec3f_t),
+	                                          (const void*) glsm->vb);
+	if(self->frontface_vb == NULL)
 	{
 		goto fail_createFrontfaceV;
 	}
 	self->frontface_vc = glsm->ec;
 
-	if(gear_createBuffer(self, glsm->ec*sizeof(a3d_vec3f_t),
-	                     (const void*) glsm->nb,
-	                     VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-	                     &self->frontface_normal_buffer,
-	                     &self->frontface_normal_memory) == 0)
+	self->frontface_nb = vkk_engine_newBuffer(engine, 0,
+	                                          VKK_BUFFER_USAGE_VERTEX,
+	                                          glsm->ec*sizeof(a3d_vec3f_t),
+	                                          (const void*) glsm->nb);
+	if(self->frontface_nb == NULL)
 	{
 		goto fail_createFrontfaceN;
 	}
@@ -266,22 +168,26 @@ static int gear_generate(gear_t* self,
 	a3d_glsm_end(glsm);
 
 	// buffer back face
-	if((a3d_glsm_status(glsm) != A3D_GLSM_COMPLETE) ||
-	   (gear_createBuffer(self, glsm->ec*sizeof(a3d_vec3f_t),
-	                      (const void*) glsm->vb,
-	                      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-	                      &self->backface_vertex_buffer,
-	                      &self->backface_vertex_memory) == 0))
+	if(a3d_glsm_status(glsm) != A3D_GLSM_COMPLETE)
+	{
+		goto fail_createBackfaceV;
+	}
+
+	self->backface_vb = vkk_engine_newBuffer(engine, 0,
+	                                         VKK_BUFFER_USAGE_VERTEX,
+	                                         glsm->ec*sizeof(a3d_vec3f_t),
+	                                         (const void*) glsm->vb);
+	if(self->backface_vb == NULL)
 	{
 		goto fail_createBackfaceV;
 	}
 	self->backface_vc = glsm->ec;
 
-	if(gear_createBuffer(self, glsm->ec*sizeof(a3d_vec3f_t),
-	                     (const void*) glsm->nb,
-	                     VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-	                     &self->backface_normal_buffer,
-	                     &self->backface_normal_memory) == 0)
+	self->backface_nb = vkk_engine_newBuffer(engine, 0,
+	                                         VKK_BUFFER_USAGE_VERTEX,
+	                                         glsm->ec*sizeof(a3d_vec3f_t),
+	                                         (const void*) glsm->nb);
+	if(self->backface_nb == NULL)
 	{
 		goto fail_createBackfaceN;
 	}
@@ -336,22 +242,26 @@ static int gear_generate(gear_t* self,
 	a3d_glsm_end(glsm);
 
 	// buffer outward faces of teeth
-	if((a3d_glsm_status(glsm) != A3D_GLSM_COMPLETE) ||
-	   (gear_createBuffer(self, glsm->ec*sizeof(a3d_vec3f_t),
-	                      (const void*) glsm->vb,
-	                      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-	                      &self->outward_vertex_buffer,
-	                      &self->outward_vertex_memory) == 0))
+	if(a3d_glsm_status(glsm) != A3D_GLSM_COMPLETE)
+	{
+		goto fail_createOutwardV;
+	}
+
+	self->outward_vb = vkk_engine_newBuffer(engine, 0,
+	                                        VKK_BUFFER_USAGE_VERTEX,
+	                                        glsm->ec*sizeof(a3d_vec3f_t),
+	                                        (const void*) glsm->vb);
+	if(self->outward_vb == NULL)
 	{
 		goto fail_createOutwardV;
 	}
 	self->outward_vc = glsm->ec;
 
-	if(gear_createBuffer(self, glsm->ec*sizeof(a3d_vec3f_t),
-	                     (const void*) glsm->nb,
-	                     VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-	                     &self->outward_normal_buffer,
-	                     &self->outward_normal_memory) == 0)
+	self->outward_nb = vkk_engine_newBuffer(engine, 0,
+	                                        VKK_BUFFER_USAGE_VERTEX,
+	                                        glsm->ec*sizeof(a3d_vec3f_t),
+	                                        (const void*) glsm->nb);
+	if(self->outward_nb == NULL)
 	{
 		goto fail_createOutwardN;
 	}
@@ -373,22 +283,26 @@ static int gear_generate(gear_t* self,
 	a3d_glsm_end(glsm);
 
 	// buffer inside radius cylinder
-	if((a3d_glsm_status(glsm) != A3D_GLSM_COMPLETE) ||
-	   (gear_createBuffer(self, glsm->ec*sizeof(a3d_vec3f_t),
-	                      (const void*) glsm->vb,
-	                      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-	                      &self->cylinder_vertex_buffer,
-	                      &self->cylinder_vertex_memory) == 0))
+	if(a3d_glsm_status(glsm) != A3D_GLSM_COMPLETE)
+	{
+		goto fail_createCylinderV;
+	}
+
+	self->cylinder_vb = vkk_engine_newBuffer(engine, 0,
+	                                         VKK_BUFFER_USAGE_VERTEX,
+	                                         glsm->ec*sizeof(a3d_vec3f_t),
+	                                         (const void*) glsm->vb);
+	if(self->cylinder_vb == NULL)
 	{
 		goto fail_createCylinderV;
 	}
 	self->cylinder_vc = glsm->ec;
 
-	if(gear_createBuffer(self, glsm->ec*sizeof(a3d_vec3f_t),
-	                     (const void*) glsm->nb,
-	                     VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-	                     &self->cylinder_normal_buffer,
-	                     &self->cylinder_normal_memory) == 0)
+	self->cylinder_nb = vkk_engine_newBuffer(engine, 0,
+	                                         VKK_BUFFER_USAGE_VERTEX,
+	                                         glsm->ec*sizeof(a3d_vec3f_t),
+	                                         (const void*) glsm->nb);
+	if(self->cylinder_nb == NULL)
 	{
 		goto fail_createCylinderN;
 	}
@@ -399,188 +313,21 @@ static int gear_generate(gear_t* self,
 
 	// failure
 	fail_createCylinderN:
-		vkFreeMemory(renderer->device,
-		             self->cylinder_vertex_memory,
-		             NULL);
-		vkDestroyBuffer(renderer->device,
-		                self->cylinder_vertex_buffer,
-		                NULL);
+		vkk_engine_deleteBuffer(engine, &self->cylinder_vb);
 	fail_createCylinderV:
-		vkFreeMemory(renderer->device,
-		             self->outward_normal_memory,
-		             NULL);
-		vkDestroyBuffer(renderer->device,
-		                self->outward_normal_buffer,
-		                NULL);
+		vkk_engine_deleteBuffer(engine, &self->outward_nb);
 	fail_createOutwardN:
-		vkFreeMemory(renderer->device,
-		             self->outward_vertex_memory,
-		             NULL);
-		vkDestroyBuffer(renderer->device,
-		                self->outward_vertex_buffer,
-		                NULL);
+		vkk_engine_deleteBuffer(engine, &self->outward_vb);
 	fail_createOutwardV:
-		vkFreeMemory(renderer->device,
-		             self->backface_normal_memory,
-		             NULL);
-		vkDestroyBuffer(renderer->device,
-		                self->backface_normal_buffer,
-		                NULL);
+		vkk_engine_deleteBuffer(engine, &self->backface_nb);
 	fail_createBackfaceN:
-		vkFreeMemory(renderer->device,
-		             self->backface_vertex_memory,
-		             NULL);
-		vkDestroyBuffer(renderer->device,
-		                self->backface_vertex_buffer,
-		                NULL);
+		vkk_engine_deleteBuffer(engine, &self->backface_vb);
 	fail_createBackfaceV:
-		vkFreeMemory(renderer->device,
-		             self->frontface_normal_memory,
-		             NULL);
-		vkDestroyBuffer(renderer->device,
-		                self->frontface_normal_buffer,
-		                NULL);
+		vkk_engine_deleteBuffer(engine, &self->frontface_nb);
 	fail_createFrontfaceN:
-		vkFreeMemory(renderer->device,
-		             self->frontface_vertex_memory,
-		             NULL);
-		vkDestroyBuffer(renderer->device,
-		                self->frontface_vertex_buffer,
-		                NULL);
+		vkk_engine_deleteBuffer(engine, &self->frontface_vb);
 	fail_createFrontfaceV:
 		a3d_glsm_delete(&glsm);
-	return 0;
-}
-
-static int
-gear_createUniformMvpArray(gear_t* self)
-{
-	assert(self);
-
-	gears_renderer_t* renderer;
-	uint32_t          count;
-
-	renderer = self->renderer;
-	count    = renderer->swapchain_image_count;
-
-	self->uniformMvp_buffer = (VkBuffer*)
-	                          calloc(count,
-	                                 sizeof(VkBuffer));
-	if(self->uniformMvp_buffer == NULL)
-	{
-		LOGE("calloc failed");
-		return 0;
-	}
-
-	self->uniformMvp_memory = (VkDeviceMemory*)
-	                          calloc(count,
-	                                 sizeof(VkDeviceMemory));
-	if(self->uniformMvp_memory == NULL)
-	{
-		LOGE("calloc failed");
-		goto fail_memory;
-	}
-
-	int i;
-	for(i = 0; i < count; ++i)
-	{
-		if(gear_createBuffer(self,
-		                     sizeof(a3d_mat4f_t),
-		                     NULL,
-		                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-		                     &self->uniformMvp_buffer[i],
-		                     &self->uniformMvp_memory[i]) == 0)
-		{
-			goto fail_create;
-		}
-	}
-
-	// success
-	return 1;
-
-	// failure
-	fail_create:
-	{
-		int j;
-		for(j = 0; j < i; ++j)
-		{
-			vkFreeMemory(renderer->device,
-			             self->uniformMvp_memory[i],
-			             NULL);
-			vkDestroyBuffer(renderer->device,
-			                self->uniformMvp_buffer[i],
-			                NULL);
-		}
-		free(self->uniformMvp_memory);
-	}
-	fail_memory:
-		free(self->uniformMvp_buffer);
-	return 0;
-}
-
-static int
-gear_createUniformNmArray(gear_t* self)
-{
-	assert(self);
-
-	gears_renderer_t* renderer;
-	uint32_t          count;
-
-	renderer = self->renderer;
-	count    = renderer->swapchain_image_count;
-
-	self->uniformNm_buffer = (VkBuffer*)
-	                          calloc(count,
-	                                 sizeof(VkBuffer));
-	if(self->uniformNm_buffer == NULL)
-	{
-		LOGE("calloc failed");
-		return 0;
-	}
-
-	self->uniformNm_memory = (VkDeviceMemory*)
-	                         calloc(count,
-	                                sizeof(VkDeviceMemory));
-	if(self->uniformNm_memory == NULL)
-	{
-		LOGE("calloc failed");
-		goto fail_memory;
-	}
-
-	int i;
-	for(i = 0; i < count; ++i)
-	{
-		if(gear_createBuffer(self,
-		                     sizeof(a3d_mat4f_t),
-		                     NULL,
-		                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-		                     &self->uniformNm_buffer[i],
-		                     &self->uniformNm_memory[i]) == 0)
-		{
-			goto fail_create;
-		}
-	}
-
-	// success
-	return 1;
-
-	// failure
-	fail_create:
-	{
-		int j;
-		for(j = 0; j < i; ++j)
-		{
-			vkFreeMemory(renderer->device,
-			             self->uniformNm_memory[i],
-			             NULL);
-			vkDestroyBuffer(renderer->device,
-			                self->uniformNm_buffer[i],
-			                NULL);
-		}
-		free(self->uniformNm_memory);
-	}
-	fail_memory:
-		free(self->uniformNm_buffer);
 	return 0;
 }
 
@@ -589,92 +336,44 @@ gear_createDescriptorSet(gear_t* self)
 {
 	assert(self);
 
-	gears_renderer_t* renderer = self->renderer;
-
-	self->descriptor_sets = (VkDescriptorSet*)
-	                        calloc(renderer->swapchain_image_count,
-	                               sizeof(VkDescriptorSet));
-	if(self->descriptor_sets == NULL)
+	vkk_engine_t*               engine;
+	vkk_descriptorSetFactory_t* dsf;
+	engine   = self->renderer->engine;
+	dsf      = self->renderer->dsf;
+	self->ds = vkk_engine_newDescriptorSet(engine, dsf);
+	if(self->ds == NULL)
 	{
-		LOGE("calloc failed");
 		return 0;
 	}
 
-	VkDescriptorSetAllocateInfo ds_info =
-	{
-		.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-		.pNext              = NULL,
-		.descriptorPool     = renderer->descriptor_pool,
-		.descriptorSetCount = 1,
-		.pSetLayouts        = &renderer->descriptor_set_layout
-	};
+	// layout(std140, set=0, binding=0) uniform uniformMvp
+	// {
+	//     mat4 mvp;
+	// };
+	vkk_engine_writeDescriptorSetUB(engine,
+	                                self->ds,
+	                                self->mvp_ub,
+	                                0);
 
-	int i;
-	for(i = 0; i < renderer->swapchain_image_count; ++i)
-	{
-		if(vkAllocateDescriptorSets(renderer->device, &ds_info,
-		                            &self->descriptor_sets[i]) != VK_SUCCESS)
-		{
-			LOGE("vkAllocateDescriptorSets failed");
-			goto fail_ds;
-		}
+	// layout(std140, set=0, binding=1) uniform uniformNm
+	// {
+	//     mat4 nm;
+	// };
+	vkk_engine_writeDescriptorSetUB(engine,
+	                                self->ds,
+	                                self->nm_ub,
+	                                1);
 
-		// layout(std140, set=0, binding=0) uniform uniformMvp
-		// {
-		//     mat4 mvp;
-		// };
-		VkDescriptorBufferInfo db_info =
-		{
-			.buffer  = self->uniformMvp_buffer[i],
-			.offset  = 0,
-			.range   = sizeof(a3d_mat4f_t)
-		};
+	// layout(std140, set=0, binding=2) uniform uniformColor
+	// {
+	//     vec4 color;
+	// };
+	vkk_engine_writeDescriptorSetUB(engine,
+	                                self->ds,
+	                                self->color_ub,
+	                                2);
 
-		VkWriteDescriptorSet writes =
-		{
-			.sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-			.pNext            = NULL,
-			.dstSet           = self->descriptor_sets[i],
-			.dstBinding       = 0,
-			.dstArrayElement  = 0,
-			.descriptorCount  = 1,
-			.descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-			.pImageInfo       = NULL,
-			.pBufferInfo      = &db_info,
-			.pTexelBufferView = NULL,
-		};
-
-		vkUpdateDescriptorSets(renderer->device, 1, &writes,
-		                       0, NULL);
-
-		// layout(std140, set=0, binding=1) uniform uniformNm
-		// {
-		//     mat4 nm;
-		// };
-		db_info.buffer    = self->uniformNm_buffer[i];
-		db_info.range     = sizeof(a3d_mat4f_t);
-		writes.dstBinding = 1;
-		vkUpdateDescriptorSets(renderer->device, 1, &writes,
-		                       0, NULL);
-
-		// layout(std140, set=0, binding=2) uniform uniformColor
-		// {
-		//     vec4 color;
-		// };
-		db_info.buffer    = self->uniformColor_buffer;
-		db_info.range     = sizeof(a3d_vec4f_t);
-		writes.dstBinding = 2;
-		vkUpdateDescriptorSets(renderer->device, 1, &writes,
-		                       0, NULL);
-	}
-
-	// success
 	return 1;
-
-	// failure
-	fail_ds:
-		free(self->descriptor_sets);
-	return 0;
 }
 
 /***********************************************************
@@ -697,22 +396,30 @@ gear_t* gear_new(struct gears_renderer_s* renderer,
 
 	a3d_vec4f_copy(color, &self->color);
 
-	if(gear_createUniformMvpArray(self) == 0)
+	vkk_engine_t* engine = renderer->engine;
+	self->mvp_ub = vkk_engine_newBuffer(engine, 1,
+	                                    VKK_BUFFER_USAGE_UNIFORM,
+	                                    sizeof(a3d_mat4f_t),
+	                                    NULL);
+	if(self->mvp_ub == NULL)
 	{
 		goto fail_createUniformMvp;
 	}
 
-	if(gear_createUniformNmArray(self) == 0)
+	self->nm_ub = vkk_engine_newBuffer(engine, 1,
+	                                   VKK_BUFFER_USAGE_UNIFORM,
+	                                   sizeof(a3d_mat4f_t),
+	                                   NULL);
+	if(self->nm_ub == NULL)
 	{
 		goto fail_createUniformNm;
 	}
 
-	if(gear_createBuffer(self,
-	                     sizeof(a3d_vec4f_t),
-	                     (const void*) &self->color,
-	                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-	                     &self->uniformColor_buffer,
-	                     &self->uniformColor_memory) == 0)
+	self->color_ub = vkk_engine_newBuffer(engine, 0,
+	                                      VKK_BUFFER_USAGE_UNIFORM,
+	                                      sizeof(a3d_vec4f_t),
+	                                      (const void*) &self->color);
+	if(self->color_ub == NULL)
 	{
 		goto fail_createUniformColor;
 	}
@@ -735,91 +442,20 @@ gear_t* gear_new(struct gears_renderer_s* renderer,
 
 	// failure
 	fail_createDescriptorSet:
-		vkFreeMemory(renderer->device,
-		             self->cylinder_normal_memory,
-		             NULL);
-		vkDestroyBuffer(renderer->device,
-		                self->cylinder_normal_buffer,
-		                NULL);
-		vkFreeMemory(renderer->device,
-		             self->cylinder_vertex_memory,
-		             NULL);
-		vkDestroyBuffer(renderer->device,
-		                self->cylinder_vertex_buffer,
-		                NULL);
-		vkFreeMemory(renderer->device,
-		             self->outward_normal_memory,
-		             NULL);
-		vkDestroyBuffer(renderer->device,
-		                self->outward_normal_buffer,
-		                NULL);
-		vkFreeMemory(renderer->device,
-		             self->outward_vertex_memory,
-		             NULL);
-		vkDestroyBuffer(renderer->device,
-		                self->outward_vertex_buffer,
-		                NULL);
-		vkFreeMemory(renderer->device,
-		             self->backface_normal_memory,
-		             NULL);
-		vkDestroyBuffer(renderer->device,
-		                self->backface_normal_buffer,
-		                NULL);
-		vkFreeMemory(renderer->device,
-		             self->backface_vertex_memory,
-		             NULL);
-		vkDestroyBuffer(renderer->device,
-		                self->backface_vertex_buffer,
-		                NULL);
-		vkFreeMemory(renderer->device,
-		             self->frontface_normal_memory,
-		             NULL);
-		vkDestroyBuffer(renderer->device,
-		                self->frontface_normal_buffer,
-		                NULL);
-		vkFreeMemory(renderer->device,
-		             self->frontface_vertex_memory,
-		             NULL);
-		vkDestroyBuffer(renderer->device,
-		                self->frontface_vertex_buffer,
-		                NULL);
+		vkk_engine_deleteBuffer(engine, &self->cylinder_nb);
+		vkk_engine_deleteBuffer(engine, &self->cylinder_vb);
+		vkk_engine_deleteBuffer(engine, &self->outward_nb);
+		vkk_engine_deleteBuffer(engine, &self->outward_vb);
+		vkk_engine_deleteBuffer(engine, &self->backface_nb);
+		vkk_engine_deleteBuffer(engine, &self->backface_vb);
+		vkk_engine_deleteBuffer(engine, &self->frontface_nb);
+		vkk_engine_deleteBuffer(engine, &self->frontface_vb);
 	fail_gear_generate:
-		vkFreeMemory(renderer->device,
-		             self->uniformColor_memory,
-		             NULL);
-		vkDestroyBuffer(renderer->device,
-		                self->uniformColor_buffer,
-		                NULL);
+		vkk_engine_deleteBuffer(engine, &self->color_ub);
 	fail_createUniformColor:
-	{
-		int i;
-		for(i = 0; i < renderer->swapchain_image_count; ++i)
-		{
-			vkFreeMemory(renderer->device,
-			             self->uniformNm_memory[i],
-			             NULL);
-			vkDestroyBuffer(renderer->device,
-			                self->uniformNm_buffer[i],
-			                NULL);
-		}
-		free(self->uniformNm_memory);
-		free(self->uniformNm_buffer);
-	}
+		vkk_engine_deleteBuffer(engine, &self->nm_ub);
 	fail_createUniformNm:
-	{
-		int i;
-		for(i = 0; i < renderer->swapchain_image_count; ++i)
-		{
-			vkFreeMemory(renderer->device,
-			             self->uniformMvp_memory[i],
-			             NULL);
-			vkDestroyBuffer(renderer->device,
-			                self->uniformMvp_buffer[i],
-			                NULL);
-		}
-		free(self->uniformMvp_memory);
-		free(self->uniformMvp_buffer);
-	}
+		vkk_engine_deleteBuffer(engine, &self->mvp_ub);
 	fail_createUniformMvp:
 		free(self);
 	return NULL;
@@ -833,89 +469,19 @@ void gear_delete(gear_t** _self)
 	gear_t* self = *_self;
 	if(self)
 	{
-		gears_renderer_t* renderer = self->renderer;
-
-		free(self->descriptor_sets);
-		vkFreeMemory(renderer->device,
-		             self->cylinder_normal_memory,
-		             NULL);
-		vkDestroyBuffer(renderer->device,
-		                self->cylinder_normal_buffer,
-		                NULL);
-		vkFreeMemory(renderer->device,
-		             self->cylinder_vertex_memory,
-		             NULL);
-		vkDestroyBuffer(renderer->device,
-		                self->cylinder_vertex_buffer,
-		                NULL);
-		vkFreeMemory(renderer->device,
-		             self->outward_normal_memory,
-		             NULL);
-		vkDestroyBuffer(renderer->device,
-		                self->outward_normal_buffer,
-		                NULL);
-		vkFreeMemory(renderer->device,
-		             self->outward_vertex_memory,
-		             NULL);
-		vkDestroyBuffer(renderer->device,
-		                self->outward_vertex_buffer,
-		                NULL);
-		vkFreeMemory(renderer->device,
-		             self->backface_normal_memory,
-		             NULL);
-		vkDestroyBuffer(renderer->device,
-		                self->backface_normal_buffer,
-		                NULL);
-		vkFreeMemory(renderer->device,
-		             self->backface_vertex_memory,
-		             NULL);
-		vkDestroyBuffer(renderer->device,
-		                self->backface_vertex_buffer,
-		                NULL);
-		vkFreeMemory(renderer->device,
-		             self->frontface_normal_memory,
-		             NULL);
-		vkDestroyBuffer(renderer->device,
-		                self->frontface_normal_buffer,
-		                NULL);
-		vkFreeMemory(renderer->device,
-		             self->frontface_vertex_memory,
-		             NULL);
-		vkDestroyBuffer(renderer->device,
-		                self->frontface_vertex_buffer,
-		                NULL);
-		vkFreeMemory(renderer->device,
-		             self->uniformColor_memory,
-		             NULL);
-		vkDestroyBuffer(renderer->device,
-		                self->uniformColor_buffer,
-		                NULL);
-
-		int i;
-		for(i = 0; i < renderer->swapchain_image_count; ++i)
-		{
-			vkFreeMemory(renderer->device,
-			             self->uniformNm_memory[i],
-			             NULL);
-			vkDestroyBuffer(renderer->device,
-			                self->uniformNm_buffer[i],
-			                NULL);
-		}
-		free(self->uniformNm_memory);
-		free(self->uniformNm_buffer);
-
-		for(i = 0; i < renderer->swapchain_image_count; ++i)
-		{
-			vkFreeMemory(renderer->device,
-			             self->uniformMvp_memory[i],
-			             NULL);
-			vkDestroyBuffer(renderer->device,
-			                self->uniformMvp_buffer[i],
-			                NULL);
-		}
-		free(self->uniformMvp_memory);
-		free(self->uniformMvp_buffer);
-
+		vkk_engine_t* engine = self->renderer->engine;
+		vkk_engine_deleteDescriptorSet(engine, &self->ds);
+		vkk_engine_deleteBuffer(engine, &self->cylinder_nb);
+		vkk_engine_deleteBuffer(engine, &self->cylinder_vb);
+		vkk_engine_deleteBuffer(engine, &self->outward_nb);
+		vkk_engine_deleteBuffer(engine, &self->outward_vb);
+		vkk_engine_deleteBuffer(engine, &self->backface_nb);
+		vkk_engine_deleteBuffer(engine, &self->backface_vb);
+		vkk_engine_deleteBuffer(engine, &self->frontface_nb);
+		vkk_engine_deleteBuffer(engine, &self->frontface_vb);
+		vkk_engine_deleteBuffer(engine, &self->color_ub);
+		vkk_engine_deleteBuffer(engine, &self->nm_ub);
+		vkk_engine_deleteBuffer(engine, &self->mvp_ub);
 		free(self);
 		*_self = NULL;
 	}
@@ -928,24 +494,11 @@ void gear_update(gear_t* self,
 	assert(mvp);
 	assert(mvm);
 
-	gears_renderer_t* renderer = self->renderer;
-	uint32_t          frame    = renderer->swapchain_frame;
+	vkk_engine_t* engine = self->renderer->engine;
 
-	void* data;
-	if(vkMapMemory(renderer->device,
-	               self->uniformMvp_memory[frame],
-	               0, sizeof(a3d_mat4f_t), 0,
-	               &data) == VK_SUCCESS)
-	{
-		memcpy(data, (const void*) mvp,
-		       sizeof(a3d_mat4f_t));
-		vkUnmapMemory(renderer->device,
-		              self->uniformMvp_memory[frame]);
-	}
-	else
-	{
-		LOGW("vkMapMemory failed");
-	}
+	vkk_engine_updateBuffer(engine,
+	                        self->mvp_ub,
+	                        (const void*) mvp);
 
 	a3d_mat3f_t nm;
 	a3d_mat4f_normalmatrix(mvm, &nm);
@@ -968,69 +521,44 @@ void gear_update(gear_t* self,
 		.m23 = 0.0f,
 		.m33 = 1.0f
 	};
-	if(vkMapMemory(renderer->device,
-	               self->uniformNm_memory[frame],
-	               0, sizeof(a3d_mat4f_t), 0,
-	               &data) == VK_SUCCESS)
-	{
-		memcpy(data, (const void*) &nm4,
-		       sizeof(a3d_mat4f_t));
-		vkUnmapMemory(renderer->device,
-		              self->uniformNm_memory[frame]);
-	}
-	else
-	{
-		LOGW("vkMapMemory failed");
-	}
+	vkk_engine_updateBuffer(engine,
+	                        self->nm_ub,
+	                        (const void*) &nm4);
 }
 
-void gear_draw(gear_t* self,
-               VkCommandBuffer command_buffer)
+void gear_draw(gear_t* self)
 {
 	assert(self);
 
-	gears_renderer_t* renderer;
-	uint32_t          frame;
-	VkDescriptorSet*  descriptor_set;
-	renderer       = self->renderer;
-	frame          = renderer->swapchain_frame;
-	descriptor_set = &self->descriptor_sets[frame];
+	vkk_engine_t*         engine = self->renderer->engine;
+	vkk_pipelineLayout_t* pl     = self->renderer->pl;
 
-	vkCmdBindDescriptorSets(command_buffer,
-	                        VK_PIPELINE_BIND_POINT_GRAPHICS,
-	                        renderer->pipeline_layout,
-	                        0, 1, descriptor_set,
-	                        0, NULL);
+	vkk_engine_bindDescriptorSet(engine, pl, self->ds);
 
 	// front face
-	VkDeviceSize offsets[2] = { 0, 0 };
-	VkBuffer     buffers[2] =
+	vkk_buffer_t* vertex_buffers[2] =
 	{
-		self->frontface_vertex_buffer,
-		self->frontface_normal_buffer
+		self->frontface_vb,
+		self->frontface_nb,
 	};
-	vkCmdBindVertexBuffers(command_buffer, 0, 2,
-	                       buffers, offsets);
-	vkCmdDraw(command_buffer, self->frontface_vc, 1, 0, 0);
+	vkk_engine_draw(engine, self->frontface_vc,
+	                2, 0, NULL, vertex_buffers);
 
 	// back face
-	buffers[0] = self->backface_vertex_buffer;
-	buffers[1] = self->backface_normal_buffer;
-	vkCmdBindVertexBuffers(command_buffer, 0, 2,
-	                       buffers, offsets);
-	vkCmdDraw(command_buffer, self->backface_vc, 1, 0, 0);
+	vertex_buffers[0] = self->backface_vb;
+	vertex_buffers[1] = self->backface_nb;
+	vkk_engine_draw(engine, self->backface_vc,
+	                2, 0, NULL, vertex_buffers);
 
 	// outward
-	buffers[0] = self->outward_vertex_buffer;
-	buffers[1] = self->outward_normal_buffer;
-	vkCmdBindVertexBuffers(command_buffer, 0, 2,
-	                       buffers, offsets);
-	vkCmdDraw(command_buffer, self->outward_vc, 1, 0, 0);
+	vertex_buffers[0] = self->outward_vb;
+	vertex_buffers[1] = self->outward_nb;
+	vkk_engine_draw(engine, self->outward_vc,
+	                2, 0, NULL, vertex_buffers);
 
 	// cylinder
-	buffers[0] = self->cylinder_vertex_buffer;
-	buffers[1] = self->cylinder_normal_buffer;
-	vkCmdBindVertexBuffers(command_buffer, 0, 2,
-	                       buffers, offsets);
-	vkCmdDraw(command_buffer, self->cylinder_vc, 1, 0, 0);
+	vertex_buffers[0] = self->cylinder_vb;
+	vertex_buffers[1] = self->cylinder_nb;
+	vkk_engine_draw(engine, self->cylinder_vc,
+	                2, 0, NULL, vertex_buffers);
 }

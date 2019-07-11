@@ -30,18 +30,10 @@
 #ifndef gear_H
 #define gear_H
 
-#ifdef ANDROID
-	#include <vulkan_wrapper.h>
-	#include <android_native_app_glue.h>
-#else
-	#include <SDL2/SDL.h>
-	#include <SDL2/SDL_vulkan.h>
-	#include <vulkan/vulkan.h>
-#endif
-
 #include "a3d/a3d_GL.h"
 #include "a3d/math/a3d_mat4f.h"
 #include "a3d/math/a3d_vec4f.h"
+#include "libvkk/vkk_engine.h"
 
 struct gears_renderer_s;
 
@@ -53,41 +45,28 @@ typedef struct
 	a3d_vec4f_t color;
 
 	// dynamic buffer data
-	// one per swapchain image
-	VkBuffer*       uniformMvp_buffer;
-	VkDeviceMemory* uniformMvp_memory;
-	VkBuffer*       uniformNm_buffer;
-	VkDeviceMemory* uniformNm_memory;
+	vkk_buffer_t* mvp_ub;
+	vkk_buffer_t* nm_ub;
 
 	// constant buffer data
-	VkBuffer       uniformColor_buffer;
-	VkDeviceMemory uniformColor_memory;
+	vkk_buffer_t* color_ub;
 
 	// vertex data
-	uint32_t       frontface_vc;
-	VkBuffer       frontface_vertex_buffer;
-	VkDeviceMemory frontface_vertex_memory;
-	VkBuffer       frontface_normal_buffer;
-	VkDeviceMemory frontface_normal_memory;
-	uint32_t       backface_vc;
-	VkBuffer       backface_vertex_buffer;
-	VkDeviceMemory backface_vertex_memory;
-	VkBuffer       backface_normal_buffer;
-	VkDeviceMemory backface_normal_memory;
-	uint32_t       outward_vc;
-	VkBuffer       outward_vertex_buffer;
-	VkDeviceMemory outward_vertex_memory;
-	VkBuffer       outward_normal_buffer;
-	VkDeviceMemory outward_normal_memory;
-	uint32_t       cylinder_vc;
-	VkBuffer       cylinder_vertex_buffer;
-	VkDeviceMemory cylinder_vertex_memory;
-	VkBuffer       cylinder_normal_buffer;
-	VkDeviceMemory cylinder_normal_memory;
+	uint32_t      frontface_vc;
+	vkk_buffer_t* frontface_vb;
+	vkk_buffer_t* frontface_nb;
+	uint32_t      backface_vc;
+	vkk_buffer_t* backface_vb;
+	vkk_buffer_t* backface_nb;
+	uint32_t      outward_vc;
+	vkk_buffer_t* outward_vb;
+	vkk_buffer_t* outward_nb;
+	uint32_t      cylinder_vc;
+	vkk_buffer_t* cylinder_vb;
+	vkk_buffer_t* cylinder_nb;
 
 	// descriptors
-	// one per swapchain image
-	VkDescriptorSet* descriptor_sets;
+	vkk_descriptorSet_t* ds;
 } gear_t;
 
 gear_t* gear_new(struct gears_renderer_s* renderer,
@@ -98,7 +77,6 @@ gear_t* gear_new(struct gears_renderer_s* renderer,
 void    gear_delete(gear_t** _self);
 void    gear_update(gear_t* self,
                     a3d_mat4f_t* mvp, a3d_mat4f_t* mvm);
-void    gear_draw(gear_t* self,
-                  VkCommandBuffer command_buffer);
+void    gear_draw(gear_t* self);
 
 #endif

@@ -5,15 +5,18 @@ OBJECTS  = $(TARGET).o $(CLASSES:%=%.o)
 HFILES   = $(CLASSES:%=%.h)
 OPT      = -O2 -Wall
 CFLAGS   = $(OPT) -I. -I$(VULKAN_SDK)/include `sdl2-config --cflags` -DA3D_GL2
-LDFLAGS  = -L$(VULKAN_SDK)/lib -lvulkan `sdl2-config --libs` -Llibpak -lpak -Ltexgz -ltexgz -La3d -la3d -Llibexpat/expat/lib -lexpat -lm -lpthread
+LDFLAGS  = -Llibvkk -lvkk -L$(VULKAN_SDK)/lib -lvulkan `sdl2-config --libs` -Llibpak -lpak -Ltexgz -ltexgz -La3d -la3d -Llibcc -lcc -Llibexpat/expat/lib -lexpat -lm -lpthread
 CCC      = gcc
 
-all: $(TARGET) libpak texgz a3d libexpat
+all: $(TARGET) libcc libpak texgz a3d libvkk libexpat
 
-$(TARGET): $(OBJECTS) libpak texgz a3d libexpat
+$(TARGET): $(OBJECTS) libcc libpak texgz a3d libvkk libexpat
 	$(CCC) $(OPT) $(OBJECTS) -o $@ $(LDFLAGS)
 
-.PHONY: libpak texgz a3d libexpat
+.PHONY: libcc libpak texgz a3d libvkk libexpat
+
+libcc:
+	$(MAKE) -C libcc
 
 libpak:
 	$(MAKE) -C libpak
@@ -24,14 +27,19 @@ texgz:
 a3d:
 	$(MAKE) -C a3d -f Makefile.sdl
 
+libvkk:
+	$(MAKE) -C libvkk
+
 libexpat:
 	$(MAKE) -C libexpat/expat/lib
 
 clean:
 	rm -f $(OBJECTS) *~ \#*\# $(TARGET)
+	$(MAKE) -C libcc clean
 	$(MAKE) -C libpak clean
 	$(MAKE) -C texgz clean
 	$(MAKE) -C a3d -f Makefile.sdl clean
+	$(MAKE) -C libvkk clean
 	$(MAKE) -C libexpat/expat/lib clean
 
 $(OBJECTS): $(HFILES)

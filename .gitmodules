@@ -10,3 +10,9 @@
 [submodule "app/src/main/cpp/libexpat"]
 	path = app/src/main/cpp/libexpat
 	url = git@github.com:jeffboody/libexpat.git
+[submodule "app/src/main/cpp/libvkk"]
+	path = app/src/main/cpp/libvkk
+	url = git@github.com:jeffboody/libvkk.git
+[submodule "app/src/main/cpp/libcc"]
+	path = app/src/main/cpp/libcc
+	url = git@github.com:jeffboody/libcc.git

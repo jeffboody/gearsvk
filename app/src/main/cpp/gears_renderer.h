@@ -30,17 +30,10 @@
 #ifndef gears_renderer_H
 #define gears_renderer_H
 
-#ifdef ANDROID
-	#include <vulkan_wrapper.h>
-	#include <android_native_app_glue.h>
-#else
-	#include <SDL2/SDL.h>
-	#include <SDL2/SDL_vulkan.h>
-	#include <vulkan/vulkan.h>
-#endif
 #include "a3d/math/a3d_quaternion.h"
 #include "a3d/math/a3d_mat4f.h"
 #include "a3d/math/a3d_stack4f.h"
+#include "libvkk/vkk_engine.h"
 #include "gear.h"
 
 #define GEARS_TOUCH_ACTION_DOWN 0
@@ -63,70 +56,10 @@ typedef void (*gears_renderer_cmd_fn)(int cmd, const char* msg);
 
 typedef struct gears_renderer_s
 {
-	// window state
-	#ifdef ANDROID
-		struct android_app* app;
-	#else
-		SDL_Window* window;
-	#endif
-
-	VkInstance instance;
-
-	// surface state
-	VkSurfaceKHR surface;
-
-	VkPhysicalDevice physical_device;
-
-	// device state
-	VkDevice device;
-	uint32_t queue_family_index;
-	VkQueue  queue;
-
-	// cache and pool state (optimizers)
-	VkPipelineCache  pipeline_cache;
-	VkCommandPool    command_pool;
-	VkDescriptorPool descriptor_pool;
-
-	// swapchain state
-	uint32_t        swapchain_frame;
-	VkFormat        swapchain_format;
-	VkExtent2D      swapchain_extent;
-	VkColorSpaceKHR swapchain_color_space;
-	uint32_t        swapchain_image_count;
-	VkSwapchainKHR  swapchain;
-	VkImage*        swapchain_images;
-	VkFence*        swapchain_fences;
-
-	// depth buffer
-	int            depth_transition;
-	VkImage        depth_image;
-	VkDeviceMemory depth_memory;
-	VkImageView    depth_image_view;
-
-	// framebuffer state
-	// one per swapchain image
-	VkImageView*   framebuffer_image_views;
-	VkFramebuffer* framebuffers;
-
-	// render pass state
-	VkRenderPass render_pass;
-
-	// command buffers
-	// one per swapchain image
-	VkCommandBuffer* command_buffers;
-
-	// synchronization
-	// one per swapchain image
-	uint32_t     semaphore_index;
-	VkSemaphore* semaphore_acquire;
-	VkSemaphore* semaphore_submit;
-
-	// shaders, descriptors, layout and pipeline
-	VkShaderModule        module_vert;
-	VkShaderModule        module_frag;
-	VkDescriptorSetLayout descriptor_set_layout;
-	VkPipelineLayout      pipeline_layout;
-	VkPipeline            pipeline;
+	vkk_engine_t*               engine;
+	vkk_descriptorSetFactory_t* dsf;
+	vkk_pipelineLayout_t*       pl;
+	vkk_graphicsPipeline_t*     gp;
 
 	// view state
 	GLfloat          view_scale;
@@ -179,9 +112,5 @@ void              gears_renderer_touch(gears_renderer_t* self,
                                        float x3, float y3);
 void              gears_renderer_keyPress(gears_renderer_t* self,
                                           int keycode, int meta);
-int               gears_renderer_getMemoryTypeIndex(gears_renderer_t* self,
-                                                    uint32_t mt_bits,
-                                                    VkFlags mp_flags,
-                                                    uint32_t* mt_index);
 
 #endif
