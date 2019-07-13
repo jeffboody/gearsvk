@@ -26,11 +26,14 @@ add_library(gearsvk
             gear.c)
 
 # Submodules
+add_subdirectory("libcc")
+add_subdirectory("libvkk")
 add_subdirectory("a3d")
 add_subdirectory("libexpat/expat/lib")
 add_subdirectory("libpak")
 add_subdirectory("texgz")
 
+# Includes
 target_include_directories(gearsvk
                            PRIVATE
 
@@ -43,6 +46,8 @@ target_include_directories(gearsvk
 target_link_libraries(gearsvk
 
                       # Submodule libraries
+                      cc
+                      vkk
                       a3d
                       expat
                       pak

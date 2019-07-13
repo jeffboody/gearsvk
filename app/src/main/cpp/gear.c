@@ -336,12 +336,12 @@ gear_createDescriptorSet(gear_t* self)
 {
 	assert(self);
 
-	vkk_engine_t*               engine;
-	vkk_descriptorSetFactory_t* dsf;
+	vkk_engine_t*            engine;
+	vkk_uniformSetFactory_t* usf;
 	engine   = self->renderer->engine;
-	dsf      = self->renderer->dsf;
-	self->ds = vkk_engine_newDescriptorSet(engine, dsf);
-	if(self->ds == NULL)
+	usf      = self->renderer->usf;
+	self->us = vkk_engine_newUniformSet(engine, usf);
+	if(self->us == NULL)
 	{
 		return 0;
 	}
@@ -350,28 +350,28 @@ gear_createDescriptorSet(gear_t* self)
 	// {
 	//     mat4 mvp;
 	// };
-	vkk_engine_writeDescriptorSetUB(engine,
-	                                self->ds,
-	                                self->mvp_ub,
-	                                0);
+	vkk_engine_attachUniformBuffer(engine,
+	                               self->us,
+	                               self->mvp_ub,
+	                               0);
 
 	// layout(std140, set=0, binding=1) uniform uniformNm
 	// {
 	//     mat4 nm;
 	// };
-	vkk_engine_writeDescriptorSetUB(engine,
-	                                self->ds,
-	                                self->nm_ub,
-	                                1);
+	vkk_engine_attachUniformBuffer(engine,
+	                               self->us,
+	                               self->nm_ub,
+	                               1);
 
 	// layout(std140, set=0, binding=2) uniform uniformColor
 	// {
 	//     vec4 color;
 	// };
-	vkk_engine_writeDescriptorSetUB(engine,
-	                                self->ds,
-	                                self->color_ub,
-	                                2);
+	vkk_engine_attachUniformBuffer(engine,
+	                               self->us,
+	                               self->color_ub,
+	                               2);
 
 	return 1;
 }
@@ -470,7 +470,7 @@ void gear_delete(gear_t** _self)
 	if(self)
 	{
 		vkk_engine_t* engine = self->renderer->engine;
-		vkk_engine_deleteDescriptorSet(engine, &self->ds);
+		vkk_engine_deleteUniformSet(engine, &self->us);
 		vkk_engine_deleteBuffer(engine, &self->cylinder_nb);
 		vkk_engine_deleteBuffer(engine, &self->cylinder_vb);
 		vkk_engine_deleteBuffer(engine, &self->outward_nb);
@@ -533,7 +533,7 @@ void gear_draw(gear_t* self)
 	vkk_engine_t*         engine = self->renderer->engine;
 	vkk_pipelineLayout_t* pl     = self->renderer->pl;
 
-	vkk_engine_bindDescriptorSet(engine, pl, self->ds);
+	vkk_engine_bindUniformSet(engine, pl, self->us);
 
 	// front face
 	vkk_buffer_t* vertex_buffers[2] =
@@ -542,23 +542,23 @@ void gear_draw(gear_t* self)
 		self->frontface_nb,
 	};
 	vkk_engine_draw(engine, self->frontface_vc,
-	                2, 0, NULL, vertex_buffers);
+	                2, vertex_buffers);
 
 	// back face
 	vertex_buffers[0] = self->backface_vb;
 	vertex_buffers[1] = self->backface_nb;
 	vkk_engine_draw(engine, self->backface_vc,
-	                2, 0, NULL, vertex_buffers);
+	                2, vertex_buffers);
 
 	// outward
 	vertex_buffers[0] = self->outward_vb;
 	vertex_buffers[1] = self->outward_nb;
 	vkk_engine_draw(engine, self->outward_vc,
-	                2, 0, NULL, vertex_buffers);
+	                2, vertex_buffers);
 
 	// cylinder
 	vertex_buffers[0] = self->cylinder_vb;
 	vertex_buffers[1] = self->cylinder_nb;
 	vkk_engine_draw(engine, self->cylinder_vc,
-	                2, 0, NULL, vertex_buffers);
+	                2, vertex_buffers);
 }

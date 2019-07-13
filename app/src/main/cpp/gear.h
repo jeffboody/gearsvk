@@ -65,8 +65,8 @@ typedef struct
 	vkk_buffer_t* cylinder_vb;
 	vkk_buffer_t* cylinder_nb;
 
-	// descriptors
-	vkk_descriptorSet_t* ds;
+	// uniforms
+	vkk_uniformSet_t* us;
 } gear_t;
 
 gear_t* gear_new(struct gears_renderer_s* renderer,

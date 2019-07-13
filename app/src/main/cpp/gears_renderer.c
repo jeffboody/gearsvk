@@ -178,11 +178,11 @@ static void gears_renderer_scale(gears_renderer_t* self,
 }
 
 static int
-gears_renderer_newDescriptorSetFactory(gears_renderer_t* self)
+gears_renderer_newUniformSetFactory(gears_renderer_t* self)
 {
 	assert(self);
 
-	vkk_descriptorSetBinding_t dsb_array[3] =
+	vkk_uniformBinding_t ub_array[3] =
 	{
 		// layout(std140, set=0, binding=0) uniform uniformMvp
 		// {
@@ -190,8 +190,8 @@ gears_renderer_newDescriptorSetFactory(gears_renderer_t* self)
 		// };
 		{
 			.binding = 0,
-			.type    = VKK_DESCRIPTOR_SET_TYPE_UNIFORM_BUFFER,
-			.stage   = VKK_STAGE_FLAGS_VS,
+			.type    = VKK_UNIFORM_TYPE_BUFFER,
+			.stage   = VKK_STAGE_VS,
 			.sampler = NULL
 		},
 		// layout(std140, set=0, binding=1) uniform uniformNm
@@ -200,8 +200,8 @@ gears_renderer_newDescriptorSetFactory(gears_renderer_t* self)
 		// };
 		{
 			.binding = 1,
-			.type    = VKK_DESCRIPTOR_SET_TYPE_UNIFORM_BUFFER,
-			.stage   = VKK_STAGE_FLAGS_VS,
+			.type    = VKK_UNIFORM_TYPE_BUFFER,
+			.stage   = VKK_STAGE_VS,
 			.sampler = NULL
 		},
 		// layout(std140, set=0, binding=2) uniform uniformColor
@@ -210,16 +210,16 @@ gears_renderer_newDescriptorSetFactory(gears_renderer_t* self)
 		// };
 		{
 			.binding = 2,
-			.type    = VKK_DESCRIPTOR_SET_TYPE_UNIFORM_BUFFER,
-			.stage   = VKK_STAGE_FLAGS_FS,
+			.type    = VKK_UNIFORM_TYPE_BUFFER,
+			.stage   = VKK_STAGE_FS,
 			.sampler = NULL
 		}
 	};
 
-	self->dsf = vkk_engine_newDescriptorSetFactory(self->engine,
-	                                               1, 3,
-	                                               dsb_array);
-	if(self->dsf == NULL)
+	self->usf = vkk_engine_newUniformSetFactory(self->engine,
+	                                            1, 3,
+	                                            ub_array);
+	if(self->usf == NULL)
 	{
 		return 0;
 	}
@@ -233,7 +233,7 @@ gears_renderer_newPipelineLayout(gears_renderer_t* self)
 	assert(self);
 
 	self->pl = vkk_engine_newPipelineLayout(self->engine,
-	                                        1, &self->dsf);
+	                                        1, &self->usf);
 	if(self->pl == NULL)
 	{
 		return 0;
@@ -270,7 +270,7 @@ gears_renderer_newGraphicsPipeline(gears_renderer_t* self)
 		.fs                = "shaders/frag.spv",
 		.vb_count          = 2,
 		.vbi               = vbi,
-		.primitive_mode    = VKK_PRIMITIVE_MODE_TRIANGLE_STRIP,
+		.primitive         = VKK_PRIMITIVE_TRIANGLE_STRIP,
 		.primitive_restart = 0,
 		.cull_back         = 0,
 		.depth_test        = 1,
@@ -320,9 +320,9 @@ gears_renderer_new(void* app,
 		goto fail_engine;
 	}
 
-	if(gears_renderer_newDescriptorSetFactory(self) == 0)
+	if(gears_renderer_newUniformSetFactory(self) == 0)
 	{
-		goto fail_dsf;
+		goto fail_usf;
 	}
 
 	if(gears_renderer_newPipelineLayout(self) == 0)
@@ -400,9 +400,9 @@ gears_renderer_new(void* app,
 		vkk_engine_deletePipelineLayout(self->engine,
 		                                &self->pl);
 	fail_pl:
-		vkk_engine_deleteDescriptorSetFactory(self->engine,
-		                                      &self->dsf);
-	fail_dsf:
+		vkk_engine_deleteUniformSetFactory(self->engine,
+		                                   &self->usf);
+	fail_usf:
 		vkk_engine_delete(&self->engine);
 	fail_engine:
 		free(self);
@@ -428,8 +428,8 @@ void gears_renderer_delete(gears_renderer_t** _self)
 		                                  &self->gp);
 		vkk_engine_deletePipelineLayout(self->engine,
 		                                &self->pl);
-		vkk_engine_deleteDescriptorSetFactory(self->engine,
-		                                      &self->dsf);
+		vkk_engine_deleteUniformSetFactory(self->engine,
+		                                   &self->usf);
 		vkk_engine_delete(&self->engine);
 		free(self);
 		*_self = NULL;

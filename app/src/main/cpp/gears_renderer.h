@@ -56,10 +56,10 @@ typedef void (*gears_renderer_cmd_fn)(int cmd, const char* msg);
 
 typedef struct gears_renderer_s
 {
-	vkk_engine_t*               engine;
-	vkk_descriptorSetFactory_t* dsf;
-	vkk_pipelineLayout_t*       pl;
-	vkk_graphicsPipeline_t*     gp;
+	vkk_engine_t*            engine;
+	vkk_uniformSetFactory_t* usf;
+	vkk_pipelineLayout_t*    pl;
+	vkk_graphicsPipeline_t*  gp;
 
 	// view state
 	GLfloat          view_scale;
