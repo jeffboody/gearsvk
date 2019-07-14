@@ -336,11 +336,9 @@ gear_createDescriptorSet(gear_t* self)
 {
 	assert(self);
 
-	vkk_engine_t*            engine;
-	vkk_uniformSetFactory_t* usf;
-	engine   = self->renderer->engine;
-	usf      = self->renderer->usf;
-	self->us = vkk_engine_newUniformSet(engine, usf);
+	gears_renderer_t* renderer = self->renderer;
+	self->us = vkk_engine_newUniformSet(renderer->engine,
+	                                    renderer->usf);
 	if(self->us == NULL)
 	{
 		return 0;
@@ -350,7 +348,7 @@ gear_createDescriptorSet(gear_t* self)
 	// {
 	//     mat4 mvp;
 	// };
-	vkk_engine_attachUniformBuffer(engine,
+	vkk_engine_attachUniformBuffer(renderer->engine,
 	                               self->us,
 	                               self->mvp_ub,
 	                               0);
@@ -359,7 +357,7 @@ gear_createDescriptorSet(gear_t* self)
 	// {
 	//     mat4 nm;
 	// };
-	vkk_engine_attachUniformBuffer(engine,
+	vkk_engine_attachUniformBuffer(renderer->engine,
 	                               self->us,
 	                               self->nm_ub,
 	                               1);
@@ -368,10 +366,17 @@ gear_createDescriptorSet(gear_t* self)
 	// {
 	//     vec4 color;
 	// };
-	vkk_engine_attachUniformBuffer(engine,
+	vkk_engine_attachUniformBuffer(renderer->engine,
 	                               self->us,
 	                               self->color_ub,
 	                               2);
+
+	// layout(set=0, binding=3) uniform sampler2D lava_sampler;
+	vkk_engine_attachUniformSampler(renderer->engine,
+	                                self->us,
+	                                renderer->sampler,
+	                                renderer->image,
+	                                3);
 
 	return 1;
 }

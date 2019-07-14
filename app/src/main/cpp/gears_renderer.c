@@ -34,6 +34,8 @@
 #include "gears_renderer.h"
 #include "a3d/widget/a3d_key.h"
 #include "a3d/a3d_timestamp.h"
+#include "texgz/texgz_png.h"
+#include "texgz/texgz_tex.h"
 
 #define LOG_TAG "gears"
 #include "a3d/a3d_log.h"
@@ -182,7 +184,7 @@ gears_renderer_newUniformSetFactory(gears_renderer_t* self)
 {
 	assert(self);
 
-	vkk_uniformBinding_t ub_array[3] =
+	vkk_uniformBinding_t ub_array[4] =
 	{
 		// layout(std140, set=0, binding=0) uniform uniformMvp
 		// {
@@ -213,11 +215,18 @@ gears_renderer_newUniformSetFactory(gears_renderer_t* self)
 			.type    = VKK_UNIFORM_TYPE_BUFFER,
 			.stage   = VKK_STAGE_FS,
 			.sampler = NULL
+		},
+		// layout(set=0, binding=3) uniform sampler2D lava_sampler;
+		{
+			.binding = 3,
+			.type    = VKK_UNIFORM_TYPE_SAMPLER,
+			.stage   = VKK_STAGE_FS,
+			.sampler = self->sampler
 		}
 	};
 
 	self->usf = vkk_engine_newUniformSetFactory(self->engine,
-	                                            1, 3,
+	                                            1, 4,
 	                                            ub_array);
 	if(self->usf == NULL)
 	{
@@ -288,6 +297,62 @@ gears_renderer_newGraphicsPipeline(gears_renderer_t* self)
 	return 1;
 }
 
+static int
+gears_renderer_newImage(gears_renderer_t* self)
+{
+	assert(self);
+
+	texgz_tex_t* tex = texgz_png_import("textures/lava.png");
+	if(tex == NULL)
+	{
+		return 0;
+	}
+
+	if(texgz_tex_convert(tex, TEXGZ_UNSIGNED_BYTE,
+	                     TEXGZ_RGB) == 0)
+	{
+		goto fail_convert;
+	}
+
+	self->image = vkk_engine_newImage(self->engine,
+	                                  (uint32_t) tex->width,
+	                                  (uint32_t) tex->height,
+	                                  VKK_IMAGE_FORMAT_RGB888,
+	                                  0, tex->pixels);
+	if(self->image == NULL)
+	{
+		goto fail_image;
+	}
+
+	texgz_tex_delete(&tex);
+
+	// success
+	return 1;
+
+	// failure
+	fail_image:
+	fail_convert:
+		texgz_tex_delete(&tex);
+	return 0;
+}
+
+static int
+gears_renderer_newSampler(gears_renderer_t* self)
+{
+	assert(self);
+
+	self->sampler = vkk_engine_newSampler(self->engine,
+	                                      VKK_SAMPLER_FILTER_LINEAR,
+	                                      VKK_SAMPLER_FILTER_LINEAR,
+	                                      VKK_SAMPLER_MIPMAP_MODE_NEAREST);
+	if(self->sampler == NULL)
+	{
+		return 0;
+	}
+
+	return 1;
+}
+
 /***********************************************************
 * public                                                   *
 ***********************************************************/
@@ -333,6 +398,16 @@ gears_renderer_new(void* app,
 	if(gears_renderer_newGraphicsPipeline(self) == 0)
 	{
 		goto fail_gp;
+	}
+
+	if(gears_renderer_newImage(self) == 0)
+	{
+		goto fail_image;
+	}
+
+	if(gears_renderer_newSampler(self) == 0)
+	{
+		goto fail_sampler;
 	}
 
 	self->view_scale = 1.0f;
@@ -394,6 +469,12 @@ gears_renderer_new(void* app,
 	fail_gear2:
 		gear_delete(&self->gear1);
 	fail_gear1:
+		vkk_engine_deleteSampler(self->engine,
+		                         &self->sampler);
+	fail_sampler:
+		vkk_engine_deleteImage(self->engine,
+		                       &self->image);
+	fail_image:
 		vkk_engine_deleteGraphicsPipeline(self->engine,
 		                                  &self->gp);
 	fail_gp:
@@ -424,6 +505,10 @@ void gears_renderer_delete(gears_renderer_t** _self)
 		gear_delete(&self->gear1);
 		a3d_stack4f_delete(&self->mvm_stack);
 
+		vkk_engine_deleteSampler(self->engine,
+		                         &self->sampler);
+		vkk_engine_deleteImage(self->engine,
+		                       &self->image);
 		vkk_engine_deleteGraphicsPipeline(self->engine,
 		                                  &self->gp);
 		vkk_engine_deletePipelineLayout(self->engine,

@@ -5,7 +5,7 @@ OBJECTS  = $(TARGET).o $(CLASSES:%=%.o)
 HFILES   = $(CLASSES:%=%.h)
 OPT      = -O2 -Wall
 CFLAGS   = $(OPT) -I. -I$(VULKAN_SDK)/include `sdl2-config --cflags` -DA3D_GL2
-LDFLAGS  = -Llibvkk -lvkk -L$(VULKAN_SDK)/lib -lvulkan `sdl2-config --libs` -Llibpak -lpak -Ltexgz -ltexgz -La3d -la3d -Llibcc -lcc -Llibexpat/expat/lib -lexpat -lm -lpthread
+LDFLAGS  = -Llibvkk -lvkk -L$(VULKAN_SDK)/lib -lvulkan `sdl2-config --libs` -Llibpak -lpak -Ltexgz -ltexgz -La3d -la3d -Llibcc -lcc -Llibexpat/expat/lib -lexpat -lm -lpthread -lz -lpng
 CCC      = gcc
 
 all: $(TARGET) libcc libpak texgz a3d libvkk libexpat

@@ -60,6 +60,8 @@ typedef struct gears_renderer_s
 	vkk_uniformSetFactory_t* usf;
 	vkk_pipelineLayout_t*    pl;
 	vkk_graphicsPipeline_t*  gp;
+	vkk_image_t*             image;
+	vkk_sampler_t*           sampler;
 
 	// view state
 	GLfloat          view_scale;
