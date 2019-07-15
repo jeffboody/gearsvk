@@ -551,9 +551,7 @@ int gears_renderer_resize(gears_renderer_t* self)
 {
 	assert(self);
 
-	uint32_t width;
-	uint32_t height;
-	return vkk_engine_resize(self->engine, &width, &height);
+	return vkk_engine_resize(self->engine);
 }
 
 void gears_renderer_touch(gears_renderer_t* self,
