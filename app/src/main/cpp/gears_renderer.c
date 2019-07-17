@@ -318,7 +318,7 @@ gears_renderer_newImage(gears_renderer_t* self)
 	                                  (uint32_t) tex->width,
 	                                  (uint32_t) tex->height,
 	                                  VKK_IMAGE_FORMAT_RGB888,
-	                                  0, VKK_STAGE_FS,
+	                                  1, VKK_STAGE_FS,
 	                                  tex->pixels);
 	if(self->image == NULL)
 	{
