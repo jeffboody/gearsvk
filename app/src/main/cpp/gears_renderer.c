@@ -34,6 +34,7 @@
 #include "gears_renderer.h"
 #include "a3d/widget/a3d_key.h"
 #include "a3d/a3d_timestamp.h"
+#include "libpak/pak_file.h"
 #include "texgz/texgz_png.h"
 #include "texgz/texgz_tex.h"
 
@@ -275,8 +276,8 @@ gears_renderer_newGraphicsPipeline(gears_renderer_t* self)
 	vkk_graphicsPipelineInfo_t gpi =
 	{
 		.pl                = self->pl,
-		.vs                = "shaders/vert.spv",
-		.fs                = "shaders/frag.spv",
+		.vs                = "vert.spv",
+		.fs                = "frag.spv",
 		.vb_count          = 2,
 		.vbi               = vbi,
 		.primitive         = VKK_PRIMITIVE_TRIANGLE_STRIP,
@@ -302,11 +303,29 @@ gears_renderer_newImage(gears_renderer_t* self)
 {
 	assert(self);
 
-	texgz_tex_t* tex = texgz_png_import("textures/lava.png");
-	if(tex == NULL)
+	pak_file_t* pak;
+	pak = pak_file_open(GEARS_RESOURCE, PAK_FLAG_READ);
+	if(pak == NULL)
 	{
 		return 0;
 	}
+
+	int size = pak_file_seek(pak, "lava.png");
+	if(size == 0)
+	{
+		LOGE("invalid lava.png");
+		pak_file_close(&pak);
+		return 0;
+	}
+
+	texgz_tex_t* tex;
+	tex = texgz_png_importf(pak->f, (size_t) size);
+	if(tex == NULL)
+	{
+		pak_file_close(&pak);
+		return 0;
+	}
+	pak_file_close(&pak);
 
 	if(texgz_tex_convert(tex, TEXGZ_UNSIGNED_BYTE,
 	                     TEXGZ_RGB) == 0)
@@ -380,7 +399,8 @@ gears_renderer_new(void* app,
 		return NULL;
 	}
 
-	self->engine = vkk_engine_new(app, app_name, app_version);
+	self->engine = vkk_engine_new(app, app_name, app_version,
+	                              GEARS_RESOURCE);
 	if(self->engine == NULL)
 	{
 		goto fail_engine;

@@ -48,6 +48,13 @@
 #define GEARS_CMD_EXIT       2
 #define GEARS_CMD_LOADURL    3
 
+#ifdef ANDROID
+	#define GEARS_RESOURCE  "/data/data/com.jeffboody.gearsvk/files/resource.pak"
+	#define GEARS_TIMESTAMP "/data/data/com.jeffboody.gearsvk/files/timestamp.raw"
+#else
+	#define GEARS_RESOURCE "resource.pak"
+#endif
+
 typedef void (*gears_renderer_cmd_fn)(int cmd, const char* msg);
 
 /***********************************************************

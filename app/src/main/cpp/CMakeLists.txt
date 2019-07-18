@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.4.1)
 
+# Defines
+set(TEXGZ_USE_PNG  true)
+
 # native_app_glue
 add_library(native_app_glue
             STATIC

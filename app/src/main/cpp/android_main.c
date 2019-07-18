@@ -24,6 +24,7 @@
 #include <jni.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <unistd.h>
 #include <vulkan_wrapper.h>
 #include <android_native_app_glue.h>
 #include "a3d/widget/a3d_key.h"
@@ -134,6 +135,192 @@ platform_termWindow(platform_t* self)
 	gears_renderer_delete(&self->renderer);
 }
 
+static int
+platform_isTimestampValid(platform_t* self)
+{
+	assert(self);
+
+	// import ts1
+	AAssetManager* am;
+	am = self->app->activity->assetManager;
+	AAsset* asset = AAssetManager_open(am, "timestamp.raw",
+	                                   AASSET_MODE_BUFFER);
+	if(asset == NULL)
+	{
+		LOGE("AAssetManager_open %s failed", "timestamp.raw");
+		return 0;
+	}
+
+	size_t sz1 = (size_t) AAsset_getLength(asset);
+	if(sz1 == 0)
+	{
+		LOGE("invalid sz1=%u", (unsigned int) sz1);
+		goto fail_ts1_size;
+	}
+
+	char* ts1 = (char*) calloc(sz1, sizeof(char));
+	if(ts1 == NULL)
+	{
+		LOGE("calloc failed");
+		goto fail_ts1_alloc;
+	}
+
+	if(AAsset_read(asset, ts1, sz1) != sz1)
+	{
+		LOGE("AAsset_read failed");
+		goto fail_ts1_read;
+	}
+
+	// check if ts2 exists
+	if(access(GEARS_TIMESTAMP, F_OK) != 0)
+	{
+		LOGW("invalid %s", GEARS_TIMESTAMP);
+		goto fail_ts2_access;
+	}
+
+	// import ts2
+	FILE* f = fopen(GEARS_TIMESTAMP, "r");
+	if(f == NULL)
+	{
+		LOGW("invalid %s", GEARS_TIMESTAMP);
+		goto fail_ts2_fopen;
+	}
+
+	fseek(f, (long) 0, SEEK_END);
+	size_t sz2 = (size_t) ftell(f);
+	fseek(f, 0, SEEK_SET);
+
+	if(sz1 != sz2)
+	{
+		LOGW("invalid sz1=%i, sz2=%i", (int) sz1, (int) sz2);
+		goto fail_compare_size;
+	}
+
+	char* ts2 = (char*) calloc(sz2, sizeof(char));
+	if(ts2 == NULL)
+	{
+		LOGE("calloc failed");
+		goto fail_ts2_alloc;
+	}
+
+	if(fread(ts2, sz2, 1, f) != 1)
+	{
+		LOGE("fread failed");
+		goto fail_ts2_read;
+	}
+
+	// compare timestamps
+	for(int i = 0; i < sz1; ++i)
+	{
+		if(ts1[i] != ts2[i])
+		{
+			LOGW("invalid ts1=%s, ts2=%s", ts1, ts2);
+			goto fail_compare;
+		}
+	}
+
+	free(ts2);
+	fclose(f);
+	free(ts1);
+	AAsset_close(asset);
+
+	// success
+	return 1;
+
+	// failure
+	// TODO
+	fail_compare:
+	fail_ts2_read:
+		free(ts2);
+	fail_ts2_alloc:
+	fail_compare_size:
+		fclose(f);
+	fail_ts2_fopen:
+	fail_ts2_access:
+	fail_ts1_read:
+		free(ts1);
+	fail_ts1_alloc:
+	fail_ts1_size:
+		AAsset_close(asset);
+	return 0;
+}
+
+static int
+platform_updateResource(platform_t* self, const char* src,
+                        const char* dst)
+{
+	assert(self);
+	assert(src);
+	assert(dst);
+
+	// remove old resource
+	unlink(dst);
+
+	// import resource
+	AAssetManager* am;
+	am = self->app->activity->assetManager;
+	AAsset* asset = AAssetManager_open(am, src,
+	                                   AASSET_MODE_BUFFER);
+	if(asset == NULL)
+	{
+		LOGE("AAssetManager_open %s failed", src);
+		return 0;
+	}
+
+	size_t size = (size_t) AAsset_getLength(asset);
+	if(size == 0)
+	{
+		LOGE("invalid size=%u", (unsigned int) size);
+		goto fail_size;
+	}
+
+	char* buf;
+	buf = (char*) calloc(size, sizeof(char));
+	if(buf == NULL)
+	{
+		LOGE("calloc failed");
+		goto fail_alloc;
+	}
+
+	if(AAsset_read(asset, buf, size) != size)
+	{
+		LOGE("AAsset_read failed");
+		goto fail_read;
+	}
+
+	// export resource
+	FILE* f = fopen(dst, "w");
+	if(f == NULL)
+	{
+		LOGE("fopen %s failed", dst);
+		goto fail_fopen;
+	}
+
+	if(fwrite(buf, size, 1, f) != 1)
+	{
+		LOGE("fwrite %s failed", dst);
+		goto fail_fwrite;
+	}
+
+	fclose(f);
+	free(buf);
+	AAsset_close(asset);
+
+	// success
+	return 1;
+
+	// failure
+	fail_fwrite:
+		fclose(f);
+	fail_fopen:
+	fail_read:
+		free(buf);
+	fail_alloc:
+	fail_size:
+		AAsset_close(asset);
+	return 0;
+}
+
 static void
 platform_initWindow(platform_t* self)
 {
@@ -145,6 +332,21 @@ platform_initWindow(platform_t* self)
 		return;
 	}
 
+	if(platform_isTimestampValid(self) == 0)
+	{
+		if(platform_updateResource(self, "resource.pak",
+		                           GEARS_RESOURCE) == 0)
+		{
+			return;
+		}
+
+		if(platform_updateResource(self, "timestamp.raw",
+		                           GEARS_TIMESTAMP) == 0)
+		{
+			return;
+		}
+	}
+
 	LOGI("InitVulkan=%i", InitVulkan());
 
 	uint32_t version = VK_MAKE_VERSION(1,0,0);
@@ -152,6 +354,10 @@ platform_initWindow(platform_t* self)
 	                                    "gearsvk",
 	                                    version,
 	                                    cmd_fn);
+	if(self->renderer == NULL)
+	{
+		return;
+	}
 
 	self->drawable = 1;
 	self->width    = ANativeWindow_getWidth(self->app->window);

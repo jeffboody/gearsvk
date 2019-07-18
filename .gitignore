@@ -12,4 +12,9 @@
 /build
 /captures
 .externalNativeBuild
-app/src/main/cpp/shaders
+
+app/src/main/cpp/resource.pak
+app/src/main/assets/timestamp.raw
+resource/pak
+resource/frag.spv
+resource/vert.spv
