@@ -24,6 +24,15 @@
 #include <stdio.h>
 #include <assert.h>
 
+#ifdef ANDROID
+	#include <vulkan_wrapper.h>
+	#include <android_native_app_glue.h>
+#else
+	#include <SDL2/SDL.h>
+	#include <SDL2/SDL_vulkan.h>
+	#include <vulkan/vulkan.h>
+#endif
+
 #include "a3d/a3d_timestamp.h"
 #include "a3d/widget/a3d_key.h"
 #include "gears_renderer.h"

@@ -33,7 +33,7 @@
 #include "a3d/math/a3d_quaternion.h"
 #include "a3d/math/a3d_mat4f.h"
 #include "a3d/math/a3d_stack4f.h"
-#include "libvkk/vkk_engine.h"
+#include "libvkk/vkk.h"
 #include "gear.h"
 
 #define GEARS_TOUCH_ACTION_DOWN 0

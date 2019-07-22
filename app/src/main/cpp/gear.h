@@ -33,7 +33,7 @@
 #include "a3d/a3d_GL.h"
 #include "a3d/math/a3d_mat4f.h"
 #include "a3d/math/a3d_vec4f.h"
-#include "libvkk/vkk_engine.h"
+#include "libvkk/vkk.h"
 
 struct gears_renderer_s;
 

@@ -62,12 +62,16 @@ static void gears_renderer_step(gears_renderer_t* self)
 {
 	assert(self);
 
+	uint32_t width;
+	uint32_t height;
+	vkk_engine_surfaceSize(self->engine, &width, &height);
+
 	// https://www.saschawillems.de/blog/2019/03/29/flipping-the-vulkan-viewport/
 	// Vulkan uses a top-left left origin while OpenGL
 	// uses a bottom-left origin so the frustum top and
 	// bottom should be swapped to compensate
-	float w = (float) self->engine->swapchain_extent.width;
-	float h = (float) self->engine->swapchain_extent.height;
+	float w = (float) width;
+	float h = (float) height;
 	if(h > w)
 	{
 		float a = h / w;
@@ -154,11 +158,15 @@ static void gears_renderer_rotate(gears_renderer_t* self,
 {
 	assert(self);
 
+	uint32_t width;
+	uint32_t height;
+	vkk_engine_surfaceSize(self->engine, &width, &height);
+
 	// rotating around x-axis is equivalent to moving up-and-down on touchscreen
 	// rotating around y-axis is equivalent to moving left-and-right on touchscreen
 	// 360 degrees is equivalent to moving completly across the touchscreen
-	float   w  = (float) self->engine->swapchain_extent.width;
-	float   h  = (float) self->engine->swapchain_extent.height;
+	float   w  = (float) width;
+	float   h  = (float) height;
 	GLfloat rx = 360.0f * dy / h;
 	GLfloat ry = 360.0f * dx / w;
 	a3d_quaternion_t q;
