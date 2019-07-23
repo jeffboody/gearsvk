@@ -504,11 +504,13 @@ void gear_update(gear_t* self,
 	assert(mvp);
 	assert(mvm);
 
-	vkk_engine_t* engine = self->renderer->engine;
+	vkk_engine_t*   engine = self->renderer->engine;
+	vkk_renderer_t* renderer;
+	renderer = vkk_engine_renderer(engine);
 
-	vkk_engine_updateBuffer(engine,
-	                        self->mvp_ub,
-	                        (const void*) mvp);
+	vkk_renderer_updateBuffer(renderer,
+	                          self->mvp_ub,
+	                          (const void*) mvp);
 
 	a3d_mat3f_t nm;
 	a3d_mat4f_normalmatrix(mvm, &nm);
@@ -531,9 +533,9 @@ void gear_update(gear_t* self,
 		.m23 = 0.0f,
 		.m33 = 1.0f
 	};
-	vkk_engine_updateBuffer(engine,
-	                        self->nm_ub,
-	                        (const void*) &nm4);
+	vkk_renderer_updateBuffer(renderer,
+	                          self->nm_ub,
+	                          (const void*) &nm4);
 }
 
 void gear_draw(gear_t* self)
@@ -541,9 +543,11 @@ void gear_draw(gear_t* self)
 	assert(self);
 
 	vkk_engine_t*         engine = self->renderer->engine;
-	vkk_pipelineLayout_t* pl     = self->renderer->pl;
+	vkk_pipelineLayout_t* pl = self->renderer->pl;
+	vkk_renderer_t*       renderer;
+	renderer = vkk_engine_renderer(engine);
 
-	vkk_engine_bindUniformSets(engine, pl, 1, &self->us);
+	vkk_renderer_bindUniformSets(renderer, pl, 1, &self->us);
 
 	// front face
 	vkk_buffer_t* vertex_buffers[2] =
@@ -551,24 +555,24 @@ void gear_draw(gear_t* self)
 		self->frontface_vb,
 		self->frontface_nb,
 	};
-	vkk_engine_draw(engine, self->frontface_vc,
-	                2, vertex_buffers);
+	vkk_renderer_draw(renderer, self->frontface_vc,
+	                  2, vertex_buffers);
 
 	// back face
 	vertex_buffers[0] = self->backface_vb;
 	vertex_buffers[1] = self->backface_nb;
-	vkk_engine_draw(engine, self->backface_vc,
-	                2, vertex_buffers);
+	vkk_renderer_draw(renderer, self->backface_vc,
+	                  2, vertex_buffers);
 
 	// outward
 	vertex_buffers[0] = self->outward_vb;
 	vertex_buffers[1] = self->outward_nb;
-	vkk_engine_draw(engine, self->outward_vc,
-	                2, vertex_buffers);
+	vkk_renderer_draw(renderer, self->outward_vc,
+	                  2, vertex_buffers);
 
 	// cylinder
 	vertex_buffers[0] = self->cylinder_vb;
 	vertex_buffers[1] = self->cylinder_nb;
-	vkk_engine_draw(engine, self->cylinder_vc,
-	                2, vertex_buffers);
+	vkk_renderer_draw(renderer, self->cylinder_vc,
+	                  2, vertex_buffers);
 }
