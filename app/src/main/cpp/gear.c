@@ -337,46 +337,51 @@ gear_createDescriptorSet(gear_t* self)
 	assert(self);
 
 	gears_renderer_t* renderer = self->renderer;
+
+	vkk_uniformAttachment_t ua_array[4] =
+	{
+		// layout(std140, set=0, binding=0) uniform uniformMvp
+		// {
+		//     mat4 mvp;
+		// };
+		{
+			.type    = VKK_UNIFORM_TYPE_BUFFER,
+			.binding = 0,
+			.buffer  = self->mvp_ub
+		},
+		// layout(std140, set=0, binding=1) uniform uniformNm
+		// {
+		//     mat4 nm;
+		// };
+		{
+			.type    = VKK_UNIFORM_TYPE_BUFFER,
+			.binding = 1,
+			.buffer  = self->nm_ub
+		},
+		// layout(std140, set=0, binding=2) uniform uniformColor
+		// {
+		//     vec4 color;
+		// };
+		{
+			.type    = VKK_UNIFORM_TYPE_BUFFER,
+			.binding = 2,
+			.buffer  = self->color_ub
+		},
+		// layout(set=0, binding=3) uniform sampler2D lava_sampler;
+		{
+			.type    = VKK_UNIFORM_TYPE_SAMPLER,
+			.binding = 3,
+			.image   = renderer->image
+		},
+	};
+
 	self->us = vkk_engine_newUniformSet(renderer->engine,
+	                                    0, 4, ua_array,
 	                                    renderer->usf);
 	if(self->us == NULL)
 	{
 		return 0;
 	}
-
-	// layout(std140, set=0, binding=0) uniform uniformMvp
-	// {
-	//     mat4 mvp;
-	// };
-	vkk_engine_attachUniformBuffer(renderer->engine,
-	                               self->us,
-	                               self->mvp_ub,
-	                               0);
-
-	// layout(std140, set=0, binding=1) uniform uniformNm
-	// {
-	//     mat4 nm;
-	// };
-	vkk_engine_attachUniformBuffer(renderer->engine,
-	                               self->us,
-	                               self->nm_ub,
-	                               1);
-
-	// layout(std140, set=0, binding=2) uniform uniformColor
-	// {
-	//     vec4 color;
-	// };
-	vkk_engine_attachUniformBuffer(renderer->engine,
-	                               self->us,
-	                               self->color_ub,
-	                               2);
-
-	// layout(set=0, binding=3) uniform sampler2D lava_sampler;
-	vkk_engine_attachUniformSampler(renderer->engine,
-	                                self->us,
-	                                renderer->sampler,
-	                                renderer->image,
-	                                3);
 
 	return 1;
 }
@@ -538,7 +543,7 @@ void gear_draw(gear_t* self)
 	vkk_engine_t*         engine = self->renderer->engine;
 	vkk_pipelineLayout_t* pl     = self->renderer->pl;
 
-	vkk_engine_bindUniformSet(engine, pl, self->us);
+	vkk_engine_bindUniformSets(engine, pl, 1, &self->us);
 
 	// front face
 	vkk_buffer_t* vertex_buffers[2] =

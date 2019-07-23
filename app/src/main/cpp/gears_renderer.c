@@ -414,6 +414,11 @@ gears_renderer_new(void* app,
 		goto fail_engine;
 	}
 
+	if(gears_renderer_newSampler(self) == 0)
+	{
+		goto fail_sampler;
+	}
+
 	if(gears_renderer_newUniformSetFactory(self) == 0)
 	{
 		goto fail_usf;
@@ -432,11 +437,6 @@ gears_renderer_new(void* app,
 	if(gears_renderer_newImage(self) == 0)
 	{
 		goto fail_image;
-	}
-
-	if(gears_renderer_newSampler(self) == 0)
-	{
-		goto fail_sampler;
 	}
 
 	self->view_scale = 1.0f;
@@ -498,9 +498,6 @@ gears_renderer_new(void* app,
 	fail_gear2:
 		gear_delete(&self->gear1);
 	fail_gear1:
-		vkk_engine_deleteSampler(self->engine,
-		                         &self->sampler);
-	fail_sampler:
 		vkk_engine_deleteImage(self->engine,
 		                       &self->image);
 	fail_image:
@@ -513,6 +510,9 @@ gears_renderer_new(void* app,
 		vkk_engine_deleteUniformSetFactory(self->engine,
 		                                   &self->usf);
 	fail_usf:
+		vkk_engine_deleteSampler(self->engine,
+		                         &self->sampler);
+	fail_sampler:
 		vkk_engine_delete(&self->engine);
 	fail_engine:
 		free(self);
@@ -534,8 +534,6 @@ void gears_renderer_delete(gears_renderer_t** _self)
 		gear_delete(&self->gear1);
 		a3d_stack4f_delete(&self->mvm_stack);
 
-		vkk_engine_deleteSampler(self->engine,
-		                         &self->sampler);
 		vkk_engine_deleteImage(self->engine,
 		                       &self->image);
 		vkk_engine_deleteGraphicsPipeline(self->engine,
@@ -544,6 +542,8 @@ void gears_renderer_delete(gears_renderer_t** _self)
 		                                &self->pl);
 		vkk_engine_deleteUniformSetFactory(self->engine,
 		                                   &self->usf);
+		vkk_engine_deleteSampler(self->engine,
+		                         &self->sampler);
 		vkk_engine_delete(&self->engine);
 		free(self);
 		*_self = NULL;
