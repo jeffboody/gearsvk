@@ -415,8 +415,10 @@ gears_renderer_new(void* app,
 		return NULL;
 	}
 
-	self->engine = vkk_engine_new(app, app_name, app_version,
-	                              GEARS_RESOURCE);
+	self->engine = vkk_engine_new(app, app_name,
+	                              app_version,
+	                              GEARS_RESOURCE,
+	                              GEARS_CACHE);
 	if(self->engine == NULL)
 	{
 		goto fail_engine;

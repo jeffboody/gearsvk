@@ -50,9 +50,11 @@
 
 #ifdef ANDROID
 	#define GEARS_RESOURCE  "/data/data/com.jeffboody.gearsvk/files/resource.pak"
+	#define GEARS_CACHE     "/data/data/com.jeffboody.gearsvk/files/pipeline.cache"
 	#define GEARS_TIMESTAMP "/data/data/com.jeffboody.gearsvk/files/timestamp.raw"
 #else
 	#define GEARS_RESOURCE "resource.pak"
+	#define GEARS_CACHE    "pipeline.cache"
 #endif
 
 typedef void (*gears_renderer_cmd_fn)(int cmd, const char* msg);
