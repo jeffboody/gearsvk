@@ -304,8 +304,10 @@ gears_renderer_newGraphicsPipeline(gears_renderer_t* self)
 		.blend_mode        = 0
 	};
 
+	vkk_renderer_t* renderer;
+	renderer = vkk_engine_renderer(self->engine);
 	self->gp = vkk_engine_newGraphicsPipeline(self->engine,
-	                                          &gpi);
+	                                          renderer, &gpi);
 	if(self->gp == NULL)
 	{
 		return 0;
