@@ -291,6 +291,7 @@ gears_renderer_newGraphicsPipeline(gears_renderer_t* self)
 
 	vkk_graphicsPipelineInfo_t gpi =
 	{
+		.renderer          = vkk_engine_renderer(self->engine),
 		.pl                = self->pl,
 		.vs                = "vert.spv",
 		.fs                = "frag.spv",
@@ -304,10 +305,8 @@ gears_renderer_newGraphicsPipeline(gears_renderer_t* self)
 		.blend_mode        = 0
 	};
 
-	vkk_renderer_t* renderer;
-	renderer = vkk_engine_renderer(self->engine);
 	self->gp = vkk_engine_newGraphicsPipeline(self->engine,
-	                                          renderer, &gpi);
+	                                          &gpi);
 	if(self->gp == NULL)
 	{
 		return 0;
@@ -539,7 +538,7 @@ void gears_renderer_delete(gears_renderer_t** _self)
 	gears_renderer_t* self = *_self;
 	if(self)
 	{
-		vkk_engine_waitForIdle(self->engine);
+		vkk_engine_shutdown(self->engine);
 
 		gear_delete(&self->gear3);
 		gear_delete(&self->gear2);
