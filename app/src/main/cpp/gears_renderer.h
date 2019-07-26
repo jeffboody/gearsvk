@@ -77,6 +77,8 @@ typedef struct gears_renderer_s
 	a3d_quaternion_t view_q;
 
 	// animation state
+	GLfloat distance;
+	GLfloat scale;
 	GLfloat angle;
 
 	// matrices
@@ -108,9 +110,9 @@ typedef struct gears_renderer_s
 	gears_renderer_cmd_fn cmd_fn;
 } gears_renderer_t;
 
-gears_renderer_t* gears_renderer_new(void* app,
-                                     const char* app_name,
-                                     uint32_t app_version,
+gears_renderer_t* gears_renderer_new(vkk_engine_t* engine,
+                                     float distance,
+                                     float scale,
                                      gears_renderer_cmd_fn cmd_fn);
 void              gears_renderer_delete(gears_renderer_t** _self);
 void              gears_renderer_draw(gears_renderer_t* self);

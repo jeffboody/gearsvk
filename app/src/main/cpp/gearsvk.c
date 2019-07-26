@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <pthread.h>
 
 #ifdef ANDROID
 	#include <vulkan_wrapper.h>
@@ -35,6 +36,8 @@
 
 #include "a3d/a3d_timestamp.h"
 #include "a3d/widget/a3d_key.h"
+#include "libcc/cc_list.h"
+#include "libcc/cc_timestamp.h"
 #include "gears_renderer.h"
 
 #define LOG_TAG "gears"
@@ -45,12 +48,21 @@
 ***********************************************************/
 
 static int gRunning = 1;
+vkk_engine_t*   engine;
+cc_list_t*      renderer_list;
+cc_list_t*      create_list;
+cc_list_t*      destroy_list;
+pthread_mutex_t mutex;
+pthread_cond_t  cond;
 
 static void cmd_fn(int cmd, const char* msg)
 {
 	if(cmd == GEARS_CMD_EXIT)
 	{
+		pthread_mutex_lock(&mutex);
 		gRunning = 0;
+		pthread_cond_broadcast(&cond);
+		pthread_mutex_unlock(&mutex);
 	}
 }
 
@@ -319,22 +331,133 @@ static int keyPress(SDL_Keysym* keysym,
 }
 
 /***********************************************************
+* threads                                                  *
+***********************************************************/
+
+static void* gearsvk_create(void* arg)
+{
+	pthread_mutex_lock(&mutex);
+	while(gRunning)
+	{
+		while(cc_list_size(create_list) < 10)
+		{
+			pthread_mutex_unlock(&mutex);
+
+			gears_renderer_t* renderer;
+			float distance = -3.0f + ((float) (rand()%61))/10.0f;
+			float scale    = ((float) (rand()%21))/10.0f;
+			renderer = gears_renderer_new(engine, distance, scale, cmd_fn);
+
+			pthread_mutex_lock(&mutex);
+			if(renderer)
+			{
+				cc_list_append(create_list, NULL, (const void*) renderer);
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		pthread_cond_wait(&cond, &mutex);
+	}
+	pthread_mutex_unlock(&mutex);
+
+	return NULL;
+}
+
+static void* gearsvk_destroy(void* arg)
+{
+	pthread_mutex_lock(&mutex);
+	while(gRunning)
+	{
+		cc_listIter_t* iter = cc_list_head(destroy_list);
+		while(iter)
+		{
+			gears_renderer_t* renderer;
+			renderer = (gears_renderer_t*)
+			           cc_list_remove(destroy_list, &iter);
+			pthread_mutex_unlock(&mutex);
+
+			gears_renderer_delete(&renderer);
+
+			pthread_mutex_lock(&mutex);
+		}
+
+		pthread_cond_wait(&cond, &mutex);
+	}
+	pthread_mutex_unlock(&mutex);
+
+	return NULL;
+}
+
+/***********************************************************
 * main                                                     *
 ***********************************************************/
 
 int main(int argc, char** argv)
 {
 	uint32_t version = VK_MAKE_VERSION(1,0,0);
-	gears_renderer_t* renderer;
-	renderer = gears_renderer_new(NULL,
-	                              "GearsVK",
-	                              version,
-	                              cmd_fn);
-	if(renderer == NULL)
+	engine = vkk_engine_new(NULL, "GearsVK",
+	                        version,
+	                        GEARS_RESOURCE,
+	                        GEARS_CACHE);
+	if(engine == NULL)
 	{
 		return EXIT_FAILURE;
 	}
 
+	renderer_list = cc_list_new();
+	if(renderer_list == NULL)
+	{
+		return EXIT_FAILURE;
+	}
+
+	create_list = cc_list_new();
+	if(create_list == NULL)
+	{
+		return EXIT_FAILURE;
+	}
+
+	destroy_list = cc_list_new();
+	if(destroy_list == NULL)
+	{
+		return EXIT_FAILURE;
+	}
+
+	// PTHREAD_MUTEX_DEFAULT is not re-entrant
+	if(pthread_mutex_init(&mutex, NULL) != 0)
+	{
+		LOGE("pthread_mutex_init failed");
+		return EXIT_FAILURE;
+	}
+
+	if(pthread_cond_init(&cond, NULL) != 0)
+	{
+		LOGE("pthread_cond_init failed");
+		return EXIT_FAILURE;
+	}
+
+	pthread_t thread_create;
+	if(pthread_create(&thread_create, NULL,
+	                  gearsvk_create,
+	                  (void*) NULL) != 0)
+	{
+		LOGE("pthread_create failed");
+		return EXIT_FAILURE;
+	}
+
+	pthread_t thread_destroy;
+	if(pthread_create(&thread_destroy, NULL,
+	                  gearsvk_destroy,
+	                  (void*) NULL) != 0)
+	{
+		LOGE("pthread_create failed");
+		return EXIT_FAILURE;
+	}
+
+	double t0 = 0;
+	cc_listIter_t* iter;
 	while(gRunning)
 	{
 		SDL_Event e;
@@ -347,68 +470,171 @@ int main(int argc, char** argv)
 			{
 				if(keyPress(&e.key.keysym, &keycode, &meta))
 				{
-					gears_renderer_keyPress(renderer,
-					                        keycode, meta);
+					iter = cc_list_head(renderer_list);
+					while(iter)
+					{
+						gears_renderer_t* renderer;
+						renderer = (gears_renderer_t*)
+						           cc_list_peekIter(iter);
+						gears_renderer_keyPress(renderer,
+						                        keycode, meta);
+						iter = cc_list_next(iter);
+					}
 				}
 			}
 			else if(e.type == SDL_MOUSEBUTTONUP)
 			{
-				float  x  = (float) e.button.x;
-				float  y  = (float) e.button.y;
-				double ts = a3d_timestamp();
-				gears_renderer_touch(renderer,
-				                     GEARS_TOUCH_ACTION_UP,
-				                     1, ts, x, y,
-				                     0.0f, 0.0f,
-				                     0.0f, 0.0f,
-				                     0.0f, 0.0f);
+				iter = cc_list_head(renderer_list);
+				while(iter)
+				{
+					gears_renderer_t* renderer;
+					renderer = (gears_renderer_t*)
+					           cc_list_peekIter(iter);
+					float  x  = (float) e.button.x;
+					float  y  = (float) e.button.y;
+					double ts = a3d_timestamp();
+					gears_renderer_touch(renderer,
+					                     GEARS_TOUCH_ACTION_UP,
+					                     1, ts, x, y,
+					                     0.0f, 0.0f,
+					                     0.0f, 0.0f,
+					                     0.0f, 0.0f);
+					iter = cc_list_next(iter);
+				}
 			}
 			else if(e.type == SDL_MOUSEBUTTONDOWN)
 			{
-				float  x  = (float) e.button.x;
-				float  y  = (float) e.button.y;
-				double ts = a3d_timestamp();
-				gears_renderer_touch(renderer,
-				                     GEARS_TOUCH_ACTION_DOWN,
-				                     1, ts, x, y,
-				                     0.0f, 0.0f,
-				                     0.0f, 0.0f,
-				                     0.0f, 0.0f);
+				iter = cc_list_head(renderer_list);
+				while(iter)
+				{
+					gears_renderer_t* renderer;
+					renderer = (gears_renderer_t*)
+					           cc_list_peekIter(iter);
+					float  x  = (float) e.button.x;
+					float  y  = (float) e.button.y;
+					double ts = a3d_timestamp();
+					gears_renderer_touch(renderer,
+					                     GEARS_TOUCH_ACTION_DOWN,
+					                     1, ts, x, y,
+					                     0.0f, 0.0f,
+					                     0.0f, 0.0f,
+					                     0.0f, 0.0f);
+					iter = cc_list_next(iter);
+				}
 			}
 			else if(e.type == SDL_MOUSEMOTION)
 			{
-				float  x  = (float) e.button.x;
-				float  y  = (float) e.button.y;
-				double ts = a3d_timestamp();
-				gears_renderer_touch(renderer,
-				                     GEARS_TOUCH_ACTION_MOVE,
-				                     1, ts, x, y,
-				                     0.0f, 0.0f,
-				                     0.0f, 0.0f,
-				                     0.0f, 0.0f);
+				iter = cc_list_head(renderer_list);
+				while(iter)
+				{
+					gears_renderer_t* renderer;
+					renderer = (gears_renderer_t*)
+					           cc_list_peekIter(iter);
+					float  x  = (float) e.button.x;
+					float  y  = (float) e.button.y;
+					double ts = a3d_timestamp();
+					gears_renderer_touch(renderer,
+					                     GEARS_TOUCH_ACTION_MOVE,
+					                     1, ts, x, y,
+					                     0.0f, 0.0f,
+					                     0.0f, 0.0f,
+					                     0.0f, 0.0f);
+					iter = cc_list_next(iter);
+				}
 			}
 			else if(e.type == SDL_WINDOWEVENT)
 			{
 				if(e.window.event == SDL_WINDOWEVENT_RESIZED)
 				{
-					if(gears_renderer_resize(renderer) == 0)
+					if(vkk_engine_resize(engine) == 0)
 					{
-						gears_renderer_delete(&renderer);
 						return EXIT_FAILURE;
 					}
 				}
 			}
 			else if(e.type == SDL_QUIT)
 			{
+				pthread_mutex_lock(&mutex);
 				gRunning = 0;
+				pthread_cond_broadcast(&cond);
+				pthread_mutex_unlock(&mutex);
 			}
 		}
 
-		gears_renderer_draw(renderer);
+		vkk_renderer_t* rend;
+		rend = vkk_engine_renderer(engine);
+
+		float clear_color[4] =
+		{
+			0.0f, 0.0f, 0.0f, 1.0f
+		};
+		if(vkk_renderer_begin(rend, clear_color))
+		{
+			iter = cc_list_head(renderer_list);
+			while(iter)
+			{
+				gears_renderer_t* renderer;
+				renderer = (gears_renderer_t*)
+				           cc_list_peekIter(iter);
+				gears_renderer_draw(renderer);
+				iter = cc_list_next(iter);
+			}
+			vkk_renderer_end(rend);
+		}
+
+		// swap the objects
+		double t1 = cc_timestamp();
+		if((t1 - t0 > 3.0) ||
+		   (cc_list_size(renderer_list) == 0))
+		{
+			t0 = t1;
+			pthread_mutex_lock(&mutex);
+			cc_list_appendList(destroy_list,
+			                   renderer_list);
+			cc_list_appendList(renderer_list,
+			                   create_list);
+			pthread_cond_broadcast(&cond);
+			pthread_mutex_unlock(&mutex);
+		}
 	}
 
-	gears_renderer_delete(&renderer);
+	vkk_engine_shutdown(engine);
+	pthread_join(thread_create, NULL);
+	pthread_join(thread_destroy, NULL);
 
-	// success
+	iter = cc_list_head(destroy_list);
+	while(iter)
+	{
+		gears_renderer_t* renderer;
+		renderer = (gears_renderer_t*)
+		           cc_list_remove(destroy_list, &iter);
+		gears_renderer_delete(&renderer);
+	}
+
+	iter = cc_list_head(create_list);
+	while(iter)
+	{
+		gears_renderer_t* renderer;
+		renderer = (gears_renderer_t*)
+		           cc_list_remove(create_list, &iter);
+		gears_renderer_delete(&renderer);
+	}
+
+	iter = cc_list_head(renderer_list);
+	while(iter)
+	{
+		gears_renderer_t* renderer;
+		renderer = (gears_renderer_t*)
+		           cc_list_remove(renderer_list, &iter);
+		gears_renderer_delete(&renderer);
+	}
+
+	pthread_mutex_destroy(&mutex);
+	pthread_cond_destroy(&cond);
+	cc_list_delete(&destroy_list);
+	cc_list_delete(&create_list);
+	cc_list_delete(&renderer_list);
+	vkk_engine_delete(&engine);
+
 	return EXIT_SUCCESS;
 }

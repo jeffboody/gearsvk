@@ -88,14 +88,15 @@ static void gears_renderer_step(gears_renderer_t* self)
 	a3d_mat4f_translate(&self->mvm, 1, 0.0f, 0.0f, -40.0f);
 
 	// glxgears: event_loop
+	float scale = self->scale*self->view_scale;
 	a3d_stack4f_push(self->mvm_stack, &self->mvm);
-	a3d_mat4f_scale(&self->mvm, 0, self->view_scale, self->view_scale, self->view_scale);
+	a3d_mat4f_scale(&self->mvm, 0, scale, scale, scale);
 	a3d_mat4f_rotateq(&self->mvm, 0, &self->view_q);
 
 	// Gear1
 	a3d_mat4f_t mvp;
 	a3d_stack4f_push(self->mvm_stack, &self->mvm);
-	a3d_mat4f_translate(&self->mvm, 0, -3.0f, -2.0f, 0.0f);
+	a3d_mat4f_translate(&self->mvm, 0, -3.0f, -2.0f, self->distance);
 	a3d_mat4f_rotate(&self->mvm, 0, self->angle, 0.0f, 0.0f, 1.0f);
 	a3d_mat4f_mulm_copy(&self->pm, &self->mvm, &mvp);
 	gear_update(self->gear1, &mvp, &self->mvm);
@@ -103,7 +104,7 @@ static void gears_renderer_step(gears_renderer_t* self)
 
 	// Gear2
 	a3d_stack4f_push(self->mvm_stack, &self->mvm);
-	a3d_mat4f_translate(&self->mvm, 0, 3.1f, -2.0f, 0.0f);
+	a3d_mat4f_translate(&self->mvm, 0, 3.1f, -2.0f, self->distance);
 	a3d_mat4f_rotate(&self->mvm, 0, -2.0f * self->angle - 9.0f, 0.0f, 0.0f, 1.0f);
 	a3d_mat4f_mulm_copy(&self->pm, &self->mvm, &mvp);
 	gear_update(self->gear2, &mvp, &self->mvm);
@@ -111,7 +112,7 @@ static void gears_renderer_step(gears_renderer_t* self)
 
 	// Gear3
 	a3d_stack4f_push(self->mvm_stack, &self->mvm);
-	a3d_mat4f_translate(&self->mvm, 0, -3.1f, 4.2f, 0.0f);
+	a3d_mat4f_translate(&self->mvm, 0, -3.1f, 4.2f, self->distance);
 	a3d_mat4f_rotate(&self->mvm, 0, -2.0f * self->angle - 25.0f, 0.0f, 0.0f, 1.0f);
 	a3d_mat4f_mulm_copy(&self->pm, &self->mvm, &mvp);
 	gear_update(self->gear3, &mvp, &self->mvm);
@@ -395,17 +396,12 @@ gears_renderer_newSampler(gears_renderer_t* self)
 ***********************************************************/
 
 gears_renderer_t*
-gears_renderer_new(void* app,
-                   const char* app_name,
-                   uint32_t app_version,
+gears_renderer_new(vkk_engine_t* engine,
+                   float distance,
+                   float scale,
                    gears_renderer_cmd_fn cmd_fn)
 {
-	#ifdef ANDROID
-		assert(app);
-	#else
-		assert(app == NULL);
-	#endif
-	assert(app_name);
+	assert(cmd_fn);
 
 	gears_renderer_t* self;
 	self = (gears_renderer_t*)
@@ -416,14 +412,9 @@ gears_renderer_new(void* app,
 		return NULL;
 	}
 
-	self->engine = vkk_engine_new(app, app_name,
-	                              app_version,
-	                              GEARS_RESOURCE,
-	                              GEARS_CACHE);
-	if(self->engine == NULL)
-	{
-		goto fail_engine;
-	}
+	self->engine   = engine;
+	self->distance = distance;
+	self->scale    = scale;
 
 	if(gears_renderer_newSampler(self) == 0)
 	{
@@ -524,8 +515,6 @@ gears_renderer_new(void* app,
 		vkk_engine_deleteSampler(self->engine,
 		                         &self->sampler);
 	fail_sampler:
-		vkk_engine_delete(&self->engine);
-	fail_engine:
 		free(self);
 	return NULL;
 }
@@ -538,8 +527,6 @@ void gears_renderer_delete(gears_renderer_t** _self)
 	gears_renderer_t* self = *_self;
 	if(self)
 	{
-		vkk_engine_shutdown(self->engine);
-
 		gear_delete(&self->gear3);
 		gear_delete(&self->gear2);
 		gear_delete(&self->gear1);
@@ -555,7 +542,6 @@ void gears_renderer_delete(gears_renderer_t** _self)
 		                                   &self->usf);
 		vkk_engine_deleteSampler(self->engine,
 		                         &self->sampler);
-		vkk_engine_delete(&self->engine);
 		free(self);
 		*_self = NULL;
 	}
@@ -568,15 +554,6 @@ void gears_renderer_draw(gears_renderer_t* self)
 	vkk_renderer_t* renderer;
 	renderer = vkk_engine_renderer(self->engine);
 
-	float clear_color[4] =
-	{
-		0.0f, 0.0f, 0.0f, 1.0f
-	};
-	if(vkk_renderer_begin(renderer, clear_color) == 0)
-	{
-		return;
-	}
-
 	gears_renderer_step(self);
 
 	vkk_renderer_bindGraphicsPipeline(renderer, self->gp);
@@ -584,8 +561,6 @@ void gears_renderer_draw(gears_renderer_t* self)
 	gear_draw(self->gear1);
 	gear_draw(self->gear2);
 	gear_draw(self->gear3);
-
-	vkk_renderer_end(renderer);
 }
 
 int gears_renderer_resize(gears_renderer_t* self)
