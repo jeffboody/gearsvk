@@ -568,7 +568,7 @@ int main(int argc, char** argv)
 		{
 			0.0f, 0.0f, 0.0f, 1.0f
 		};
-		if(vkk_renderer_begin(rend, clear_color))
+		if(vkk_renderer_beginDefault(rend, clear_color))
 		{
 			iter = cc_list_head(renderer_list);
 			while(iter)

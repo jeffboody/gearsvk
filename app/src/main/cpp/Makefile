@@ -1,3 +1,5 @@
+export CC_USE_MATH = 1
+
 TARGET   = gearsvk
 CLASSES  = gears_renderer gear
 SOURCE   = $(TARGET).c $(CLASSES:%=%.c)

@@ -19,3 +19,5 @@ app/src/main/assets/timestamp.raw
 resource/pak
 resource/frag.spv
 resource/vert.spv
+resource/gen_frag.spv
+resource/gen_vert.spv

@@ -34,6 +34,8 @@
 #include "gears_renderer.h"
 #include "a3d/widget/a3d_key.h"
 #include "a3d/a3d_timestamp.h"
+#include "libcc/math/cc_mat4f.h"
+#include "libcc/math/cc_vec2f.h"
 #include "libpak/pak_file.h"
 #include "texgz/texgz_png.h"
 #include "texgz/texgz_tex.h"
@@ -41,14 +43,22 @@
 #define LOG_TAG "gears"
 #include "a3d/a3d_log.h"
 
+#define GEARS_TEST_OFFSCREEN
+
 /***********************************************************
 * private                                                  *
 ***********************************************************/
 
 // gear colors
+#ifdef GEARS_TEST_OFFSCREEN
+static const a3d_vec4f_t RED   = { .r=1.0f, .g=1.0f, .b=1.0f, .a=1.0f };
+static const a3d_vec4f_t GREEN = { .r=1.0f, .g=1.0f, .b=1.0f, .a=1.0f };
+static const a3d_vec4f_t BLUE  = { .r=1.0f, .g=1.0f, .b=1.0f, .a=1.0f };
+#else
 static const a3d_vec4f_t RED   = { .r=0.8f, .g=0.1f, .b=0.0f, .a=1.0f };
 static const a3d_vec4f_t GREEN = { .r=0.0f, .g=0.8f, .b=0.2f, .a=1.0f };
 static const a3d_vec4f_t BLUE  = { .r=0.2f, .g=0.2f, .b=1.0f, .a=1.0f };
+#endif
 
 static void gears_renderer_exit(gears_renderer_t* self)
 {
@@ -316,6 +326,193 @@ gears_renderer_newGraphicsPipeline(gears_renderer_t* self)
 	return 1;
 }
 
+#ifdef GEARS_TEST_OFFSCREEN
+static int
+gears_renderer_newImage(gears_renderer_t* self)
+{
+	assert(self);
+
+	self->image = vkk_engine_newImage(self->engine,
+	                                  256, 256,
+	                                  VKK_IMAGE_FORMAT_RGBA8888,
+	                                  1, VKK_STAGE_FS,
+	                                  NULL);
+	if(self->image == NULL)
+	{
+		return 0;
+	}
+
+	vkk_renderer_t* renderer;
+	renderer = vkk_engine_newRenderer(self->engine,
+                                      256, 256,
+                                      VKK_IMAGE_FORMAT_RGBA8888);
+	if(renderer == NULL)
+	{
+		goto fail_renderer;
+	}
+
+	vkk_uniformBinding_t ub_array[1] =
+	{
+		// layout(std140, set=0, binding=0) uniform uniformMvp
+		// {
+		//     mat4 mvp;
+		// };
+		{
+			.binding = 0,
+			.type    = VKK_UNIFORM_TYPE_BUFFER,
+			.stage   = VKK_STAGE_VS,
+			.sampler = NULL
+		}
+	};
+
+	vkk_uniformSetFactory_t* usf;
+	usf = vkk_engine_newUniformSetFactory(self->engine, 0, 1,
+	                                      ub_array);
+	if(usf == NULL)
+	{
+		goto fail_usf;
+	}
+
+	cc_mat4f_t mvp;
+	cc_mat4f_ortho(&mvp, 1, 0.0f, 1.0f,
+	               1.0f, 0.0f, 0.0f, 2.0f);
+
+	vkk_buffer_t* mvp_ub;
+	mvp_ub = vkk_engine_newBuffer(self->engine, 0,
+	                              VKK_BUFFER_USAGE_UNIFORM,
+	                              sizeof(mvp),
+	                              (const void*) &mvp);
+	if(mvp_ub == NULL)
+	{
+		goto fail_mvp;
+	}
+
+	vkk_uniformAttachment_t ua_array[1] =
+	{
+		// layout(std140, set=0, binding=0) uniform uniformMvp
+		// {
+		//     mat4 mvp;
+		// };
+		{
+			.type    = VKK_UNIFORM_TYPE_BUFFER,
+			.binding = 0,
+			.buffer  = mvp_ub
+		},
+	};
+
+	vkk_uniformSet_t* us;
+	us = vkk_engine_newUniformSet(self->engine,
+	                              0, 1, ua_array, usf);
+	if(us == NULL)
+	{
+		goto fail_us;
+	}
+
+	cc_vec2f_t coords[] =
+	{
+		{ .x=0.0f, .y=1.0f },
+		{ .x=0.0f, .y=0.0f },
+		{ .x=1.0f, .y=1.0f },
+		{ .x=1.0f, .y=0.0f },
+	};
+
+	vkk_buffer_t* coords_vb;
+	coords_vb = vkk_engine_newBuffer(self->engine, 0,
+	                                 VKK_BUFFER_USAGE_VERTEX,
+	                                 sizeof(coords),
+	                                 (const void*) coords);
+	if(coords_vb == NULL)
+	{
+		goto fail_coords;
+	}
+
+	vkk_pipelineLayout_t* pl;
+	pl = vkk_engine_newPipelineLayout(self->engine, 1, &usf);
+	if(pl == NULL)
+	{
+		goto fail_pipeline_layout;
+	}
+
+	vkk_vertexBufferInfo_t vbi[1] =
+	{
+		// layout(location=0) in vec2 coords;
+		{
+			.location   = 0,
+			.components = 2,
+			.format     = VKK_VERTEX_FORMAT_FLOAT
+		},
+	};
+
+	vkk_graphicsPipelineInfo_t gpi =
+	{
+		.renderer          = renderer,
+		.pl                = pl,
+		.vs                = "gen_vert.spv",
+		.fs                = "gen_frag.spv",
+		.vb_count          = 1,
+		.vbi               = vbi,
+		.primitive         = VKK_PRIMITIVE_TRIANGLE_STRIP,
+		.primitive_restart = 0,
+		.cull_back         = 0,
+		.depth_test        = 0,
+		.depth_write       = 0,
+		.blend_mode        = 0
+	};
+
+	vkk_graphicsPipeline_t* gp;
+	gp = vkk_engine_newGraphicsPipeline(self->engine, &gpi);
+	if(gp == NULL)
+	{
+		goto fail_gp;
+	}
+
+	// render to image
+	float clear_color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	if(vkk_renderer_beginOffscreen(renderer, self->image,
+	                               clear_color) == 0)
+	{
+		LOGE("fail_offscreen");
+		goto fail_offscreen;
+	}
+
+	vkk_renderer_bindGraphicsPipeline(renderer, gp);
+	vkk_renderer_bindUniformSets(renderer, pl, 1, &us);
+	vkk_renderer_draw(renderer, 4, 1, &coords_vb);
+	vkk_renderer_end(renderer);
+
+	// cleanup
+	vkk_engine_deleteGraphicsPipeline(self->engine, &gp);
+	vkk_engine_deletePipelineLayout(self->engine, &pl);
+	vkk_engine_deleteBuffer(self->engine, &coords_vb);
+	vkk_engine_deleteUniformSet(self->engine, &us);
+	vkk_engine_deleteBuffer(self->engine, &mvp_ub);
+	vkk_engine_deleteUniformSetFactory(self->engine, &usf);
+	vkk_engine_deleteRenderer(self->engine, &renderer);
+
+	// success
+	return 1;
+
+	// failure
+	fail_offscreen:
+		vkk_engine_deleteGraphicsPipeline(self->engine, &gp);
+	fail_gp:
+		vkk_engine_deletePipelineLayout(self->engine, &pl);
+	fail_pipeline_layout:
+		vkk_engine_deleteBuffer(self->engine, &coords_vb);
+	fail_coords:
+		vkk_engine_deleteUniformSet(self->engine, &us);
+	fail_us:
+		vkk_engine_deleteBuffer(self->engine, &mvp_ub);
+	fail_mvp:
+		vkk_engine_deleteUniformSetFactory(self->engine, &usf);
+	fail_usf:
+		vkk_engine_deleteRenderer(self->engine, &renderer);
+	fail_renderer:
+		vkk_engine_deleteImage(self->engine, &self->image);
+	LOGE("END");
+	return 0;
+}
+#else
 static int
 gears_renderer_newImage(gears_renderer_t* self)
 {
@@ -373,6 +570,7 @@ gears_renderer_newImage(gears_renderer_t* self)
 		texgz_tex_delete(&tex);
 	return 0;
 }
+#endif
 
 static int
 gears_renderer_newSampler(gears_renderer_t* self)
