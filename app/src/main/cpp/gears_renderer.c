@@ -275,9 +275,25 @@ gears_renderer_newImage(gears_renderer_t* self)
 {
 	assert(self);
 
+	// pick a random image format with the required caps
+	int format = VKK_IMAGE_FORMAT_RGBA8888;
+	while(1)
+	{
+		format = rand()%VKK_IMAGE_FORMAT_COUNT;
+		int caps = vkk_engine_imageCaps(self->engine, format);
+		int req  = VKK_IMAGE_CAPS_OFFSCREEN |
+		           VKK_IMAGE_CAPS_TEXTURE   |
+		           VKK_IMAGE_CAPS_MIPMAP    |
+		           VKK_IMAGE_CAPS_FILTER_LINEAR;
+		if((caps & req) == req)
+		{
+			break;
+		}
+	}
+
 	self->image = vkk_engine_newImage(self->engine,
 	                                  256, 256,
-	                                  VKK_IMAGE_FORMAT_RGBA8888,
+	                                  format,
 	                                  1, VKK_STAGE_FS,
 	                                  NULL);
 	if(self->image == NULL)
@@ -287,8 +303,7 @@ gears_renderer_newImage(gears_renderer_t* self)
 
 	vkk_renderer_t* renderer;
 	renderer = vkk_engine_newRenderer(self->engine,
-                                      256, 256,
-                                      VKK_IMAGE_FORMAT_RGBA8888);
+                                      256, 256, format);
 	if(renderer == NULL)
 	{
 		goto fail_renderer;
@@ -460,6 +475,18 @@ static int
 gears_renderer_newImage(gears_renderer_t* self)
 {
 	assert(self);
+
+	// check for the required image caps
+	int caps = vkk_engine_imageCaps(self->engine,
+	                               VKK_IMAGE_FORMAT_RGB888);
+	int req  = VKK_IMAGE_CAPS_TEXTURE |
+	           VKK_IMAGE_CAPS_MIPMAP  |
+	           VKK_IMAGE_CAPS_FILTER_LINEAR;
+	if((caps & req) != req)
+	{
+		LOGE("caps=0x%X, req=0x%X", caps, req);
+		return 0;
+	}
 
 	pak_file_t* pak;
 	pak = pak_file_open(GEARS_RESOURCE, PAK_FLAG_READ);
