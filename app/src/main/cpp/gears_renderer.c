@@ -572,7 +572,7 @@ void gears_renderer_draw(gears_renderer_t* self)
 	{
 		0.0f, 0.0f, 0.0f, 1.0f
 	};
-	if(vkk_renderer_begin(renderer, clear_color) == 0)
+	if(vkk_renderer_beginDefault(renderer, clear_color) == 0)
 	{
 		return;
 	}
