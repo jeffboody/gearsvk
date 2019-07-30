@@ -111,6 +111,8 @@ typedef struct gears_renderer_s
 } gears_renderer_t;
 
 gears_renderer_t* gears_renderer_new(vkk_engine_t* engine,
+                                     vkk_uniformSetFactory_t* usf,
+                                     vkk_sampler_t* sampler,
                                      float distance,
                                      float scale,
                                      gears_renderer_cmd_fn cmd_fn);

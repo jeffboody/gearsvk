@@ -208,63 +208,6 @@ static void gears_renderer_scale(gears_renderer_t* self,
 }
 
 static int
-gears_renderer_newUniformSetFactory(gears_renderer_t* self)
-{
-	assert(self);
-
-	vkk_uniformBinding_t ub_array[4] =
-	{
-		// layout(std140, set=0, binding=0) uniform uniformMvp
-		// {
-		//     mat4 mvp;
-		// };
-		{
-			.binding = 0,
-			.type    = VKK_UNIFORM_TYPE_BUFFER,
-			.stage   = VKK_STAGE_VS,
-			.sampler = NULL
-		},
-		// layout(std140, set=0, binding=1) uniform uniformNm
-		// {
-		//     mat4 nm;
-		// };
-		{
-			.binding = 1,
-			.type    = VKK_UNIFORM_TYPE_BUFFER,
-			.stage   = VKK_STAGE_VS,
-			.sampler = NULL
-		},
-		// layout(std140, set=0, binding=2) uniform uniformColor
-		// {
-		//     vec4 color;
-		// };
-		{
-			.binding = 2,
-			.type    = VKK_UNIFORM_TYPE_BUFFER,
-			.stage   = VKK_STAGE_FS,
-			.sampler = NULL
-		},
-		// layout(set=0, binding=3) uniform sampler2D lava_sampler;
-		{
-			.binding = 3,
-			.type    = VKK_UNIFORM_TYPE_SAMPLER,
-			.stage   = VKK_STAGE_FS,
-			.sampler = self->sampler
-		}
-	};
-
-	self->usf = vkk_engine_newUniformSetFactory(self->engine,
-	                                            1, 4,
-	                                            ub_array);
-	if(self->usf == NULL)
-	{
-		return 0;
-	}
-
-	return 1;
-}
-
-static int
 gears_renderer_newPipelineLayout(gears_renderer_t* self)
 {
 	assert(self);
@@ -572,33 +515,21 @@ gears_renderer_newImage(gears_renderer_t* self)
 }
 #endif
 
-static int
-gears_renderer_newSampler(gears_renderer_t* self)
-{
-	assert(self);
-
-	self->sampler = vkk_engine_newSampler(self->engine,
-	                                      VKK_SAMPLER_FILTER_LINEAR,
-	                                      VKK_SAMPLER_FILTER_LINEAR,
-	                                      VKK_SAMPLER_MIPMAP_MODE_NEAREST);
-	if(self->sampler == NULL)
-	{
-		return 0;
-	}
-
-	return 1;
-}
-
 /***********************************************************
 * public                                                   *
 ***********************************************************/
 
 gears_renderer_t*
 gears_renderer_new(vkk_engine_t* engine,
+                   vkk_uniformSetFactory_t* usf,
+                   vkk_sampler_t* sampler,
                    float distance,
                    float scale,
                    gears_renderer_cmd_fn cmd_fn)
 {
+	assert(engine);
+	assert(usf);
+	assert(sampler);
 	assert(cmd_fn);
 
 	gears_renderer_t* self;
@@ -614,15 +545,8 @@ gears_renderer_new(vkk_engine_t* engine,
 	self->distance = distance;
 	self->scale    = scale;
 
-	if(gears_renderer_newSampler(self) == 0)
-	{
-		goto fail_sampler;
-	}
-
-	if(gears_renderer_newUniformSetFactory(self) == 0)
-	{
-		goto fail_usf;
-	}
+	self->sampler = sampler;
+	self->usf     = usf;
 
 	if(gears_renderer_newPipelineLayout(self) == 0)
 	{
@@ -707,12 +631,6 @@ gears_renderer_new(vkk_engine_t* engine,
 		vkk_engine_deletePipelineLayout(self->engine,
 		                                &self->pl);
 	fail_pl:
-		vkk_engine_deleteUniformSetFactory(self->engine,
-		                                   &self->usf);
-	fail_usf:
-		vkk_engine_deleteSampler(self->engine,
-		                         &self->sampler);
-	fail_sampler:
 		free(self);
 	return NULL;
 }
@@ -736,10 +654,6 @@ void gears_renderer_delete(gears_renderer_t** _self)
 		                                  &self->gp);
 		vkk_engine_deletePipelineLayout(self->engine,
 		                                &self->pl);
-		vkk_engine_deleteUniformSetFactory(self->engine,
-		                                   &self->usf);
-		vkk_engine_deleteSampler(self->engine,
-		                         &self->sampler);
 		free(self);
 		*_self = NULL;
 	}

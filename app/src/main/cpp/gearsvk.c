@@ -47,13 +47,15 @@
 * private                                                  *
 ***********************************************************/
 
-static int gRunning = 1;
-vkk_engine_t*   engine;
-cc_list_t*      renderer_list;
-cc_list_t*      create_list;
-cc_list_t*      destroy_list;
-pthread_mutex_t mutex;
-pthread_cond_t  cond;
+static int                      gRunning      = 1;
+static vkk_engine_t*            engine        = NULL;
+static vkk_uniformSetFactory_t* usf           = NULL;
+static vkk_sampler_t*           sampler       = NULL;
+static cc_list_t*               renderer_list = NULL;
+static cc_list_t*               create_list   = NULL;
+static cc_list_t*               destroy_list  = NULL;
+static pthread_mutex_t          mutex         = PTHREAD_MUTEX_INITIALIZER;;
+static pthread_cond_t           cond          = PTHREAD_COND_INITIALIZER;
 
 static void cmd_fn(int cmd, const char* msg)
 {
@@ -334,6 +336,76 @@ static int keyPress(SDL_Keysym* keysym,
 * threads                                                  *
 ***********************************************************/
 
+static int
+gearsvk_newUniformSetFactory(void)
+{
+	vkk_uniformBinding_t ub_array[4] =
+	{
+		// layout(std140, set=0, binding=0) uniform uniformMvp
+		// {
+		//     mat4 mvp;
+		// };
+		{
+			.binding = 0,
+			.type    = VKK_UNIFORM_TYPE_BUFFER,
+			.stage   = VKK_STAGE_VS,
+			.sampler = NULL
+		},
+		// layout(std140, set=0, binding=1) uniform uniformNm
+		// {
+		//     mat4 nm;
+		// };
+		{
+			.binding = 1,
+			.type    = VKK_UNIFORM_TYPE_BUFFER,
+			.stage   = VKK_STAGE_VS,
+			.sampler = NULL
+		},
+		// layout(std140, set=0, binding=2) uniform uniformColor
+		// {
+		//     vec4 color;
+		// };
+		{
+			.binding = 2,
+			.type    = VKK_UNIFORM_TYPE_BUFFER,
+			.stage   = VKK_STAGE_FS,
+			.sampler = NULL
+		},
+		// layout(set=0, binding=3) uniform sampler2D lava_sampler;
+		{
+			.binding = 3,
+			.type    = VKK_UNIFORM_TYPE_SAMPLER,
+			.stage   = VKK_STAGE_FS,
+			.sampler = sampler
+		}
+	};
+
+	usf = vkk_engine_newUniformSetFactory(engine,
+	                                      1, 4,
+	                                      ub_array);
+	if(usf == NULL)
+	{
+		return 0;
+	}
+
+	return 1;
+}
+
+static int
+gearsvk_newSampler(void)
+{
+	sampler = vkk_engine_newSampler(engine,
+	                                VKK_SAMPLER_FILTER_LINEAR,
+	                                VKK_SAMPLER_FILTER_LINEAR,
+	                                VKK_SAMPLER_MIPMAP_MODE_NEAREST);
+	if(sampler == NULL)
+	{
+		return 0;
+	}
+
+	return 1;
+}
+
 static void* gearsvk_create(void* arg)
 {
 	pthread_mutex_lock(&mutex);
@@ -346,7 +418,7 @@ static void* gearsvk_create(void* arg)
 			gears_renderer_t* renderer;
 			float distance = -3.0f + ((float) (rand()%61))/10.0f;
 			float scale    = ((float) (rand()%21))/10.0f;
-			renderer = gears_renderer_new(engine, distance, scale, cmd_fn);
+			renderer = gears_renderer_new(engine, usf, sampler, distance, scale, cmd_fn);
 
 			pthread_mutex_lock(&mutex);
 			if(renderer)
@@ -403,6 +475,16 @@ int main(int argc, char** argv)
 	                        GEARS_RESOURCE,
 	                        GEARS_CACHE);
 	if(engine == NULL)
+	{
+		return EXIT_FAILURE;
+	}
+
+	if(gearsvk_newSampler() == 0)
+	{
+		return EXIT_FAILURE;
+	}
+
+	if(gearsvk_newUniformSetFactory() == 0)
 	{
 		return EXIT_FAILURE;
 	}
@@ -634,6 +716,8 @@ int main(int argc, char** argv)
 	cc_list_delete(&destroy_list);
 	cc_list_delete(&create_list);
 	cc_list_delete(&renderer_list);
+	vkk_engine_deleteUniformSetFactory(engine, &usf);
+	vkk_engine_deleteSampler(engine, &sampler);
 	vkk_engine_delete(&engine);
 
 	return EXIT_SUCCESS;
