@@ -320,6 +320,18 @@ gears_renderer_newImage(gears_renderer_t* self)
 {
 	assert(self);
 
+	// check for the required image caps
+	int caps = vkk_engine_imageCaps(self->engine,
+	                               VKK_IMAGE_FORMAT_RGB888);
+	int req  = VKK_IMAGE_CAPS_TEXTURE |
+	           VKK_IMAGE_CAPS_MIPMAP  |
+	           VKK_IMAGE_CAPS_FILTER_LINEAR;
+	if((caps & req) != req)
+	{
+		LOGE("caps=0x%X, req=0x%X", caps, req);
+		return 0;
+	}
+
 	pak_file_t* pak;
 	pak = pak_file_open(GEARS_RESOURCE, PAK_FLAG_READ);
 	if(pak == NULL)
