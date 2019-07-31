@@ -243,8 +243,8 @@ gears_renderer_newUniformSetFactory(gears_renderer_t* self)
 	};
 
 	self->usf = vkk_engine_newUniformSetFactory(self->engine,
-	                                            1, 4,
-	                                            ub_array);
+	                                            VKK_UPDATE_MODE_DEFAULT,
+	                                            4, ub_array);
 	if(self->usf == NULL)
 	{
 		return 0;
