@@ -127,7 +127,8 @@ static int gear_generate(gear_t* self,
 	}
 
 	vkk_engine_t* engine = self->renderer->engine;
-	self->frontface_vb = vkk_engine_newBuffer(engine, 0,
+	self->frontface_vb = vkk_engine_newBuffer(engine,
+	                                          VKK_UPDATE_MODE_STATIC,
 	                                          VKK_BUFFER_USAGE_VERTEX,
 	                                          glsm->ec*sizeof(a3d_vec3f_t),
 	                                          (const void*) glsm->vb);
@@ -137,7 +138,8 @@ static int gear_generate(gear_t* self,
 	}
 	self->frontface_vc = glsm->ec;
 
-	self->frontface_nb = vkk_engine_newBuffer(engine, 0,
+	self->frontface_nb = vkk_engine_newBuffer(engine,
+	                                          VKK_UPDATE_MODE_STATIC,
 	                                          VKK_BUFFER_USAGE_VERTEX,
 	                                          glsm->ec*sizeof(a3d_vec3f_t),
 	                                          (const void*) glsm->nb);
@@ -173,7 +175,8 @@ static int gear_generate(gear_t* self,
 		goto fail_createBackfaceV;
 	}
 
-	self->backface_vb = vkk_engine_newBuffer(engine, 0,
+	self->backface_vb = vkk_engine_newBuffer(engine,
+	                                         VKK_UPDATE_MODE_STATIC,
 	                                         VKK_BUFFER_USAGE_VERTEX,
 	                                         glsm->ec*sizeof(a3d_vec3f_t),
 	                                         (const void*) glsm->vb);
@@ -183,7 +186,8 @@ static int gear_generate(gear_t* self,
 	}
 	self->backface_vc = glsm->ec;
 
-	self->backface_nb = vkk_engine_newBuffer(engine, 0,
+	self->backface_nb = vkk_engine_newBuffer(engine,
+	                                         VKK_UPDATE_MODE_STATIC,
 	                                         VKK_BUFFER_USAGE_VERTEX,
 	                                         glsm->ec*sizeof(a3d_vec3f_t),
 	                                         (const void*) glsm->nb);
@@ -247,7 +251,8 @@ static int gear_generate(gear_t* self,
 		goto fail_createOutwardV;
 	}
 
-	self->outward_vb = vkk_engine_newBuffer(engine, 0,
+	self->outward_vb = vkk_engine_newBuffer(engine,
+	                                        VKK_UPDATE_MODE_STATIC,
 	                                        VKK_BUFFER_USAGE_VERTEX,
 	                                        glsm->ec*sizeof(a3d_vec3f_t),
 	                                        (const void*) glsm->vb);
@@ -257,7 +262,8 @@ static int gear_generate(gear_t* self,
 	}
 	self->outward_vc = glsm->ec;
 
-	self->outward_nb = vkk_engine_newBuffer(engine, 0,
+	self->outward_nb = vkk_engine_newBuffer(engine,
+	                                        VKK_UPDATE_MODE_STATIC,
 	                                        VKK_BUFFER_USAGE_VERTEX,
 	                                        glsm->ec*sizeof(a3d_vec3f_t),
 	                                        (const void*) glsm->nb);
@@ -288,7 +294,8 @@ static int gear_generate(gear_t* self,
 		goto fail_createCylinderV;
 	}
 
-	self->cylinder_vb = vkk_engine_newBuffer(engine, 0,
+	self->cylinder_vb = vkk_engine_newBuffer(engine,
+	                                         VKK_UPDATE_MODE_STATIC,
 	                                         VKK_BUFFER_USAGE_VERTEX,
 	                                         glsm->ec*sizeof(a3d_vec3f_t),
 	                                         (const void*) glsm->vb);
@@ -298,7 +305,8 @@ static int gear_generate(gear_t* self,
 	}
 	self->cylinder_vc = glsm->ec;
 
-	self->cylinder_nb = vkk_engine_newBuffer(engine, 0,
+	self->cylinder_nb = vkk_engine_newBuffer(engine,
+	                                         VKK_UPDATE_MODE_STATIC,
 	                                         VKK_BUFFER_USAGE_VERTEX,
 	                                         glsm->ec*sizeof(a3d_vec3f_t),
 	                                         (const void*) glsm->nb);
@@ -407,7 +415,8 @@ gear_t* gear_new(struct gears_renderer_s* renderer,
 	a3d_vec4f_copy(color, &self->color);
 
 	vkk_engine_t* engine = renderer->engine;
-	self->mvp_ub = vkk_engine_newBuffer(engine, 1,
+	self->mvp_ub = vkk_engine_newBuffer(engine,
+	                                    VKK_UPDATE_MODE_DEFAULT,
 	                                    VKK_BUFFER_USAGE_UNIFORM,
 	                                    sizeof(a3d_mat4f_t),
 	                                    NULL);
@@ -416,7 +425,8 @@ gear_t* gear_new(struct gears_renderer_s* renderer,
 		goto fail_createUniformMvp;
 	}
 
-	self->nm_ub = vkk_engine_newBuffer(engine, 1,
+	self->nm_ub = vkk_engine_newBuffer(engine,
+	                                   VKK_UPDATE_MODE_DEFAULT,
 	                                   VKK_BUFFER_USAGE_UNIFORM,
 	                                   sizeof(a3d_mat4f_t),
 	                                   NULL);
@@ -425,7 +435,8 @@ gear_t* gear_new(struct gears_renderer_s* renderer,
 		goto fail_createUniformNm;
 	}
 
-	self->color_ub = vkk_engine_newBuffer(engine, 0,
+	self->color_ub = vkk_engine_newBuffer(engine,
+	                                      VKK_UPDATE_MODE_STATIC,
 	                                      VKK_BUFFER_USAGE_UNIFORM,
 	                                      sizeof(a3d_vec4f_t),
 	                                      (const void*) &self->color);

@@ -381,8 +381,8 @@ gearsvk_newUniformSetFactory(void)
 	};
 
 	usf = vkk_engine_newUniformSetFactory(engine,
-	                                      1, 4,
-	                                      ub_array);
+	                                      VKK_UPDATE_MODE_DEFAULT,
+	                                      4, ub_array);
 	if(usf == NULL)
 	{
 		return 0;

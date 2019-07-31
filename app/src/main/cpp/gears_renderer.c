@@ -324,8 +324,9 @@ gears_renderer_newImage(gears_renderer_t* self)
 	};
 
 	vkk_uniformSetFactory_t* usf;
-	usf = vkk_engine_newUniformSetFactory(self->engine, 0, 1,
-	                                      ub_array);
+	usf = vkk_engine_newUniformSetFactory(self->engine,
+	                                      VKK_UPDATE_MODE_STATIC,
+	                                      1, ub_array);
 	if(usf == NULL)
 	{
 		goto fail_usf;
