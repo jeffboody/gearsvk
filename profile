@@ -1,6 +1,9 @@
 # Update SDK to point to the Android SDK
 SDK=$HOME/Android/Sdk
 
+# Vulkan SDK for SDL
+source ${HOME}/vulkan/1.1.106.0/setup-env.sh
+
 #-- DON'T CHANGE BELOW LINE --
 
 export PATH=$SDK/tools:$PATH
