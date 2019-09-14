@@ -521,6 +521,7 @@ void gear_update(gear_t* self,
 
 	vkk_renderer_updateBuffer(renderer,
 	                          self->mvp_ub,
+	                          sizeof(a3d_mat4f_t),
 	                          (const void*) mvp);
 
 	a3d_mat3f_t nm;
@@ -546,6 +547,7 @@ void gear_update(gear_t* self,
 	};
 	vkk_renderer_updateBuffer(renderer,
 	                          self->nm_ub,
+	                          sizeof(a3d_mat4f_t),
 	                          (const void*) &nm4);
 }
 
