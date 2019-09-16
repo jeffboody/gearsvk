@@ -1,7 +1,16 @@
 cmake_minimum_required(VERSION 3.4.1)
 
 # Defines
+set(CC_USE_MATH    true)
+set(TEXGZ_USE_JPEG true)
 set(TEXGZ_USE_PNG  true)
+set(VKK_USE_VKUI   true)
+
+# Optional libraries
+if(TEXGZ_USE_JPEG)
+    set(LIBS_JPEG
+        myjpeg)
+endif()
 
 # native_app_glue
 add_library(native_app_glue
@@ -25,15 +34,21 @@ add_library(gearsvk
 
             # Source
             android_main.c
+            gears_glsm.c
+            gears_overlay.c
+            gears_viewAbout.c
+            gears_layerHud.c
             gears_renderer.c
             gear.c)
 
 # Submodules
-add_subdirectory("libcc")
-add_subdirectory("libvkk")
 add_subdirectory("a3d")
+add_subdirectory("jpeg")
+add_subdirectory("libcc")
 add_subdirectory("libexpat/expat/lib")
 add_subdirectory("libpak")
+add_subdirectory("libvkk")
+add_subdirectory("libxmlstream")
 add_subdirectory("texgz")
 
 # Includes
@@ -49,12 +64,15 @@ target_include_directories(gearsvk
 target_link_libraries(gearsvk
 
                       # Submodule libraries
-                      cc
-                      vkk
+                      ${LIBS_JPEG}
                       a3d
+                      cc
+                      xmlstream
                       expat
+                      myjpeg
                       pak
                       texgz
+                      vkk
 
                       # NDK libraries
                       android

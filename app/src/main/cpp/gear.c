@@ -27,19 +27,18 @@
  *
  */
 
-#include <stdlib.h>
 #include <assert.h>
 #include <math.h>
+#include <stdlib.h>
 #include <string.h>
-#include "gear.h"
-#include "gears_renderer.h"
-#include "a3d/a3d_glsm.h"
-#include "a3d/a3d_shader.h"
-#include "a3d/math/a3d_vec3f.h"
-#include "a3d/math/a3d_vec4f.h"
 
 #define LOG_TAG "gears"
-#include "a3d/a3d_log.h"
+#include "libcc/math/cc_vec3f.h"
+#include "libcc/math/cc_vec4f.h"
+#include "libcc/cc_log.h"
+#include "gears_glsm.h"
+#include "gears_renderer.h"
+#include "gear.h"
 
 /***********************************************************
 * private                                                  *
@@ -83,7 +82,7 @@ static int gear_generate(gear_t* self,
 {
 	assert(self);
 
-	a3d_glsm_t* glsm = a3d_glsm_new();
+	gears_glsm_t* glsm = gears_glsm_new();
 	if(glsm == NULL)
 	{
 		return 0;
@@ -101,27 +100,27 @@ static int gear_generate(gear_t* self,
 
 	// generate front face
 	// GL_TRIANGLE_STRIP
-	a3d_glsm_begin(glsm);
-	a3d_glsm_normal3f(glsm, 0.0f, 0.0f, 1.0f);
+	gears_glsm_begin(glsm);
+	gears_glsm_normal3f(glsm, 0.0f, 0.0f, 1.0f);
 	for(i = 0; i < teeth; i++)
 	{
 		gear_angle(i, teeth, &a0, &a1, &a2, &a3);
 
-		a3d_glsm_vertex3f(glsm, r0 * cosf(a0), r0 * sinf(a0), dz);
-		a3d_glsm_vertex3f(glsm, r1 * cosf(a0), r1 * sinf(a0), dz);
-		a3d_glsm_vertex3f(glsm, r0 * cosf(a0), r0 * sinf(a0), dz);
-		a3d_glsm_vertex3f(glsm, r2 * cosf(a1), r2 * sinf(a1), dz);
-		a3d_glsm_vertex3f(glsm, r0 * cosf(a0), r0 * sinf(a0), dz);
-		a3d_glsm_vertex3f(glsm, r2 * cosf(a2), r2 * sinf(a2), dz);
-		a3d_glsm_vertex3f(glsm, r0 * cosf(a0), r0 * sinf(a0), dz);
-		a3d_glsm_vertex3f(glsm, r1 * cosf(a3), r1 * sinf(a3), dz);
+		gears_glsm_vertex3f(glsm, r0 * cosf(a0), r0 * sinf(a0), dz);
+		gears_glsm_vertex3f(glsm, r1 * cosf(a0), r1 * sinf(a0), dz);
+		gears_glsm_vertex3f(glsm, r0 * cosf(a0), r0 * sinf(a0), dz);
+		gears_glsm_vertex3f(glsm, r2 * cosf(a1), r2 * sinf(a1), dz);
+		gears_glsm_vertex3f(glsm, r0 * cosf(a0), r0 * sinf(a0), dz);
+		gears_glsm_vertex3f(glsm, r2 * cosf(a2), r2 * sinf(a2), dz);
+		gears_glsm_vertex3f(glsm, r0 * cosf(a0), r0 * sinf(a0), dz);
+		gears_glsm_vertex3f(glsm, r1 * cosf(a3), r1 * sinf(a3), dz);
 	}
-	a3d_glsm_vertex3f(glsm, r0 * cosf(0.0f), r0 * sinf(0.0f), dz);
-	a3d_glsm_vertex3f(glsm, r1 * cosf(0.0f), r1 * sinf(0.0f), dz);
-	a3d_glsm_end(glsm);
+	gears_glsm_vertex3f(glsm, r0 * cosf(0.0f), r0 * sinf(0.0f), dz);
+	gears_glsm_vertex3f(glsm, r1 * cosf(0.0f), r1 * sinf(0.0f), dz);
+	gears_glsm_end(glsm);
 
 	// buffer front face
-	if(a3d_glsm_status(glsm) != A3D_GLSM_COMPLETE)
+	if(gears_glsm_status(glsm) != GEARS_GLSM_COMPLETE)
 	{
 		goto fail_createFrontfaceV;
 	}
@@ -130,7 +129,7 @@ static int gear_generate(gear_t* self,
 	self->frontface_vb = vkk_engine_newBuffer(engine,
 	                                          VKK_UPDATE_MODE_STATIC,
 	                                          VKK_BUFFER_USAGE_VERTEX,
-	                                          glsm->ec*sizeof(a3d_vec3f_t),
+	                                          glsm->ec*sizeof(cc_vec3f_t),
 	                                          (const void*) glsm->vb);
 	if(self->frontface_vb == NULL)
 	{
@@ -141,7 +140,7 @@ static int gear_generate(gear_t* self,
 	self->frontface_nb = vkk_engine_newBuffer(engine,
 	                                          VKK_UPDATE_MODE_STATIC,
 	                                          VKK_BUFFER_USAGE_VERTEX,
-	                                          glsm->ec*sizeof(a3d_vec3f_t),
+	                                          glsm->ec*sizeof(cc_vec3f_t),
 	                                          (const void*) glsm->nb);
 	if(self->frontface_nb == NULL)
 	{
@@ -150,27 +149,27 @@ static int gear_generate(gear_t* self,
 
 	// generate back face
 	// GL_TRIANGLE_STRIP
-	a3d_glsm_begin(glsm);
-	a3d_glsm_normal3f(glsm, 0.0f, 0.0f, -1.0f);
+	gears_glsm_begin(glsm);
+	gears_glsm_normal3f(glsm, 0.0f, 0.0f, -1.0f);
 	for(i = 0; i < teeth; i++)
 	{
 		gear_angle(i, teeth, &a0, &a1, &a2, &a3);
 
-		a3d_glsm_vertex3f(glsm, r1 * cosf(a0), r1 * sinf(a0), -dz);
-		a3d_glsm_vertex3f(glsm, r0 * cosf(a0), r0 * sinf(a0), -dz);
-		a3d_glsm_vertex3f(glsm, r2 * cosf(a1), r2 * sinf(a1), -dz);
-		a3d_glsm_vertex3f(glsm, r0 * cosf(a0), r0 * sinf(a0), -dz);
-		a3d_glsm_vertex3f(glsm, r2 * cosf(a2), r2 * sinf(a2), -dz);
-		a3d_glsm_vertex3f(glsm, r0 * cosf(a0), r0 * sinf(a0), -dz);
-		a3d_glsm_vertex3f(glsm, r1 * cosf(a3), r1 * sinf(a3), -dz);
-		a3d_glsm_vertex3f(glsm, r0 * cosf(a0), r0 * sinf(a0), -dz);
+		gears_glsm_vertex3f(glsm, r1 * cosf(a0), r1 * sinf(a0), -dz);
+		gears_glsm_vertex3f(glsm, r0 * cosf(a0), r0 * sinf(a0), -dz);
+		gears_glsm_vertex3f(glsm, r2 * cosf(a1), r2 * sinf(a1), -dz);
+		gears_glsm_vertex3f(glsm, r0 * cosf(a0), r0 * sinf(a0), -dz);
+		gears_glsm_vertex3f(glsm, r2 * cosf(a2), r2 * sinf(a2), -dz);
+		gears_glsm_vertex3f(glsm, r0 * cosf(a0), r0 * sinf(a0), -dz);
+		gears_glsm_vertex3f(glsm, r1 * cosf(a3), r1 * sinf(a3), -dz);
+		gears_glsm_vertex3f(glsm, r0 * cosf(a0), r0 * sinf(a0), -dz);
 	}
-	a3d_glsm_vertex3f(glsm, r1 * cosf(0.0f), r1 * sinf(0.0f), -dz);
-	a3d_glsm_vertex3f(glsm, r0 * cosf(0.0f), r0 * sinf(0.0f), -dz);
-	a3d_glsm_end(glsm);
+	gears_glsm_vertex3f(glsm, r1 * cosf(0.0f), r1 * sinf(0.0f), -dz);
+	gears_glsm_vertex3f(glsm, r0 * cosf(0.0f), r0 * sinf(0.0f), -dz);
+	gears_glsm_end(glsm);
 
 	// buffer back face
-	if(a3d_glsm_status(glsm) != A3D_GLSM_COMPLETE)
+	if(gears_glsm_status(glsm) != GEARS_GLSM_COMPLETE)
 	{
 		goto fail_createBackfaceV;
 	}
@@ -178,7 +177,7 @@ static int gear_generate(gear_t* self,
 	self->backface_vb = vkk_engine_newBuffer(engine,
 	                                         VKK_UPDATE_MODE_STATIC,
 	                                         VKK_BUFFER_USAGE_VERTEX,
-	                                         glsm->ec*sizeof(a3d_vec3f_t),
+	                                         glsm->ec*sizeof(cc_vec3f_t),
 	                                         (const void*) glsm->vb);
 	if(self->backface_vb == NULL)
 	{
@@ -189,7 +188,7 @@ static int gear_generate(gear_t* self,
 	self->backface_nb = vkk_engine_newBuffer(engine,
 	                                         VKK_UPDATE_MODE_STATIC,
 	                                         VKK_BUFFER_USAGE_VERTEX,
-	                                         glsm->ec*sizeof(a3d_vec3f_t),
+	                                         glsm->ec*sizeof(cc_vec3f_t),
 	                                         (const void*) glsm->nb);
 	if(self->backface_nb == NULL)
 	{
@@ -199,15 +198,15 @@ static int gear_generate(gear_t* self,
 	// generate outward faces of teeth
 	// GL_TRIANGLE_STRIP
 	// repeated vertices are necessary to achieve flat shading in ES2
-	a3d_glsm_begin(glsm);
+	gears_glsm_begin(glsm);
 	for(i = 0; i < teeth; i++)
 	{
 		gear_angle(i, teeth, &a0, &a1, &a2, &a3);
 
 		if(i > 0)
 		{
-			a3d_glsm_vertex3f(glsm, r1 * cosf(a0), r1 * sinf(a0), dz);
-			a3d_glsm_vertex3f(glsm, r1 * cosf(a0), r1 * sinf(a0), -dz);
+			gears_glsm_vertex3f(glsm, r1 * cosf(a0), r1 * sinf(a0), dz);
+			gears_glsm_vertex3f(glsm, r1 * cosf(a0), r1 * sinf(a0), -dz);
 		}
 
 		u = r2 * cosf(a1) - r1 * cosf(a0);
@@ -216,37 +215,37 @@ static int gear_generate(gear_t* self,
 		u /= len;
 		v /= len;
 
-		a3d_glsm_normal3f(glsm, v, -u, 0.0f);
-		a3d_glsm_vertex3f(glsm, r1 * cosf(a0), r1 * sinf(a0), dz);
-		a3d_glsm_vertex3f(glsm, r1 * cosf(a0), r1 * sinf(a0), -dz);
-		a3d_glsm_vertex3f(glsm, r2 * cosf(a1), r2 * sinf(a1), dz);
-		a3d_glsm_vertex3f(glsm, r2 * cosf(a1), r2 * sinf(a1), -dz);
+		gears_glsm_normal3f(glsm, v, -u, 0.0f);
+		gears_glsm_vertex3f(glsm, r1 * cosf(a0), r1 * sinf(a0), dz);
+		gears_glsm_vertex3f(glsm, r1 * cosf(a0), r1 * sinf(a0), -dz);
+		gears_glsm_vertex3f(glsm, r2 * cosf(a1), r2 * sinf(a1), dz);
+		gears_glsm_vertex3f(glsm, r2 * cosf(a1), r2 * sinf(a1), -dz);
 
-		a3d_glsm_normal3f(glsm, cosf(a0), sinf(a0), 0.0f);
-		a3d_glsm_vertex3f(glsm, r2 * cosf(a1), r2 * sinf(a1), dz);
-		a3d_glsm_vertex3f(glsm, r2 * cosf(a1), r2 * sinf(a1), -dz);
-		a3d_glsm_vertex3f(glsm, r2 * cosf(a2), r2 * sinf(a2), dz);
-		a3d_glsm_vertex3f(glsm, r2 * cosf(a2), r2 * sinf(a2), -dz);
+		gears_glsm_normal3f(glsm, cosf(a0), sinf(a0), 0.0f);
+		gears_glsm_vertex3f(glsm, r2 * cosf(a1), r2 * sinf(a1), dz);
+		gears_glsm_vertex3f(glsm, r2 * cosf(a1), r2 * sinf(a1), -dz);
+		gears_glsm_vertex3f(glsm, r2 * cosf(a2), r2 * sinf(a2), dz);
+		gears_glsm_vertex3f(glsm, r2 * cosf(a2), r2 * sinf(a2), -dz);
 
 		u = r1 * cosf(a3) - r2 * cosf(a2);
 		v = r1 * sinf(a3) - r2 * sinf(a2);
 
-		a3d_glsm_normal3f(glsm, v, -u, 0.0f);
-		a3d_glsm_vertex3f(glsm, r2 * cosf(a2), r2 * sinf(a2), dz);
-		a3d_glsm_vertex3f(glsm, r2 * cosf(a2), r2 * sinf(a2), -dz);
-		a3d_glsm_vertex3f(glsm, r1 * cosf(a3), r1 * sinf(a3), dz);
-		a3d_glsm_vertex3f(glsm, r1 * cosf(a3), r1 * sinf(a3), -dz);
+		gears_glsm_normal3f(glsm, v, -u, 0.0f);
+		gears_glsm_vertex3f(glsm, r2 * cosf(a2), r2 * sinf(a2), dz);
+		gears_glsm_vertex3f(glsm, r2 * cosf(a2), r2 * sinf(a2), -dz);
+		gears_glsm_vertex3f(glsm, r1 * cosf(a3), r1 * sinf(a3), dz);
+		gears_glsm_vertex3f(glsm, r1 * cosf(a3), r1 * sinf(a3), -dz);
 
-		a3d_glsm_normal3f(glsm, cosf(a0), sinf(a0), 0.0f);
-		a3d_glsm_vertex3f(glsm, r1 * cosf(a3), r1 * sinf(a3), dz);
-		a3d_glsm_vertex3f(glsm, r1 * cosf(a3), r1 * sinf(a3), -dz);
+		gears_glsm_normal3f(glsm, cosf(a0), sinf(a0), 0.0f);
+		gears_glsm_vertex3f(glsm, r1 * cosf(a3), r1 * sinf(a3), dz);
+		gears_glsm_vertex3f(glsm, r1 * cosf(a3), r1 * sinf(a3), -dz);
 	}
-	a3d_glsm_vertex3f(glsm, r1 * cosf(0.0f), r1 * sinf(0.0f), dz);
-	a3d_glsm_vertex3f(glsm, r1 * cosf(0.0f), r1 * sinf(0.0f), -dz);
-	a3d_glsm_end(glsm);
+	gears_glsm_vertex3f(glsm, r1 * cosf(0.0f), r1 * sinf(0.0f), dz);
+	gears_glsm_vertex3f(glsm, r1 * cosf(0.0f), r1 * sinf(0.0f), -dz);
+	gears_glsm_end(glsm);
 
 	// buffer outward faces of teeth
-	if(a3d_glsm_status(glsm) != A3D_GLSM_COMPLETE)
+	if(gears_glsm_status(glsm) != GEARS_GLSM_COMPLETE)
 	{
 		goto fail_createOutwardV;
 	}
@@ -254,7 +253,7 @@ static int gear_generate(gear_t* self,
 	self->outward_vb = vkk_engine_newBuffer(engine,
 	                                        VKK_UPDATE_MODE_STATIC,
 	                                        VKK_BUFFER_USAGE_VERTEX,
-	                                        glsm->ec*sizeof(a3d_vec3f_t),
+	                                        glsm->ec*sizeof(cc_vec3f_t),
 	                                        (const void*) glsm->vb);
 	if(self->outward_vb == NULL)
 	{
@@ -265,7 +264,7 @@ static int gear_generate(gear_t* self,
 	self->outward_nb = vkk_engine_newBuffer(engine,
 	                                        VKK_UPDATE_MODE_STATIC,
 	                                        VKK_BUFFER_USAGE_VERTEX,
-	                                        glsm->ec*sizeof(a3d_vec3f_t),
+	                                        glsm->ec*sizeof(cc_vec3f_t),
 	                                        (const void*) glsm->nb);
 	if(self->outward_nb == NULL)
 	{
@@ -274,22 +273,22 @@ static int gear_generate(gear_t* self,
 
 	// generate inside radius cylinder
 	// GL_TRIANGLE_STRIP
-	a3d_glsm_begin(glsm);
+	gears_glsm_begin(glsm);
 	for(i = 0; i < teeth; i++)
 	{
 		gear_angle(i, teeth, &a0, &a1, &a2, &a3);
 
-		a3d_glsm_normal3f(glsm, -cosf(a0), -sinf(a0), 0.0f);
-		a3d_glsm_vertex3f(glsm, r0 * cosf(a0), r0 * sinf(a0), -dz);
-		a3d_glsm_vertex3f(glsm, r0 * cosf(a0), r0 * sinf(a0), dz);
+		gears_glsm_normal3f(glsm, -cosf(a0), -sinf(a0), 0.0f);
+		gears_glsm_vertex3f(glsm, r0 * cosf(a0), r0 * sinf(a0), -dz);
+		gears_glsm_vertex3f(glsm, r0 * cosf(a0), r0 * sinf(a0), dz);
 	}
-	a3d_glsm_normal3f(glsm, -cosf(0.0f), -sinf(0.0f), 0.0f);
-	a3d_glsm_vertex3f(glsm, r0 * cosf(0.0f), r0 * sinf(0.0f), -dz);
-	a3d_glsm_vertex3f(glsm, r0 * cosf(0.0f), r0 * sinf(0.0f), dz);
-	a3d_glsm_end(glsm);
+	gears_glsm_normal3f(glsm, -cosf(0.0f), -sinf(0.0f), 0.0f);
+	gears_glsm_vertex3f(glsm, r0 * cosf(0.0f), r0 * sinf(0.0f), -dz);
+	gears_glsm_vertex3f(glsm, r0 * cosf(0.0f), r0 * sinf(0.0f), dz);
+	gears_glsm_end(glsm);
 
 	// buffer inside radius cylinder
-	if(a3d_glsm_status(glsm) != A3D_GLSM_COMPLETE)
+	if(gears_glsm_status(glsm) != GEARS_GLSM_COMPLETE)
 	{
 		goto fail_createCylinderV;
 	}
@@ -297,7 +296,7 @@ static int gear_generate(gear_t* self,
 	self->cylinder_vb = vkk_engine_newBuffer(engine,
 	                                         VKK_UPDATE_MODE_STATIC,
 	                                         VKK_BUFFER_USAGE_VERTEX,
-	                                         glsm->ec*sizeof(a3d_vec3f_t),
+	                                         glsm->ec*sizeof(cc_vec3f_t),
 	                                         (const void*) glsm->vb);
 	if(self->cylinder_vb == NULL)
 	{
@@ -308,7 +307,7 @@ static int gear_generate(gear_t* self,
 	self->cylinder_nb = vkk_engine_newBuffer(engine,
 	                                         VKK_UPDATE_MODE_STATIC,
 	                                         VKK_BUFFER_USAGE_VERTEX,
-	                                         glsm->ec*sizeof(a3d_vec3f_t),
+	                                         glsm->ec*sizeof(cc_vec3f_t),
 	                                         (const void*) glsm->nb);
 	if(self->cylinder_nb == NULL)
 	{
@@ -316,7 +315,7 @@ static int gear_generate(gear_t* self,
 	}
 
 	// success
-	a3d_glsm_delete(&glsm);
+	gears_glsm_delete(&glsm);
 	return 1;
 
 	// failure
@@ -335,7 +334,7 @@ static int gear_generate(gear_t* self,
 	fail_createFrontfaceN:
 		vkk_engine_deleteBuffer(engine, &self->frontface_vb);
 	fail_createFrontfaceV:
-		a3d_glsm_delete(&glsm);
+		gears_glsm_delete(&glsm);
 	return 0;
 }
 
@@ -399,7 +398,7 @@ gear_createDescriptorSet(gear_t* self)
 ***********************************************************/
 
 gear_t* gear_new(struct gears_renderer_s* renderer,
-                 const a3d_vec4f_t* color,
+                 const cc_vec4f_t* color,
                  float inner_radius, float outer_radius, float width,
                  int teeth, float tooth_depth)
 {
@@ -412,13 +411,13 @@ gear_t* gear_new(struct gears_renderer_s* renderer,
 
 	self->renderer = renderer;
 
-	a3d_vec4f_copy(color, &self->color);
+	cc_vec4f_copy(color, &self->color);
 
 	vkk_engine_t* engine = renderer->engine;
 	self->mvp_ub = vkk_engine_newBuffer(engine,
 	                                    VKK_UPDATE_MODE_DEFAULT,
 	                                    VKK_BUFFER_USAGE_UNIFORM,
-	                                    sizeof(a3d_mat4f_t),
+	                                    sizeof(cc_mat4f_t),
 	                                    NULL);
 	if(self->mvp_ub == NULL)
 	{
@@ -428,7 +427,7 @@ gear_t* gear_new(struct gears_renderer_s* renderer,
 	self->nm_ub = vkk_engine_newBuffer(engine,
 	                                   VKK_UPDATE_MODE_DEFAULT,
 	                                   VKK_BUFFER_USAGE_UNIFORM,
-	                                   sizeof(a3d_mat4f_t),
+	                                   sizeof(cc_mat4f_t),
 	                                   NULL);
 	if(self->nm_ub == NULL)
 	{
@@ -438,7 +437,7 @@ gear_t* gear_new(struct gears_renderer_s* renderer,
 	self->color_ub = vkk_engine_newBuffer(engine,
 	                                      VKK_UPDATE_MODE_STATIC,
 	                                      VKK_BUFFER_USAGE_UNIFORM,
-	                                      sizeof(a3d_vec4f_t),
+	                                      sizeof(cc_vec4f_t),
 	                                      (const void*) &self->color);
 	if(self->color_ub == NULL)
 	{
@@ -509,7 +508,7 @@ void gear_delete(gear_t** _self)
 }
 
 void gear_update(gear_t* self,
-                 a3d_mat4f_t* mvp, a3d_mat4f_t* mvm)
+                 cc_mat4f_t* mvp, cc_mat4f_t* mvm)
 {
 	assert(self);
 	assert(mvp);
@@ -521,12 +520,12 @@ void gear_update(gear_t* self,
 
 	vkk_renderer_updateBuffer(renderer,
 	                          self->mvp_ub,
-	                          sizeof(a3d_mat4f_t),
+	                          sizeof(cc_mat4f_t),
 	                          (const void*) mvp);
 
-	a3d_mat3f_t nm;
-	a3d_mat4f_normalmatrix(mvm, &nm);
-	a3d_mat4f_t nm4 =
+	cc_mat3f_t nm;
+	cc_mat4f_normalmatrix(mvm, &nm);
+	cc_mat4f_t nm4 =
 	{
 		.m00 = nm.m00,
 		.m10 = nm.m10,
@@ -547,7 +546,7 @@ void gear_update(gear_t* self,
 	};
 	vkk_renderer_updateBuffer(renderer,
 	                          self->nm_ub,
-	                          sizeof(a3d_mat4f_t),
+	                          sizeof(cc_mat4f_t),
 	                          (const void*) &nm4);
 }
 

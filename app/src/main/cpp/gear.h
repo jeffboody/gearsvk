@@ -30,9 +30,8 @@
 #ifndef gear_H
 #define gear_H
 
-#include "a3d/a3d_GL.h"
-#include "a3d/math/a3d_mat4f.h"
-#include "a3d/math/a3d_vec4f.h"
+#include "libcc/math/cc_mat4f.h"
+#include "libcc/math/cc_vec4f.h"
 #include "libvkk/vkk.h"
 
 struct gears_renderer_s;
@@ -42,7 +41,7 @@ typedef struct
 	struct gears_renderer_s* renderer;
 
 	// color
-	a3d_vec4f_t color;
+	cc_vec4f_t color;
 
 	// dynamic buffer data
 	vkk_buffer_t* mvp_ub;
@@ -70,13 +69,13 @@ typedef struct
 } gear_t;
 
 gear_t* gear_new(struct gears_renderer_s* renderer,
-                 const a3d_vec4f_t* color,
+                 const cc_vec4f_t* color,
                  float inner_radius, float outer_radius,
                  float width,
                  int teeth, float tooth_depth);
 void    gear_delete(gear_t** _self);
 void    gear_update(gear_t* self,
-                    a3d_mat4f_t* mvp, a3d_mat4f_t* mvm);
+                    cc_mat4f_t* mvp, cc_mat4f_t* mvm);
 void    gear_draw(gear_t* self);
 
 #endif

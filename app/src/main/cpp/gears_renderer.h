@@ -30,19 +30,21 @@
 #ifndef gears_renderer_H
 #define gears_renderer_H
 
-#include "a3d/math/a3d_quaternion.h"
-#include "a3d/math/a3d_mat4f.h"
-#include "a3d/math/a3d_stack4f.h"
+#include "libcc/math/cc_quaternion.h"
+#include "libcc/math/cc_mat4f.h"
+#include "libcc/math/cc_stack4f.h"
 #include "libvkk/vkk.h"
+#include "gears_overlay.h"
 #include "gear.h"
 
 #define GEARS_TOUCH_ACTION_DOWN 0
 #define GEARS_TOUCH_ACTION_UP   1
 #define GEARS_TOUCH_ACTION_MOVE 2
 
-#define GEARS_TOUCH_STATE_INIT   0
-#define GEARS_TOUCH_STATE_ROTATE 1
-#define GEARS_TOUCH_STATE_ZOOM   2
+#define GEARS_TOUCH_STATE_INIT    0
+#define GEARS_TOUCH_STATE_ROTATE  1
+#define GEARS_TOUCH_STATE_ZOOM    2
+#define GEARS_TOUCH_STATE_OVERLAY 3
 
 #define GEARS_CMD_PLAY_CLICK 1
 #define GEARS_CMD_EXIT       2
@@ -73,16 +75,16 @@ typedef struct gears_renderer_s
 	vkk_sampler_t*           sampler;
 
 	// view state
-	GLfloat          view_scale;
-	a3d_quaternion_t view_q;
+	float           view_scale;
+	cc_quaternion_t view_q;
 
 	// animation state
-	GLfloat angle;
+	float angle;
 
 	// matrices
-	a3d_mat4f_t    pm;
-	a3d_mat4f_t    mvm;
-	a3d_stack4f_t* mvm_stack;
+	cc_mat4f_t    pm;
+	cc_mat4f_t    mvm;
+	cc_stack4f_t* mvm_stack;
 
 	// fps state
 	double t0;
@@ -99,6 +101,10 @@ typedef struct gears_renderer_s
 	// escape state
 	double escape_t0;
 
+	// overlay
+	float            density;
+	gears_overlay_t* overlay;
+
 	// per-gear state
 	gear_t* gear1;
 	gear_t* gear2;
@@ -113,8 +119,13 @@ gears_renderer_t* gears_renderer_new(void* app,
                                      uint32_t app_version,
                                      gears_renderer_cmd_fn cmd_fn);
 void              gears_renderer_delete(gears_renderer_t** _self);
-void              gears_renderer_draw(gears_renderer_t* self);
+void              gears_renderer_exit(gears_renderer_t* self);
+void              gears_renderer_loadURL(gears_renderer_t* self,
+                                         const char* url);
+void              gears_renderer_playClick(void* ptr);
 int               gears_renderer_resize(gears_renderer_t* self);
+void              gears_renderer_density(gears_renderer_t* self, float density);
+void              gears_renderer_draw(gears_renderer_t* self);
 void              gears_renderer_touch(gears_renderer_t* self,
                                        int action, int count, double ts,
                                        float x0, float y0,

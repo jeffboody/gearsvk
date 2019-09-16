@@ -22,3 +22,6 @@
 [submodule "app/src/main/cpp/libxmlstream"]
 	path = app/src/main/cpp/libxmlstream
 	url = git@github.com:jeffboody/libxmlstream.git
+[submodule "app/src/main/cpp/jpeg"]
+	path = app/src/main/cpp/jpeg
+	url = git@github.com:jeffboody/myjpeg.git

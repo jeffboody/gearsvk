@@ -20,25 +20,17 @@
  * THE SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
+#include <SDL2/SDL.h>
 #include <assert.h>
-
-#ifdef ANDROID
-	#include <vulkan_wrapper.h>
-	#include <android_native_app_glue.h>
-#else
-	#include <SDL2/SDL.h>
-	#include <SDL2/SDL_vulkan.h>
-	#include <vulkan/vulkan.h>
-#endif
-
-#include "a3d/a3d_timestamp.h"
-#include "a3d/widget/a3d_key.h"
-#include "gears_renderer.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 #define LOG_TAG "gears"
-#include "a3d/a3d_log.h"
+#include "libcc/cc_log.h"
+#include "libcc/cc_timestamp.h"
+#include "libvkk/vkk.h"
+#include "libvkk/vkui/vkui_key.h"
+#include "gears_renderer.h"
 
 /***********************************************************
 * private                                                  *
@@ -86,55 +78,55 @@ static int keyPress(SDL_Keysym* keysym,
 	else if((keysym->sym == SDLK_RETURN) ||
 	        (keysym->sym == SDLK_KP_ENTER))
 	{
-		*keycode = A3D_KEY_ENTER;
+		*keycode = VKUI_KEY_ENTER;
 	}
 	else if(keysym->sym == SDLK_ESCAPE)
 	{
-		*keycode = A3D_KEY_ESCAPE;
+		*keycode = VKUI_KEY_ESCAPE;
 	}
 	else if(keysym->sym == SDLK_BACKSPACE)
 	{
-		*keycode = A3D_KEY_BACKSPACE;
+		*keycode = VKUI_KEY_BACKSPACE;
 	}
 	else if(keysym->sym == SDLK_DELETE)
 	{
-		*keycode = A3D_KEY_DELETE;
+		*keycode = VKUI_KEY_DELETE;
 	}
 	else if(keysym->sym == SDLK_UP)
 	{
-		*keycode = A3D_KEY_UP;
+		*keycode = VKUI_KEY_UP;
 	}
 	else if(keysym->sym == SDLK_DOWN)
 	{
-		*keycode = A3D_KEY_DOWN;
+		*keycode = VKUI_KEY_DOWN;
 	}
 	else if(keysym->sym == SDLK_LEFT)
 	{
-		*keycode = A3D_KEY_LEFT;
+		*keycode = VKUI_KEY_LEFT;
 	}
 	else if(keysym->sym == SDLK_RIGHT)
 	{
-		*keycode = A3D_KEY_RIGHT;
+		*keycode = VKUI_KEY_RIGHT;
 	}
 	else if(keysym->sym == SDLK_HOME)
 	{
-		*keycode = A3D_KEY_HOME;
+		*keycode = VKUI_KEY_HOME;
 	}
 	else if(keysym->sym == SDLK_END)
 	{
-		*keycode = A3D_KEY_END;
+		*keycode = VKUI_KEY_END;
 	}
 	else if(keysym->sym == SDLK_PAGEUP)
 	{
-		*keycode = A3D_KEY_PGUP;
+		*keycode = VKUI_KEY_PGUP;
 	}
 	else if(keysym->sym == SDLK_PAGEDOWN)
 	{
-		*keycode = A3D_KEY_PGDOWN;
+		*keycode = VKUI_KEY_PGDOWN;
 	}
 	else if(keysym->sym == SDLK_ESCAPE)
 	{
-		*keycode = A3D_KEY_ESCAPE;
+		*keycode = VKUI_KEY_ESCAPE;
 	}
 	else if(keysym->sym == SDLK_BACKSPACE)
 	{
@@ -276,43 +268,43 @@ static int keyPress(SDL_Keysym* keysym,
 	// convert the meta
 	if(keysym->mod & KMOD_ALT)
 	{
-		*meta |= A3D_KEY_ALT;
+		*meta |= VKUI_KEY_ALT;
 	}
 	if(keysym->mod & KMOD_LALT)
 	{
-		*meta |= A3D_KEY_ALT_L;
+		*meta |= VKUI_KEY_ALT_L;
 	}
 	if(keysym->mod & KMOD_RALT)
 	{
-		*meta |= A3D_KEY_ALT_R;
+		*meta |= VKUI_KEY_ALT_R;
 	}
 	if(keysym->mod & KMOD_CTRL)
 	{
-		*meta |= A3D_KEY_CTRL;
+		*meta |= VKUI_KEY_CTRL;
 	}
 	if(keysym->mod & KMOD_LCTRL)
 	{
-		*meta |= A3D_KEY_CTRL_L;
+		*meta |= VKUI_KEY_CTRL_L;
 	}
 	if(keysym->mod & KMOD_RCTRL)
 	{
-		*meta |= A3D_KEY_CTRL_R;
+		*meta |= VKUI_KEY_CTRL_R;
 	}
 	if(keysym->mod & KMOD_SHIFT)
 	{
-		*meta |= A3D_KEY_SHIFT;
+		*meta |= VKUI_KEY_SHIFT;
 	}
 	if(keysym->mod & KMOD_LSHIFT)
 	{
-		*meta |= A3D_KEY_SHIFT_L;
+		*meta |= VKUI_KEY_SHIFT_L;
 	}
 	if(keysym->mod & KMOD_RSHIFT)
 	{
-		*meta |= A3D_KEY_SHIFT_R;
+		*meta |= VKUI_KEY_SHIFT_R;
 	}
 	if(keysym->mod & KMOD_CAPS)
 	{
-		*meta |= A3D_KEY_CAPS;
+		*meta |= VKUI_KEY_CAPS;
 	}
 
 	return 1;
@@ -324,7 +316,7 @@ static int keyPress(SDL_Keysym* keysym,
 
 int main(int argc, char** argv)
 {
-	uint32_t version = VK_MAKE_VERSION(1,0,0);
+	uint32_t version = VKK_MAKE_VERSION(1,0,1);
 	gears_renderer_t* renderer;
 	renderer = gears_renderer_new(NULL,
 	                              "GearsVK",
@@ -355,7 +347,7 @@ int main(int argc, char** argv)
 			{
 				float  x  = (float) e.button.x;
 				float  y  = (float) e.button.y;
-				double ts = a3d_timestamp();
+				double ts = cc_timestamp();
 				gears_renderer_touch(renderer,
 				                     GEARS_TOUCH_ACTION_UP,
 				                     1, ts, x, y,
@@ -367,7 +359,7 @@ int main(int argc, char** argv)
 			{
 				float  x  = (float) e.button.x;
 				float  y  = (float) e.button.y;
-				double ts = a3d_timestamp();
+				double ts = cc_timestamp();
 				gears_renderer_touch(renderer,
 				                     GEARS_TOUCH_ACTION_DOWN,
 				                     1, ts, x, y,
@@ -379,7 +371,7 @@ int main(int argc, char** argv)
 			{
 				float  x  = (float) e.button.x;
 				float  y  = (float) e.button.y;
-				double ts = a3d_timestamp();
+				double ts = cc_timestamp();
 				gears_renderer_touch(renderer,
 				                     GEARS_TOUCH_ACTION_MOVE,
 				                     1, ts, x, y,

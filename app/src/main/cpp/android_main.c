@@ -21,24 +21,24 @@
  *
  */
 
+#include <android_native_app_glue.h>
+#include <assert.h>
 #include <jni.h>
 #include <stdlib.h>
-#include <assert.h>
 #include <unistd.h>
 #include <vulkan_wrapper.h>
-#include <android_native_app_glue.h>
-#include "a3d/widget/a3d_key.h"
-#include "gears_renderer.h"
 
 #define LOG_TAG "gears"
-#include "a3d/a3d_log.h"
+#include "libcc/cc_log.h"
+#include "libvkk/vkui/vkui_key.h"
+#include "gears_renderer.h"
 
 /***********************************************************
 * private - cmd_fn callback                                *
 ***********************************************************/
 
 // java state required for cmd_fn
-static JavaVM* g_vm    = NULL;
+static JavaVM* g_vm = NULL;
 static jobject g_clazz;
 
 static void cmd_fn(int cmd, const char* msg)
@@ -349,7 +349,7 @@ platform_initWindow(platform_t* self)
 
 	LOGI("InitVulkan=%i", InitVulkan());
 
-	uint32_t version = VK_MAKE_VERSION(1,0,0);
+	uint32_t version = VKK_MAKE_VERSION(1,0,0);
 	self->renderer = gears_renderer_new(self->app,
 	                                    "gearsvk",
 	                                    version,
@@ -475,7 +475,7 @@ onInputEvent(struct android_app* app,
 		   (keycode == AKEYCODE_BACK))
 		{
 			gears_renderer_keyPress(renderer,
-			                        A3D_KEY_ESCAPE, 0);
+			                        VKUI_KEY_ESCAPE, 0);
 		}
 		return 1;
 	}

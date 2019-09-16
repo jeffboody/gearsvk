@@ -27,36 +27,30 @@
  *
  */
 
-#include <stdlib.h>
 #include <assert.h>
-#include <string.h>
 #include <math.h>
-#include "gears_renderer.h"
-#include "a3d/widget/a3d_key.h"
-#include "a3d/a3d_timestamp.h"
+#include <stdlib.h>
+#include <string.h>
+
+#define LOG_TAG "gears"
+#include "libvkk/vkui/vkui_key.h"
+#include "libcc/math/cc_mat4f.h"
+#include "libcc/math/cc_vec4f.h"
+#include "libcc/cc_log.h"
+#include "libcc/cc_timestamp.h"
 #include "libpak/pak_file.h"
 #include "texgz/texgz_png.h"
 #include "texgz/texgz_tex.h"
-
-#define LOG_TAG "gears"
-#include "a3d/a3d_log.h"
+#include "gears_renderer.h"
 
 /***********************************************************
 * private                                                  *
 ***********************************************************/
 
 // gear colors
-static const a3d_vec4f_t RED   = { .r=0.8f, .g=0.1f, .b=0.0f, .a=1.0f };
-static const a3d_vec4f_t GREEN = { .r=0.0f, .g=0.8f, .b=0.2f, .a=1.0f };
-static const a3d_vec4f_t BLUE  = { .r=0.2f, .g=0.2f, .b=1.0f, .a=1.0f };
-
-static void gears_renderer_exit(gears_renderer_t* self)
-{
-	assert(self);
-
-	gears_renderer_cmd_fn cmd_fn = self->cmd_fn;
-	(*cmd_fn)(GEARS_CMD_EXIT, "");
-}
+static const cc_vec4f_t RED   = { .r=0.8f, .g=0.1f, .b=0.0f, .a=1.0f };
+static const cc_vec4f_t GREEN = { .r=0.0f, .g=0.8f, .b=0.2f, .a=1.0f };
+static const cc_vec4f_t BLUE  = { .r=0.2f, .g=0.2f, .b=1.0f, .a=1.0f };
 
 static void gears_renderer_step(gears_renderer_t* self)
 {
@@ -78,48 +72,48 @@ static void gears_renderer_step(gears_renderer_t* self)
 	if(h > w)
 	{
 		float a = h / w;
-		a3d_mat4f_frustum(&self->pm, 1, -1.0f, 1.0f, a, -a, 5.0f, 60.0f);
+		cc_mat4f_frustum(&self->pm, 1, -1.0f, 1.0f, a, -a, 5.0f, 60.0f);
 	}
 	else
 	{
 		float a = w / h;
-		a3d_mat4f_frustum(&self->pm, 1, -a, a, 1.0f, -1.0f, 5.0f, 60.0f);
+		cc_mat4f_frustum(&self->pm, 1, -a, a, 1.0f, -1.0f, 5.0f, 60.0f);
 	}
-	a3d_mat4f_translate(&self->mvm, 1, 0.0f, 0.0f, -40.0f);
+	cc_mat4f_translate(&self->mvm, 1, 0.0f, 0.0f, -40.0f);
 
 	// glxgears: event_loop
-	a3d_stack4f_push(self->mvm_stack, &self->mvm);
-	a3d_mat4f_scale(&self->mvm, 0, self->view_scale, self->view_scale, self->view_scale);
-	a3d_mat4f_rotateq(&self->mvm, 0, &self->view_q);
+	cc_stack4f_push(self->mvm_stack, &self->mvm);
+	cc_mat4f_scale(&self->mvm, 0, self->view_scale, self->view_scale, self->view_scale);
+	cc_mat4f_rotateq(&self->mvm, 0, &self->view_q);
 
 	// Gear1
-	a3d_mat4f_t mvp;
-	a3d_stack4f_push(self->mvm_stack, &self->mvm);
-	a3d_mat4f_translate(&self->mvm, 0, -3.0f, -2.0f, 0.0f);
-	a3d_mat4f_rotate(&self->mvm, 0, self->angle, 0.0f, 0.0f, 1.0f);
-	a3d_mat4f_mulm_copy(&self->pm, &self->mvm, &mvp);
+	cc_mat4f_t mvp;
+	cc_stack4f_push(self->mvm_stack, &self->mvm);
+	cc_mat4f_translate(&self->mvm, 0, -3.0f, -2.0f, 0.0f);
+	cc_mat4f_rotate(&self->mvm, 0, self->angle, 0.0f, 0.0f, 1.0f);
+	cc_mat4f_mulm_copy(&self->pm, &self->mvm, &mvp);
 	gear_update(self->gear1, &mvp, &self->mvm);
-	a3d_stack4f_pop(self->mvm_stack, &self->mvm);
+	cc_stack4f_pop(self->mvm_stack, &self->mvm);
 
 	// Gear2
-	a3d_stack4f_push(self->mvm_stack, &self->mvm);
-	a3d_mat4f_translate(&self->mvm, 0, 3.1f, -2.0f, 0.0f);
-	a3d_mat4f_rotate(&self->mvm, 0, -2.0f * self->angle - 9.0f, 0.0f, 0.0f, 1.0f);
-	a3d_mat4f_mulm_copy(&self->pm, &self->mvm, &mvp);
+	cc_stack4f_push(self->mvm_stack, &self->mvm);
+	cc_mat4f_translate(&self->mvm, 0, 3.1f, -2.0f, 0.0f);
+	cc_mat4f_rotate(&self->mvm, 0, -2.0f * self->angle - 9.0f, 0.0f, 0.0f, 1.0f);
+	cc_mat4f_mulm_copy(&self->pm, &self->mvm, &mvp);
 	gear_update(self->gear2, &mvp, &self->mvm);
-	a3d_stack4f_pop(self->mvm_stack, &self->mvm);
+	cc_stack4f_pop(self->mvm_stack, &self->mvm);
 
 	// Gear3
-	a3d_stack4f_push(self->mvm_stack, &self->mvm);
-	a3d_mat4f_translate(&self->mvm, 0, -3.1f, 4.2f, 0.0f);
-	a3d_mat4f_rotate(&self->mvm, 0, -2.0f * self->angle - 25.0f, 0.0f, 0.0f, 1.0f);
-	a3d_mat4f_mulm_copy(&self->pm, &self->mvm, &mvp);
+	cc_stack4f_push(self->mvm_stack, &self->mvm);
+	cc_mat4f_translate(&self->mvm, 0, -3.1f, 4.2f, 0.0f);
+	cc_mat4f_rotate(&self->mvm, 0, -2.0f * self->angle - 25.0f, 0.0f, 0.0f, 1.0f);
+	cc_mat4f_mulm_copy(&self->pm, &self->mvm, &mvp);
 	gear_update(self->gear3, &mvp, &self->mvm);
-	a3d_stack4f_pop(self->mvm_stack, &self->mvm);
+	cc_stack4f_pop(self->mvm_stack, &self->mvm);
 
-	a3d_stack4f_pop(self->mvm_stack, &self->mvm);
+	cc_stack4f_pop(self->mvm_stack, &self->mvm);
 
-	double t     = a3d_timestamp();
+	double t     = cc_timestamp();
 	double dt0   = t - self->t0;
 	++self->frames;
 
@@ -130,6 +124,7 @@ static void gears_renderer_step(gears_renderer_t* self)
 		self->last_fps = ((float) self->frames)/seconds;
 
 		//LOGI("%i frames in %.2lf seconds = %.2lf FPS", self->frames, seconds, self->last_fps);
+		gears_overlay_updateFps(self->overlay, (int) (self->last_fps + 0.5f));
 
 		self->t0     = t;
 		self->frames = 0;
@@ -165,7 +160,7 @@ static void gears_renderer_rotate(gears_renderer_t* self,
 	renderer = vkk_engine_renderer(self->engine);
 
 	// TODO - vkk_renderer_surfaceSize shouldn't be called
-	// outside beginn/end
+	// outside begin/end
 	uint32_t width;
 	uint32_t height;
 	vkk_renderer_surfaceSize(renderer, &width, &height);
@@ -173,13 +168,13 @@ static void gears_renderer_rotate(gears_renderer_t* self,
 	// rotating around x-axis is equivalent to moving up-and-down on touchscreen
 	// rotating around y-axis is equivalent to moving left-and-right on touchscreen
 	// 360 degrees is equivalent to moving completly across the touchscreen
-	float   w  = (float) width;
-	float   h  = (float) height;
-	GLfloat rx = 360.0f * dy / h;
-	GLfloat ry = 360.0f * dx / w;
-	a3d_quaternion_t q;
-	a3d_quaternion_loadeuler(&q, rx, ry, 0.0f);
-	a3d_quaternion_rotateq(&self->view_q, &q);
+	float w  = (float) width;
+	float h  = (float) height;
+	float rx = 360.0f * dy / h;
+	float ry = 360.0f * dx / w;
+	cc_quaternion_t q;
+	cc_quaternion_loadeuler(&q, rx, ry, 0.0f);
+	cc_quaternion_rotateq(&self->view_q, &q);
 }
 
 static void gears_renderer_scale(gears_renderer_t* self,
@@ -322,7 +317,7 @@ gears_renderer_newImage(gears_renderer_t* self)
 
 	// check for the required image caps
 	int caps = vkk_engine_imageCaps(self->engine,
-	                               VKK_IMAGE_FORMAT_RGB888);
+	                                VKK_IMAGE_FORMAT_RGBA8888);
 	int req  = VKK_IMAGE_CAPS_TEXTURE |
 	           VKK_IMAGE_CAPS_MIPMAP  |
 	           VKK_IMAGE_CAPS_FILTER_LINEAR;
@@ -357,7 +352,7 @@ gears_renderer_newImage(gears_renderer_t* self)
 	pak_file_close(&pak);
 
 	if(texgz_tex_convert(tex, TEXGZ_UNSIGNED_BYTE,
-	                     TEXGZ_RGB) == 0)
+	                     TEXGZ_RGBA) == 0)
 	{
 		goto fail_convert;
 	}
@@ -365,7 +360,7 @@ gears_renderer_newImage(gears_renderer_t* self)
 	self->image = vkk_engine_newImage(self->engine,
 	                                  (uint32_t) tex->width,
 	                                  (uint32_t) tex->height,
-	                                  VKK_IMAGE_FORMAT_RGB888,
+	                                  VKK_IMAGE_FORMAT_RGBA8888,
 	                                  1, VKK_STAGE_FS,
 	                                  tex->pixels);
 	if(self->image == NULL)
@@ -428,6 +423,14 @@ gears_renderer_new(void* app,
 		return NULL;
 	}
 
+	self->view_scale = 1.0f;
+	self->t0         = cc_timestamp();
+	self->density    = 1.0f;
+	self->touch_state = GEARS_TOUCH_STATE_INIT;
+	self->touch_ds    = 1.0f;
+	self->escape_t0   = cc_timestamp();
+	self->cmd_fn      = cmd_fn;
+
 	self->engine = vkk_engine_new(app, app_name,
 	                              app_version,
 	                              GEARS_RESOURCE,
@@ -462,23 +465,14 @@ gears_renderer_new(void* app,
 		goto fail_image;
 	}
 
-	self->view_scale = 1.0f;
+	cc_quaternion_t qx;
+	cc_quaternion_t qy;
+	cc_quaternion_loadeuler(&qx, 20.0f,  0.0f, 0.0f);
+	cc_quaternion_loadeuler(&qy,  0.0f, 30.0f, 0.0f);
+	cc_quaternion_rotateq_copy(&qy, &qx, &self->view_q);
 
-	a3d_quaternion_t qx;
-	a3d_quaternion_t qy;
-	a3d_quaternion_loadeuler(&qx, 20.0f,  0.0f, 0.0f);
-	a3d_quaternion_loadeuler(&qy,  0.0f, 30.0f, 0.0f);
-	a3d_quaternion_rotateq_copy(&qy, &qx, &self->view_q);
-
-	self->angle = 0.0f;
-
-	a3d_mat4f_identity(&self->pm);
-	a3d_mat4f_identity(&self->mvm);
-
-	self->t0       = a3d_timestamp();
-	self->t_last   = 0.0;
-	self->frames   = 0;
-	self->last_fps = 0.0f;
+	cc_mat4f_identity(&self->pm);
+	cc_mat4f_identity(&self->mvm);
 
 	// create the gears buffers
 	self->gear1 = gear_new(self, &RED,
@@ -502,18 +496,24 @@ gears_renderer_new(void* app,
 		goto fail_gear3;
 	}
 
-	self->mvm_stack = a3d_stack4f_new();
+	self->mvm_stack = cc_stack4f_new();
 	if(self->mvm_stack == NULL)
 	{
 		goto fail_stack;
 	}
 
-	self->cmd_fn = cmd_fn;
+	self->overlay = gears_overlay_new(self);
+	if(self->overlay == NULL)
+	{
+		goto fail_overlay;
+	}
 
 	// success
 	return self;
 
 	// failure
+	fail_overlay:
+		cc_stack4f_delete(&self->mvm_stack);
 	fail_stack:
 		gear_delete(&self->gear3);
 	fail_gear3:
@@ -536,6 +536,7 @@ gears_renderer_new(void* app,
 		vkk_engine_deleteSampler(self->engine,
 		                         &self->sampler);
 	fail_sampler:
+		vkk_engine_shutdown(self->engine);
 		vkk_engine_delete(&self->engine);
 	fail_engine:
 		free(self);
@@ -552,10 +553,11 @@ void gears_renderer_delete(gears_renderer_t** _self)
 	{
 		vkk_engine_shutdown(self->engine);
 
+		gears_overlay_delete(&self->overlay);
+		cc_stack4f_delete(&self->mvm_stack);
 		gear_delete(&self->gear3);
 		gear_delete(&self->gear2);
 		gear_delete(&self->gear1);
-		a3d_stack4f_delete(&self->mvm_stack);
 
 		vkk_engine_deleteImage(self->engine,
 		                       &self->image);
@@ -571,6 +573,48 @@ void gears_renderer_delete(gears_renderer_t** _self)
 		free(self);
 		*_self = NULL;
 	}
+}
+
+void gears_renderer_exit(gears_renderer_t* self)
+{
+	assert(self);
+
+	gears_renderer_cmd_fn cmd_fn = self->cmd_fn;
+	(*cmd_fn)(GEARS_CMD_EXIT, "");
+}
+
+void gears_renderer_loadURL(gears_renderer_t* self,
+                            const char* url)
+{
+	assert(self);
+	assert(url);
+
+	gears_renderer_cmd_fn cmd_fn = self->cmd_fn;
+	(*cmd_fn)(GEARS_CMD_LOADURL, url);
+}
+
+void gears_renderer_playClick(void* ptr)
+{
+	assert(ptr);
+
+	gears_renderer_t* self = (gears_renderer_t*) ptr;
+	gears_renderer_cmd_fn cmd_fn = self->cmd_fn;
+	(*cmd_fn)(GEARS_CMD_PLAY_CLICK, "");
+}
+
+int gears_renderer_resize(gears_renderer_t* self)
+{
+	assert(self);
+
+	return vkk_engine_resize(self->engine);
+}
+
+void gears_renderer_density(gears_renderer_t* self,
+                            float density)
+{
+	assert(self);
+
+	self->density = density;
 }
 
 void gears_renderer_draw(gears_renderer_t* self)
@@ -597,14 +641,9 @@ void gears_renderer_draw(gears_renderer_t* self)
 	gear_draw(self->gear2);
 	gear_draw(self->gear3);
 
+	gears_overlay_draw(self->overlay, self->density);
+
 	vkk_renderer_end(renderer);
-}
-
-int gears_renderer_resize(gears_renderer_t* self)
-{
-	assert(self);
-
-	return vkk_engine_resize(self->engine);
 }
 
 void gears_renderer_touch(gears_renderer_t* self,
@@ -618,12 +657,27 @@ void gears_renderer_touch(gears_renderer_t* self,
 
 	if(action == GEARS_TOUCH_ACTION_UP)
 	{
+		if(self->touch_state == GEARS_TOUCH_STATE_OVERLAY)
+		{
+			gears_overlay_pointerUp(self->overlay, x0, y0, ts);
+		}
+
 		// Do nothing
 		self->touch_state = GEARS_TOUCH_STATE_INIT;
 	}
 	else if(count == 1)
 	{
-		if(self->touch_state == GEARS_TOUCH_STATE_ROTATE)
+		if((self->touch_state == GEARS_TOUCH_STATE_INIT) &&
+		   (action == GEARS_TOUCH_ACTION_DOWN) &&
+		   gears_overlay_pointerDown(self->overlay, x0, y0, ts))
+		{
+			self->touch_state = GEARS_TOUCH_STATE_OVERLAY;
+		}
+		else if(self->touch_state == GEARS_TOUCH_STATE_OVERLAY)
+		{
+			gears_overlay_pointerMove(self->overlay, x0, y0, ts);
+		}
+		else if(self->touch_state == GEARS_TOUCH_STATE_ROTATE)
 		{
 			float dx = x0 - self->touch_x1;
 			float dy = y0 - self->touch_y1;
@@ -640,7 +694,11 @@ void gears_renderer_touch(gears_renderer_t* self,
 	}
 	else if(count == 2)
 	{
-		if(self->touch_state == GEARS_TOUCH_STATE_ZOOM)
+		if(self->touch_state == GEARS_TOUCH_STATE_OVERLAY)
+		{
+			// ignore
+		}
+		else if(self->touch_state == GEARS_TOUCH_STATE_ZOOM)
 		{
 			float dx = fabsf(x1 - x0);
 			float dy = fabsf(y1 - y0);
@@ -667,17 +725,24 @@ void gears_renderer_keyPress(gears_renderer_t* self,
 {
 	assert(self);
 
-	if(keycode == A3D_KEY_ESCAPE)
+	if(keycode == VKUI_KEY_ESCAPE)
 	{
-		// double tap back to exit
-		double t1 = a3d_timestamp();
-		if((t1 - self->escape_t0) < 0.5)
+		if(gears_overlay_escape(self->overlay))
 		{
-			gears_renderer_exit(self);
+			// ignore
 		}
 		else
 		{
-			self->escape_t0 = t1;
+			// double tap back to exit
+			double t1 = cc_timestamp();
+			if((t1 - self->escape_t0) < 0.5)
+			{
+				gears_renderer_exit(self);
+			}
+			else
+			{
+				self->escape_t0 = t1;
+			}
 		}
 	}
 }
