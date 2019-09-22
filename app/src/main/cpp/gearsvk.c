@@ -327,6 +327,24 @@ int main(int argc, char** argv)
 		return EXIT_FAILURE;
 	}
 
+	// override the default screen size
+	FILE* f = fopen("sdl.cfg", "r");
+	if(f)
+	{
+		int   w;
+		int   h;
+		float density = 1.0f;
+		int   fullscreen;
+		if(fscanf(f, "%i %i %f %i",
+		          &w, &h, &density, &fullscreen) != 4)
+		{
+			LOGW("fscanf failed");
+		}
+		fclose(f);
+
+		gears_renderer_density(renderer, density);
+	}
+
 	while(gRunning)
 	{
 		SDL_Event e;
