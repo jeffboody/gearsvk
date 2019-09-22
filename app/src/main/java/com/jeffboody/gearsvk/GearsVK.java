@@ -32,7 +32,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Handler.Callback;
 import android.os.Message;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.WindowManager;
 import java.util.LinkedList;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -42,6 +44,9 @@ extends NativeActivity
 implements Handler.Callback
 {
 	private static final String TAG = "gears";
+
+	// native interface
+	private native void NativeChangeDensity(float density);
 
 	// native commands
 	private static final int GEARS_CMD_PLAY_CLICK = 1;
@@ -151,6 +156,12 @@ implements Handler.Callback
 		super.onCreate(savedInstanceState);
 
 		mHandler = new Handler(this);
+
+		DisplayMetrics metrics = new DisplayMetrics();
+		WindowManager  wm      = (WindowManager)
+		                         getSystemService(Context.WINDOW_SERVICE);
+		wm.getDefaultDisplay().getMetrics(metrics);
+		NativeChangeDensity(metrics.density);
 	}
 
 	@Override
@@ -175,5 +186,10 @@ implements Handler.Callback
 		mHandler = null;
 		super.onDestroy();
 		Log.i(TAG, "onDestroy2");
+	}
+
+	static
+	{
+		System.loadLibrary("gearsvk");
 	}
 }

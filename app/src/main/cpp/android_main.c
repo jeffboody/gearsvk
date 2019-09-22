@@ -40,6 +40,7 @@
 // java state required for cmd_fn
 static JavaVM* g_vm = NULL;
 static jobject g_clazz;
+static float   g_density = 1.0f;
 
 static void cmd_fn(int cmd, const char* msg)
 {
@@ -84,6 +85,20 @@ static void cmd_fn(int cmd, const char* msg)
 }
 
 /***********************************************************
+* JNI interface                                            *
+***********************************************************/
+
+JNIEXPORT void JNICALL
+Java_com_jeffboody_gearsvk_GearsVK_NativeChangeDensity(JNIEnv* env,
+                                                       jobject obj,
+                                                       jfloat density)
+{
+	assert(env);
+
+	g_density = density;
+}
+
+/***********************************************************
 * platform                                                 *
 ***********************************************************/
 
@@ -95,6 +110,7 @@ typedef struct
 	int     drawable;
 	int32_t width;
 	int32_t height;
+	float   density;
 
 	gears_renderer_t* renderer;
 } platform_t;
@@ -362,6 +378,7 @@ platform_initWindow(platform_t* self)
 	self->drawable = 1;
 	self->width    = ANativeWindow_getWidth(self->app->window);
 	self->height   = ANativeWindow_getHeight(self->app->window);
+	self->density  = 1.0f;
 }
 
 static void platform_delete(platform_t** _self)
@@ -399,6 +416,12 @@ static void platform_draw(platform_t* self)
 			self->drawable = 1;
 			self->width    = width;
 			self->height   = height;
+		}
+
+		if(self->density != g_density)
+		{
+			self->density = g_density;
+			gears_renderer_density(self->renderer, g_density);
 		}
 
 		if(self->drawable)
