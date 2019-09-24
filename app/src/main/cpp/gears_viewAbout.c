@@ -108,7 +108,7 @@ gears_viewAbout_t* gears_viewAbout_new(struct gears_overlay_s* overlay,
 	vkui_widgetScroll_t scroll_listbox =
 	{
 		.scroll_bar = 1,
-		.color_scroll0 =
+		.color0 =
 		{
 			// ltgray
 			.r = 0.95f,
@@ -116,7 +116,7 @@ gears_viewAbout_t* gears_viewAbout_new(struct gears_overlay_s* overlay,
 			.b = 0.95f,
 			.a = 1.0f
 		},
-		.color_scroll1 =
+		.color1 =
 		{
 			// dkgray
 			.r = 0.4f,
@@ -174,9 +174,9 @@ gears_viewAbout_t* gears_viewAbout_new(struct gears_overlay_s* overlay,
 		},
 		.color_footer =
 		{
-			.r = 1.0f,
-			.g = 1.0f,
-			.b = 1.0f,
+			.r = 0.95f,
+			.g = 0.95f,
+			.b = 0.95f,
 			.a = 1.0f
 		},
 		.text_style =

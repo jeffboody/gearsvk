@@ -148,6 +148,7 @@ void gears_overlay_delete(gears_overlay_t** _self)
 	gears_overlay_t* self = *_self;
 	if(self)
 	{
+		vkui_screen_top(self->screen, NULL);
 		vkui_layer_clear(self->layer_show);
 		gears_layerHud_delete(&self->layer_hud);
 		gears_viewAbout_delete(&self->view_about);
