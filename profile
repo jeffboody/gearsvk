@@ -2,7 +2,7 @@
 SDK=$HOME/Android/Sdk
 
 # Vulkan SDK for SDL
-source ${HOME}/vulkan/1.1.106.0/setup-env.sh
+source ${HOME}/vulkan/1.1.121.1/setup-env.sh
 
 #-- DON'T CHANGE BELOW LINE --
 
