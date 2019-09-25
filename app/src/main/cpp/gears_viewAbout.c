@@ -28,7 +28,7 @@ static int clickGithub(vkui_widget_t* widget,
 	{
 		gears_overlay_t*  overlay  = (gears_overlay_t*) priv;
 		gears_renderer_t* renderer = overlay->renderer;
-		gears_renderer_loadURL(renderer, "https://github.com/jeffboody/gears2/");
+		gears_renderer_loadURL(renderer, "https://github.com/jeffboody/gearsvk/");
 	}
 	return 1;
 }
@@ -465,10 +465,12 @@ gears_viewAbout_t* gears_viewAbout_new(struct gears_overlay_s* overlay,
 	vkui_textbox_printf(textbox_intro, "%s", "The Gears demo is an open source project intended to help developers learn");
 	vkui_textbox_printf(textbox_intro, "%s", "how to create OpenGL ES programs on Android. The Gears demo was originally");
 	vkui_textbox_printf(textbox_intro, "%s", "written by Brian Paul as part of the Mesa3D project. My implementation");
-	vkui_textbox_printf(textbox_intro, "%s", "includes variations for Java/OpenGL ES 1.x, Java/C/OpenGL ES 1.x and");
-	vkui_textbox_printf(textbox_intro, "%s", "Java/C/OpenGL ES 2.0. I have also added several features not found in the");
-	vkui_textbox_printf(textbox_intro, "%s", "original implementation including touch screen support, VBOs and an");
-	vkui_textbox_printf(textbox_intro, "%s", "on-screen FPS counter.");
+	vkui_textbox_printf(textbox_intro, "%s", "includes variations for Java/OpenGL ES 1.x, Java/C/OpenGL ES 1.x,");
+	vkui_textbox_printf(textbox_intro, "%s", "Java/C/OpenGL ES 2.0 and C/Vulkan. The Vulkan edition includes two versions.");
+	vkui_textbox_printf(textbox_intro, "%s", "The first version (the master branch) is implemented using the Vulkan library");
+	vkui_textbox_printf(textbox_intro, "%s", "directly while the second version (the master-vkk branch) is implemented using");
+	vkui_textbox_printf(textbox_intro, "%s", "a Vulkan wrapper library called VKK (The Vulkan Kit). Going forward only the");
+	vkui_textbox_printf(textbox_intro, "%s", "VKK version will be maintained.");
 	vkui_textbox_printf(textbox_intro, "%s", "");
 	vkui_textbox_printf(textbox_intro, "%s", "The FPS (frames-per-second) counter is often used as a benchmark metric for");
 	vkui_textbox_printf(textbox_intro, "%s", "graphics programs. On Android the frame rate is limited by v-sync (typically");
@@ -477,7 +479,7 @@ gears_viewAbout_t* gears_viewAbout_new(struct gears_overlay_s* overlay,
 	vkui_textbox_printf(textbox_intro, "%s", "it provides limited benchmarking value.");
 	vkui_textbox_printf(textbox_intro, "%s", "");
 	vkui_textbox_printf(textbox_intro, "%s", "Send questions or comments to Jeff Boody at jeffboody@gmail.com.");
-	vkui_textbox_printf(linkbox_github, "%s", "https://github.com/jeffboody/gears2/");
+	vkui_textbox_printf(linkbox_github, "%s", "https://github.com/jeffboody/gearsvk/");
 	vkui_textbox_printf(linkbox_github, "%s", "");
 
 	vkui_text_label(text_icons, "%s", "Material Design Icons");

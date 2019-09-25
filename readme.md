@@ -21,6 +21,12 @@ can be used as companion documentation to the "Vulkan
 Programming Guide: The Official Guide to Learning Vulkan".
 These dot files may be viewed with the xdot program.
 
+This project includes two branches. The master branch
+contains my original port to Vulkan and uses the Vulkan
+library directly. The master-vkk branch contains a new
+port to Vulkan via my VKK (Vulkan Kit) wrapper library.
+Going forward only the VKK version will be maintained.
+
 You may find the Github project for Gears VK at
 
 	https://github.com/jeffboody/gearsvk
@@ -36,6 +42,7 @@ Clone Project
 Clone the gearsvk project https://github.com/jeffboody/gearsvk.
 
 	git clone git@github.com:jeffboody/gearsvk.git
+	git checkout -b master-vkk origin/master-vkk
 	git submodule update
 
 Linux
