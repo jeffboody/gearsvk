@@ -327,7 +327,7 @@ int main(int argc, char** argv)
 		return EXIT_FAILURE;
 	}
 
-	// override the default screen size
+	// override the default screen density
 	FILE* f = fopen("sdl.cfg", "r");
 	if(f)
 	{
