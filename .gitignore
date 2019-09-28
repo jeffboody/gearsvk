@@ -13,6 +13,7 @@
 /captures
 .externalNativeBuild
 
+app/src/main/cpp/sdl.cfg
 app/src/main/cpp/resource.pak
 app/src/main/cpp/pipeline.cache
 app/src/main/assets/timestamp.raw
