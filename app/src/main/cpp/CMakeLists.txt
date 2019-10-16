@@ -42,7 +42,6 @@ add_library(gearsvk
             gear.c)
 
 # Submodules
-add_subdirectory("a3d")
 add_subdirectory("jpeg")
 add_subdirectory("libcc")
 add_subdirectory("libexpat/expat/lib")
@@ -65,7 +64,6 @@ target_link_libraries(gearsvk
 
                       # Submodule libraries
                       ${LIBS_JPEG}
-                      a3d
                       cc
                       xmlstream
                       expat

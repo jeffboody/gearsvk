@@ -8,15 +8,15 @@ OBJECTS  = $(TARGET).o $(CLASSES:%=%.o)
 HFILES   = $(CLASSES:%=%.h)
 OPT      = -O2 -Wall
 CFLAGS   = $(OPT) -I. -I$(VULKAN_SDK)/include `sdl2-config --cflags` -DA3D_GL2
-LDFLAGS  = -Llibvkk -lvkk -L$(VULKAN_SDK)/lib -lvulkan `sdl2-config --libs` -Llibpak -lpak -Llibxmlstream -lxmlstream -Ltexgz -ltexgz -La3d -la3d -Llibcc -lcc -Llibexpat/expat/lib -lexpat -lm -lpthread -lz -ljpeg -lpng
+LDFLAGS  = -Llibvkk -lvkk -L$(VULKAN_SDK)/lib -lvulkan `sdl2-config --libs` -Llibpak -lpak -Llibxmlstream -lxmlstream -Ltexgz -ltexgz -Llibcc -lcc -Llibexpat/expat/lib -lexpat -lm -lpthread -lz -ljpeg -lpng
 CCC      = gcc
 
-all: $(TARGET) libcc libpak libxmlstream texgz a3d libvkk libexpat
+all: $(TARGET) libcc libpak libxmlstream texgz libvkk libexpat
 
-$(TARGET): $(OBJECTS) libcc libpak libxmlstream texgz a3d libvkk libexpat
+$(TARGET): $(OBJECTS) libcc libpak libxmlstream texgz libvkk libexpat
 	$(CCC) $(OPT) $(OBJECTS) -o $@ $(LDFLAGS)
 
-.PHONY: libcc libpak libxmlstream texgz a3d libvkk libexpat
+.PHONY: libcc libpak libxmlstream texgz libvkk libexpat
 
 libcc:
 	$(MAKE) -C libcc
@@ -30,9 +30,6 @@ libxmlstream:
 texgz:
 	$(MAKE) -C texgz
 
-a3d:
-	$(MAKE) -C a3d -f Makefile.sdl
-
 libvkk:
 	$(MAKE) -C libvkk
 
@@ -45,7 +42,6 @@ clean:
 	$(MAKE) -C libpak clean
 	$(MAKE) -C libxmlstream clean
 	$(MAKE) -C texgz clean
-	$(MAKE) -C a3d -f Makefile.sdl clean
 	$(MAKE) -C libvkk clean
 	$(MAKE) -C libexpat/expat/lib clean
 

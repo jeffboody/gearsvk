@@ -1,6 +1,3 @@
-[submodule "app/src/main/cpp/a3d"]
-	path = app/src/main/cpp/a3d
-	url = git@github.com:jeffboody/a3d-native.git
 [submodule "app/src/main/cpp/texgz"]
 	path = app/src/main/cpp/texgz
 	url = git@github.com:jeffboody/texgz.git
