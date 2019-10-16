@@ -47,7 +47,7 @@ static int clickBack(vkui_widget_t* widget,
 	{
 		overlay->draw_mode = GEARS_OVERLAY_DRAWMODE_HUD;
 		vkui_layer_clear(overlay->layer_show);
-		vkui_layer_add(overlay->layer_show, VKUI_WIDGET_ANCHOR_TL,
+		vkui_layer_add(overlay->layer_show,
 		               (vkui_widget_t*) overlay->layer_hud);
 	}
 	return 1;
@@ -91,8 +91,6 @@ gears_overlay_t* gears_overlay_new(struct gears_renderer_s* renderer)
 	{
 		.wrapx    = VKUI_WIDGET_WRAP_STRETCH_PARENT,
 		.wrapy    = VKUI_WIDGET_WRAP_STRETCH_PARENT,
-		.aspectx  = VKUI_WIDGET_ASPECT_DEFAULT,
-		.aspecty  = VKUI_WIDGET_ASPECT_DEFAULT,
 		.stretchx = 1.0f,
 		.stretchy = 1.0f
 	};
@@ -123,7 +121,7 @@ gears_overlay_t* gears_overlay_new(struct gears_renderer_s* renderer)
 	                (vkui_widget_t*) self->layer_show);
 	self->draw_mode = GEARS_OVERLAY_DRAWMODE_HUD;
 	vkui_layer_clear(self->layer_show);
-	vkui_layer_add(self->layer_show, VKUI_WIDGET_ANCHOR_TL,
+	vkui_layer_add(self->layer_show,
 	               (vkui_widget_t*) self->layer_hud);
 
 	// success
@@ -167,7 +165,7 @@ int gears_overlay_escape(gears_overlay_t* self)
 	{
 		self->draw_mode = GEARS_OVERLAY_DRAWMODE_HUD;
 		vkui_layer_clear(self->layer_show);
-		vkui_layer_add(self->layer_show, VKUI_WIDGET_ANCHOR_TL,
+		vkui_layer_add(self->layer_show,
 		               (vkui_widget_t*) self->layer_hud);
 		return 1;
 	}

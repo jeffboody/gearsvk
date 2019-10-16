@@ -98,11 +98,7 @@ gears_viewAbout_t* gears_viewAbout_new(struct gears_overlay_s* overlay,
 	{
 		.border     = VKUI_WIDGET_BORDER_LARGE,
 		.wrapx      = VKUI_WIDGET_WRAP_STRETCH_PARENT,
-		.wrapy      = VKUI_WIDGET_WRAP_SHRINK,
-		.aspectx    = VKUI_WIDGET_ASPECT_DEFAULT,
-		.aspecty    = VKUI_WIDGET_ASPECT_DEFAULT,
 		.stretchx   = 1.0f,
-		.stretchy   = 1.0f
 	};
 
 	vkui_widgetScroll_t scroll_listbox =
@@ -129,11 +125,17 @@ gears_viewAbout_t* gears_viewAbout_new(struct gears_overlay_s* overlay,
 	vkui_widgetFn_t fn;
 	memset(&fn, 0, sizeof(vkui_widgetFn_t));
 
+	cc_vec4f_t clear =
+	{
+		.a = 0.0f
+	};
+
 	vkui_listbox_t* listbox;
 	listbox = vkui_listbox_new(overlay->screen, 0,
 	                           &layout_listbox,
 	                           &scroll_listbox, &fn,
-	                           VKUI_LISTBOX_ORIENTATION_VERTICAL);
+	                           VKUI_LISTBOX_ORIENTATION_VERTICAL,
+	                           &clear);
 	if(listbox == NULL)
 	{
 		return NULL;
@@ -141,12 +143,7 @@ gears_viewAbout_t* gears_viewAbout_new(struct gears_overlay_s* overlay,
 
 	vkui_widgetLayout_t layout_about =
 	{
-		.border   = VKUI_WIDGET_BORDER_NONE,
-		.wrapx    = VKUI_WIDGET_WRAP_SHRINK,
 		.wrapy    = VKUI_WIDGET_WRAP_STRETCH_PARENT,
-		.aspectx  = VKUI_WIDGET_ASPECT_DEFAULT,
-		.aspecty  = VKUI_WIDGET_ASPECT_DEFAULT,
-		.stretchx = 1.0f,
 		.stretchy = 1.0f
 	};
 
@@ -179,17 +176,27 @@ gears_viewAbout_t* gears_viewAbout_new(struct gears_overlay_s* overlay,
 			.b = 0.95f,
 			.a = 1.0f
 		},
-		.text_style =
+		.bulletbox_style =
 		{
-			.font_type = VKUI_TEXT_FONTTYPE_BOLD,
-			.size      = VKUI_TEXT_SIZE_MEDIUM,
-			.spacing   = VKUI_TEXT_SPACING_MEDIUM,
-			.color     =
+			.color_icon =
 			{
 				.r = 1.0f,
 				.g = 1.0f,
 				.b = 1.0f,
 				.a = 1.0f,
+			},
+			.text_style =
+			{
+				.font_type = VKUI_TEXT_FONTTYPE_BOLD,
+				.size      = VKUI_TEXT_SIZE_MEDIUM,
+				.spacing   = VKUI_TEXT_SPACING_MEDIUM,
+				.color     =
+				{
+					.r = 1.0f,
+					.g = 1.0f,
+					.b = 1.0f,
+					.a = 1.0f,
+				}
 			}
 		}
 	};
@@ -228,13 +235,20 @@ gears_viewAbout_t* gears_viewAbout_new(struct gears_overlay_s* overlay,
 		}
 	};
 
+	vkui_textLayout_t text_layout =
+	{
+		.border = VKUI_WIDGET_BORDER_NONE
+	};
+
 	vkui_textFn_t text_fn_heading;
 	memset(&text_fn_heading, 0, sizeof(vkui_textFn_t));
 
 	vkui_text_t* text_intro;
 	text_intro = vkui_text_new(overlay->screen, 0,
+	                           &text_layout,
 	                           &text_style_heading,
-	                           &text_fn_heading);
+	                           &text_fn_heading,
+	                           &clear);
 	if(text_intro == NULL)
 	{
 		LOGE("fail_text_intro");
@@ -244,8 +258,10 @@ gears_viewAbout_t* gears_viewAbout_new(struct gears_overlay_s* overlay,
 
 	vkui_text_t* text_icons;
 	text_icons = vkui_text_new(overlay->screen, 0,
+	                           &text_layout,
 	                           &text_style_heading,
-	                           &text_fn_heading);
+	                           &text_fn_heading,
+	                           &clear);
 	if(text_icons == NULL)
 	{
 		LOGE("fail_text_icons");
@@ -255,8 +271,10 @@ gears_viewAbout_t* gears_viewAbout_new(struct gears_overlay_s* overlay,
 
 	vkui_text_t* text_barlow;
 	text_barlow = vkui_text_new(overlay->screen, 0,
+	                            &text_layout,
 	                            &text_style_heading,
-	                            &text_fn_heading);
+	                            &text_fn_heading,
+	                            &clear);
 	if(text_barlow == NULL)
 	{
 		LOGE("fail_text_barlow");
@@ -266,8 +284,10 @@ gears_viewAbout_t* gears_viewAbout_new(struct gears_overlay_s* overlay,
 
 	vkui_text_t* text_expat;
 	text_expat = vkui_text_new(overlay->screen, 0,
+	                           &text_layout,
 	                           &text_style_heading,
-	                           &text_fn_heading);
+	                           &text_fn_heading,
+	                           &clear);
 	if(text_expat == NULL)
 	{
 		LOGE("fail_text_expat");
@@ -277,8 +297,10 @@ gears_viewAbout_t* gears_viewAbout_new(struct gears_overlay_s* overlay,
 
 	vkui_text_t* text_license;
 	text_license = vkui_text_new(overlay->screen, 0,
+	                             &text_layout,
 	                             &text_style_heading,
-	                             &text_fn_heading);
+	                             &text_fn_heading,
+	                             &clear);
 	if(text_license == NULL)
 	{
 		LOGE("fail_text_license");
@@ -289,11 +311,7 @@ gears_viewAbout_t* gears_viewAbout_new(struct gears_overlay_s* overlay,
 	vkui_widgetLayout_t layout_textbox =
 	{
 		.wrapx    = VKUI_WIDGET_WRAP_STRETCH_PARENT,
-		.wrapy    = VKUI_WIDGET_WRAP_SHRINK,
-		.aspectx  = VKUI_WIDGET_ASPECT_DEFAULT,
-		.aspecty  = VKUI_WIDGET_ASPECT_DEFAULT,
 		.stretchx = 1.0f,
-		.stretchy = 1.0f
 	};
 
 	vkui_textStyle_t style_textbox =

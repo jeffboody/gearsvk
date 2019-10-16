@@ -27,7 +27,7 @@ static int clickAbout(vkui_widget_t* widget,
 	{
 		overlay->draw_mode = GEARS_OVERLAY_DRAWMODE_ABOUT;
 		vkui_layer_clear(overlay->layer_show);
-		vkui_layer_add(overlay->layer_show, VKUI_WIDGET_ANCHOR_TL,
+		vkui_layer_add(overlay->layer_show,
 		               (vkui_widget_t*) overlay->view_about);
 	}
 	return 1;
@@ -54,8 +54,6 @@ gears_layerHud_t* gears_layerHud_new(struct gears_overlay_s* overlay)
 		.border   = VKUI_WIDGET_BORDER_LARGE,
 		.wrapx    = VKUI_WIDGET_WRAP_STRETCH_PARENT,
 		.wrapy    = VKUI_WIDGET_WRAP_STRETCH_PARENT,
-		.aspectx  = VKUI_WIDGET_ASPECT_DEFAULT,
-		.aspecty  = VKUI_WIDGET_ASPECT_DEFAULT,
 		.stretchx = 1.0f,
 		.stretchy = 1.0f
 	};
@@ -70,17 +68,27 @@ gears_layerHud_t* gears_layerHud_new(struct gears_overlay_s* overlay)
 		return NULL;
 	}
 
-	vkui_textStyle_t style_about =
+	vkui_bulletboxStyle_t style_about =
 	{
-		.font_type = VKUI_TEXT_FONTTYPE_REGULAR,
-		.size      = VKUI_TEXT_SIZE_MEDIUM,
-		.spacing   = VKUI_TEXT_SPACING_MEDIUM,
-		.color     =
+		.color_icon =
 		{
 			.r = 1.0f,
 			.g = 1.0f,
 			.b = 1.0f,
 			.a = 1.0f
+		},
+		.text_style =
+		{
+			.font_type = VKUI_TEXT_FONTTYPE_REGULAR,
+			.size      = VKUI_TEXT_SIZE_MEDIUM,
+			.spacing   = VKUI_TEXT_SPACING_MEDIUM,
+			.color     =
+			{
+				.r = 1.0f,
+				.g = 1.0f,
+				.b = 1.0f,
+				.a = 1.0f
+			}
 		}
 	};
 
@@ -97,7 +105,9 @@ gears_layerHud_t* gears_layerHud_new(struct gears_overlay_s* overlay)
 	};
 
 	self->bulletbox_about = vkui_bulletbox_new(overlay->screen,
-	                                           0, &fn,
+	                                           0,
+	                                           VKUI_WIDGET_ANCHOR_TL,
+	                                           &fn,
 	                                           &style_about,
 	                                           sprite_about);
 	if(self->bulletbox_about == NULL)
@@ -106,6 +116,11 @@ gears_layerHud_t* gears_layerHud_new(struct gears_overlay_s* overlay)
 	}
 	vkui_bulletbox_label(self->bulletbox_about,
 	                     "%s", "Gears");
+
+	vkui_textLayout_t text_layout =
+	{
+		.anchor = VKUI_WIDGET_ANCHOR_BR
+	};
 
 	vkui_textStyle_t text_style_fps =
 	{
@@ -124,8 +139,10 @@ gears_layerHud_t* gears_layerHud_new(struct gears_overlay_s* overlay)
 	memset(&text_fn_fps, 0, sizeof(vkui_textFn_t));
 
 	self->text_fps = vkui_text_new(overlay->screen, 0,
+	                               &text_layout,
 	                               &text_style_fps,
-	                               &text_fn_fps);
+	                               &text_fn_fps,
+	                               &clear);
 	if(self->text_fps == NULL)
 	{
 		goto fail_text_fps;
@@ -134,10 +151,9 @@ gears_layerHud_t* gears_layerHud_new(struct gears_overlay_s* overlay)
 	self->fps = 0;
 
 	vkui_layer_t* layer = (vkui_layer_t*) self;
-	vkui_layer_add(layer, VKUI_WIDGET_ANCHOR_TL,
+	vkui_layer_add(layer,
 	               (vkui_widget_t*) self->bulletbox_about);
-	vkui_layer_add(layer, VKUI_WIDGET_ANCHOR_BR,
-	               (vkui_widget_t*) self->text_fps);
+	vkui_layer_add(layer, (vkui_widget_t*) self->text_fps);
 
 	// success
 	return self;
