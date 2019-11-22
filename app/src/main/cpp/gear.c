@@ -126,22 +126,22 @@ static int gear_generate(gear_t* self,
 	}
 
 	vkk_engine_t* engine = self->renderer->engine;
-	self->frontface_vb = vkk_engine_newBuffer(engine,
-	                                          VKK_UPDATE_MODE_STATIC,
-	                                          VKK_BUFFER_USAGE_VERTEX,
-	                                          glsm->ec*sizeof(cc_vec3f_t),
-	                                          (const void*) glsm->vb);
+	self->frontface_vb = vkk_buffer_new(engine,
+	                                    VKK_UPDATE_MODE_STATIC,
+	                                    VKK_BUFFER_USAGE_VERTEX,
+	                                    glsm->ec*sizeof(cc_vec3f_t),
+	                                    (const void*) glsm->vb);
 	if(self->frontface_vb == NULL)
 	{
 		goto fail_createFrontfaceV;
 	}
 	self->frontface_vc = glsm->ec;
 
-	self->frontface_nb = vkk_engine_newBuffer(engine,
-	                                          VKK_UPDATE_MODE_STATIC,
-	                                          VKK_BUFFER_USAGE_VERTEX,
-	                                          glsm->ec*sizeof(cc_vec3f_t),
-	                                          (const void*) glsm->nb);
+	self->frontface_nb = vkk_buffer_new(engine,
+	                                    VKK_UPDATE_MODE_STATIC,
+	                                    VKK_BUFFER_USAGE_VERTEX,
+	                                    glsm->ec*sizeof(cc_vec3f_t),
+	                                    (const void*) glsm->nb);
 	if(self->frontface_nb == NULL)
 	{
 		goto fail_createFrontfaceN;
@@ -174,22 +174,22 @@ static int gear_generate(gear_t* self,
 		goto fail_createBackfaceV;
 	}
 
-	self->backface_vb = vkk_engine_newBuffer(engine,
-	                                         VKK_UPDATE_MODE_STATIC,
-	                                         VKK_BUFFER_USAGE_VERTEX,
-	                                         glsm->ec*sizeof(cc_vec3f_t),
-	                                         (const void*) glsm->vb);
+	self->backface_vb = vkk_buffer_new(engine,
+	                                   VKK_UPDATE_MODE_STATIC,
+	                                   VKK_BUFFER_USAGE_VERTEX,
+	                                   glsm->ec*sizeof(cc_vec3f_t),
+	                                   (const void*) glsm->vb);
 	if(self->backface_vb == NULL)
 	{
 		goto fail_createBackfaceV;
 	}
 	self->backface_vc = glsm->ec;
 
-	self->backface_nb = vkk_engine_newBuffer(engine,
-	                                         VKK_UPDATE_MODE_STATIC,
-	                                         VKK_BUFFER_USAGE_VERTEX,
-	                                         glsm->ec*sizeof(cc_vec3f_t),
-	                                         (const void*) glsm->nb);
+	self->backface_nb = vkk_buffer_new(engine,
+	                                   VKK_UPDATE_MODE_STATIC,
+	                                   VKK_BUFFER_USAGE_VERTEX,
+	                                   glsm->ec*sizeof(cc_vec3f_t),
+	                                   (const void*) glsm->nb);
 	if(self->backface_nb == NULL)
 	{
 		goto fail_createBackfaceN;
@@ -250,22 +250,22 @@ static int gear_generate(gear_t* self,
 		goto fail_createOutwardV;
 	}
 
-	self->outward_vb = vkk_engine_newBuffer(engine,
-	                                        VKK_UPDATE_MODE_STATIC,
-	                                        VKK_BUFFER_USAGE_VERTEX,
-	                                        glsm->ec*sizeof(cc_vec3f_t),
-	                                        (const void*) glsm->vb);
+	self->outward_vb = vkk_buffer_new(engine,
+	                                  VKK_UPDATE_MODE_STATIC,
+	                                  VKK_BUFFER_USAGE_VERTEX,
+	                                  glsm->ec*sizeof(cc_vec3f_t),
+	                                  (const void*) glsm->vb);
 	if(self->outward_vb == NULL)
 	{
 		goto fail_createOutwardV;
 	}
 	self->outward_vc = glsm->ec;
 
-	self->outward_nb = vkk_engine_newBuffer(engine,
-	                                        VKK_UPDATE_MODE_STATIC,
-	                                        VKK_BUFFER_USAGE_VERTEX,
-	                                        glsm->ec*sizeof(cc_vec3f_t),
-	                                        (const void*) glsm->nb);
+	self->outward_nb = vkk_buffer_new(engine,
+	                                  VKK_UPDATE_MODE_STATIC,
+	                                  VKK_BUFFER_USAGE_VERTEX,
+	                                  glsm->ec*sizeof(cc_vec3f_t),
+	                                  (const void*) glsm->nb);
 	if(self->outward_nb == NULL)
 	{
 		goto fail_createOutwardN;
@@ -293,22 +293,22 @@ static int gear_generate(gear_t* self,
 		goto fail_createCylinderV;
 	}
 
-	self->cylinder_vb = vkk_engine_newBuffer(engine,
-	                                         VKK_UPDATE_MODE_STATIC,
-	                                         VKK_BUFFER_USAGE_VERTEX,
-	                                         glsm->ec*sizeof(cc_vec3f_t),
-	                                         (const void*) glsm->vb);
+	self->cylinder_vb = vkk_buffer_new(engine,
+	                                   VKK_UPDATE_MODE_STATIC,
+	                                   VKK_BUFFER_USAGE_VERTEX,
+	                                   glsm->ec*sizeof(cc_vec3f_t),
+	                                   (const void*) glsm->vb);
 	if(self->cylinder_vb == NULL)
 	{
 		goto fail_createCylinderV;
 	}
 	self->cylinder_vc = glsm->ec;
 
-	self->cylinder_nb = vkk_engine_newBuffer(engine,
-	                                         VKK_UPDATE_MODE_STATIC,
-	                                         VKK_BUFFER_USAGE_VERTEX,
-	                                         glsm->ec*sizeof(cc_vec3f_t),
-	                                         (const void*) glsm->nb);
+	self->cylinder_nb = vkk_buffer_new(engine,
+	                                   VKK_UPDATE_MODE_STATIC,
+	                                   VKK_BUFFER_USAGE_VERTEX,
+	                                   glsm->ec*sizeof(cc_vec3f_t),
+	                                   (const void*) glsm->nb);
 	if(self->cylinder_nb == NULL)
 	{
 		goto fail_createCylinderN;
@@ -320,19 +320,19 @@ static int gear_generate(gear_t* self,
 
 	// failure
 	fail_createCylinderN:
-		vkk_engine_deleteBuffer(engine, &self->cylinder_vb);
+		vkk_buffer_delete(&self->cylinder_vb);
 	fail_createCylinderV:
-		vkk_engine_deleteBuffer(engine, &self->outward_nb);
+		vkk_buffer_delete(&self->outward_nb);
 	fail_createOutwardN:
-		vkk_engine_deleteBuffer(engine, &self->outward_vb);
+		vkk_buffer_delete(&self->outward_vb);
 	fail_createOutwardV:
-		vkk_engine_deleteBuffer(engine, &self->backface_nb);
+		vkk_buffer_delete(&self->backface_nb);
 	fail_createBackfaceN:
-		vkk_engine_deleteBuffer(engine, &self->backface_vb);
+		vkk_buffer_delete(&self->backface_vb);
 	fail_createBackfaceV:
-		vkk_engine_deleteBuffer(engine, &self->frontface_nb);
+		vkk_buffer_delete(&self->frontface_nb);
 	fail_createFrontfaceN:
-		vkk_engine_deleteBuffer(engine, &self->frontface_vb);
+		vkk_buffer_delete(&self->frontface_vb);
 	fail_createFrontfaceV:
 		gears_glsm_delete(&glsm);
 	return 0;
@@ -382,9 +382,9 @@ gear_createDescriptorSet(gear_t* self)
 		},
 	};
 
-	self->us = vkk_engine_newUniformSet(renderer->engine,
-	                                    0, 4, ua_array,
-	                                    renderer->usf);
+	self->us = vkk_uniformSet_new(renderer->engine,
+	                              0, 4, ua_array,
+	                              renderer->usf);
 	if(self->us == NULL)
 	{
 		return 0;
@@ -414,31 +414,31 @@ gear_t* gear_new(struct gears_renderer_s* renderer,
 	cc_vec4f_copy(color, &self->color);
 
 	vkk_engine_t* engine = renderer->engine;
-	self->mvp_ub = vkk_engine_newBuffer(engine,
-	                                    VKK_UPDATE_MODE_DEFAULT,
-	                                    VKK_BUFFER_USAGE_UNIFORM,
-	                                    sizeof(cc_mat4f_t),
-	                                    NULL);
+	self->mvp_ub = vkk_buffer_new(engine,
+	                              VKK_UPDATE_MODE_DEFAULT,
+	                              VKK_BUFFER_USAGE_UNIFORM,
+	                              sizeof(cc_mat4f_t),
+	                              NULL);
 	if(self->mvp_ub == NULL)
 	{
 		goto fail_createUniformMvp;
 	}
 
-	self->nm_ub = vkk_engine_newBuffer(engine,
-	                                   VKK_UPDATE_MODE_DEFAULT,
-	                                   VKK_BUFFER_USAGE_UNIFORM,
-	                                   sizeof(cc_mat4f_t),
-	                                   NULL);
+	self->nm_ub = vkk_buffer_new(engine,
+	                             VKK_UPDATE_MODE_DEFAULT,
+	                             VKK_BUFFER_USAGE_UNIFORM,
+	                             sizeof(cc_mat4f_t),
+	                             NULL);
 	if(self->nm_ub == NULL)
 	{
 		goto fail_createUniformNm;
 	}
 
-	self->color_ub = vkk_engine_newBuffer(engine,
-	                                      VKK_UPDATE_MODE_STATIC,
-	                                      VKK_BUFFER_USAGE_UNIFORM,
-	                                      sizeof(cc_vec4f_t),
-	                                      (const void*) &self->color);
+	self->color_ub = vkk_buffer_new(engine,
+	                                VKK_UPDATE_MODE_STATIC,
+	                                VKK_BUFFER_USAGE_UNIFORM,
+	                                sizeof(cc_vec4f_t),
+	                                (const void*) &self->color);
 	if(self->color_ub == NULL)
 	{
 		goto fail_createUniformColor;
@@ -462,20 +462,20 @@ gear_t* gear_new(struct gears_renderer_s* renderer,
 
 	// failure
 	fail_createDescriptorSet:
-		vkk_engine_deleteBuffer(engine, &self->cylinder_nb);
-		vkk_engine_deleteBuffer(engine, &self->cylinder_vb);
-		vkk_engine_deleteBuffer(engine, &self->outward_nb);
-		vkk_engine_deleteBuffer(engine, &self->outward_vb);
-		vkk_engine_deleteBuffer(engine, &self->backface_nb);
-		vkk_engine_deleteBuffer(engine, &self->backface_vb);
-		vkk_engine_deleteBuffer(engine, &self->frontface_nb);
-		vkk_engine_deleteBuffer(engine, &self->frontface_vb);
+		vkk_buffer_delete(&self->cylinder_nb);
+		vkk_buffer_delete(&self->cylinder_vb);
+		vkk_buffer_delete(&self->outward_nb);
+		vkk_buffer_delete(&self->outward_vb);
+		vkk_buffer_delete(&self->backface_nb);
+		vkk_buffer_delete(&self->backface_vb);
+		vkk_buffer_delete(&self->frontface_nb);
+		vkk_buffer_delete(&self->frontface_vb);
 	fail_gear_generate:
-		vkk_engine_deleteBuffer(engine, &self->color_ub);
+		vkk_buffer_delete(&self->color_ub);
 	fail_createUniformColor:
-		vkk_engine_deleteBuffer(engine, &self->nm_ub);
+		vkk_buffer_delete(&self->nm_ub);
 	fail_createUniformNm:
-		vkk_engine_deleteBuffer(engine, &self->mvp_ub);
+		vkk_buffer_delete(&self->mvp_ub);
 	fail_createUniformMvp:
 		free(self);
 	return NULL;
@@ -489,19 +489,18 @@ void gear_delete(gear_t** _self)
 	gear_t* self = *_self;
 	if(self)
 	{
-		vkk_engine_t* engine = self->renderer->engine;
-		vkk_engine_deleteUniformSet(engine, &self->us);
-		vkk_engine_deleteBuffer(engine, &self->cylinder_nb);
-		vkk_engine_deleteBuffer(engine, &self->cylinder_vb);
-		vkk_engine_deleteBuffer(engine, &self->outward_nb);
-		vkk_engine_deleteBuffer(engine, &self->outward_vb);
-		vkk_engine_deleteBuffer(engine, &self->backface_nb);
-		vkk_engine_deleteBuffer(engine, &self->backface_vb);
-		vkk_engine_deleteBuffer(engine, &self->frontface_nb);
-		vkk_engine_deleteBuffer(engine, &self->frontface_vb);
-		vkk_engine_deleteBuffer(engine, &self->color_ub);
-		vkk_engine_deleteBuffer(engine, &self->nm_ub);
-		vkk_engine_deleteBuffer(engine, &self->mvp_ub);
+		vkk_uniformSet_delete(&self->us);
+		vkk_buffer_delete(&self->cylinder_nb);
+		vkk_buffer_delete(&self->cylinder_vb);
+		vkk_buffer_delete(&self->outward_nb);
+		vkk_buffer_delete(&self->outward_vb);
+		vkk_buffer_delete(&self->backface_nb);
+		vkk_buffer_delete(&self->backface_vb);
+		vkk_buffer_delete(&self->frontface_nb);
+		vkk_buffer_delete(&self->frontface_vb);
+		vkk_buffer_delete(&self->color_ub);
+		vkk_buffer_delete(&self->nm_ub);
+		vkk_buffer_delete(&self->mvp_ub);
 		free(self);
 		*_self = NULL;
 	}

@@ -237,9 +237,9 @@ gears_renderer_newUniformSetFactory(gears_renderer_t* self)
 		}
 	};
 
-	self->usf = vkk_engine_newUniformSetFactory(self->engine,
-	                                            VKK_UPDATE_MODE_DEFAULT,
-	                                            4, ub_array);
+	self->usf = vkk_uniformSetFactory_new(self->engine,
+	                                      VKK_UPDATE_MODE_DEFAULT,
+	                                      4, ub_array);
 	if(self->usf == NULL)
 	{
 		return 0;
@@ -253,8 +253,8 @@ gears_renderer_newPipelineLayout(gears_renderer_t* self)
 {
 	assert(self);
 
-	self->pl = vkk_engine_newPipelineLayout(self->engine,
-	                                        1, &self->usf);
+	self->pl = vkk_pipelineLayout_new(self->engine,
+	                                  1, &self->usf);
 	if(self->pl == NULL)
 	{
 		return 0;
@@ -300,8 +300,8 @@ gears_renderer_newGraphicsPipeline(gears_renderer_t* self)
 		.blend_mode        = 0
 	};
 
-	self->gp = vkk_engine_newGraphicsPipeline(self->engine,
-	                                          &gpi);
+	self->gp = vkk_graphicsPipeline_new(self->engine,
+	                                    &gpi);
 	if(self->gp == NULL)
 	{
 		return 0;
@@ -357,12 +357,12 @@ gears_renderer_newImage(gears_renderer_t* self)
 		goto fail_convert;
 	}
 
-	self->image = vkk_engine_newImage(self->engine,
-	                                  (uint32_t) tex->width,
-	                                  (uint32_t) tex->height,
-	                                  VKK_IMAGE_FORMAT_RGBA8888,
-	                                  1, VKK_STAGE_FS,
-	                                  tex->pixels);
+	self->image = vkk_image_new(self->engine,
+	                            (uint32_t) tex->width,
+	                            (uint32_t) tex->height,
+	                            VKK_IMAGE_FORMAT_RGBA8888,
+	                            1, VKK_STAGE_FS,
+	                            tex->pixels);
 	if(self->image == NULL)
 	{
 		goto fail_image;
@@ -385,10 +385,10 @@ gears_renderer_newSampler(gears_renderer_t* self)
 {
 	assert(self);
 
-	self->sampler = vkk_engine_newSampler(self->engine,
-	                                      VKK_SAMPLER_FILTER_LINEAR,
-	                                      VKK_SAMPLER_FILTER_LINEAR,
-	                                      VKK_SAMPLER_MIPMAP_MODE_NEAREST);
+	self->sampler = vkk_sampler_new(self->engine,
+	                                VKK_SAMPLER_FILTER_LINEAR,
+	                                VKK_SAMPLER_FILTER_LINEAR,
+	                                VKK_SAMPLER_MIPMAP_MODE_NEAREST);
 	if(self->sampler == NULL)
 	{
 		return 0;
@@ -521,20 +521,15 @@ gears_renderer_new(void* app,
 	fail_gear2:
 		gear_delete(&self->gear1);
 	fail_gear1:
-		vkk_engine_deleteImage(self->engine,
-		                       &self->image);
+		vkk_image_delete(&self->image);
 	fail_image:
-		vkk_engine_deleteGraphicsPipeline(self->engine,
-		                                  &self->gp);
+		vkk_graphicsPipeline_delete(&self->gp);
 	fail_gp:
-		vkk_engine_deletePipelineLayout(self->engine,
-		                                &self->pl);
+		vkk_pipelineLayout_delete(&self->pl);
 	fail_pl:
-		vkk_engine_deleteUniformSetFactory(self->engine,
-		                                   &self->usf);
+		vkk_uniformSetFactory_delete(&self->usf);
 	fail_usf:
-		vkk_engine_deleteSampler(self->engine,
-		                         &self->sampler);
+		vkk_sampler_delete(&self->sampler);
 	fail_sampler:
 		vkk_engine_shutdown(self->engine);
 		vkk_engine_delete(&self->engine);
@@ -559,16 +554,11 @@ void gears_renderer_delete(gears_renderer_t** _self)
 		gear_delete(&self->gear2);
 		gear_delete(&self->gear1);
 
-		vkk_engine_deleteImage(self->engine,
-		                       &self->image);
-		vkk_engine_deleteGraphicsPipeline(self->engine,
-		                                  &self->gp);
-		vkk_engine_deletePipelineLayout(self->engine,
-		                                &self->pl);
-		vkk_engine_deleteUniformSetFactory(self->engine,
-		                                   &self->usf);
-		vkk_engine_deleteSampler(self->engine,
-		                         &self->sampler);
+		vkk_image_delete(&self->image);
+		vkk_graphicsPipeline_delete(&self->gp);
+		vkk_pipelineLayout_delete(&self->pl);
+		vkk_uniformSetFactory_delete(&self->usf);
+		vkk_sampler_delete(&self->sampler);
 		vkk_engine_delete(&self->engine);
 		free(self);
 		*_self = NULL;
