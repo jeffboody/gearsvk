@@ -34,6 +34,7 @@ import android.os.Handler.Callback;
 import android.os.Message;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.View;
 import android.view.WindowManager;
 import java.util.LinkedList;
 import java.util.concurrent.locks.Lock;
@@ -169,6 +170,12 @@ implements Handler.Callback
 	{
 		Log.i(TAG, "onResume");
 		super.onResume();
+
+		View decorView = getWindow().getDecorView();
+		int  ui_flags  = View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
+		                 View.SYSTEM_UI_FLAG_HIDE_NAVIGATION  |
+		                 View.SYSTEM_UI_FLAG_FULLSCREEN;
+		decorView.setSystemUiVisibility(ui_flags);
 	}
 
 	@Override
