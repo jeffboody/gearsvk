@@ -4,16 +4,21 @@ echo RESOURCES
 cd resource
 
 # shaders
+cd shaders
 glslangValidator -V shader.vert -o vert.spv
 glslangValidator -V shader.frag -o frag.spv
-pak -c $RESOURCE vert.spv
-pak -a $RESOURCE frag.spv
-pak -a $RESOURCE lava.png
-rm *.spv
+cd ..
 
-# icons
-pak -a $RESOURCE ic_arrow_back_white_24dp.texz
-pak -a $RESOURCE ic_info_outline_white_24dp.texz
+# pak resources
+pak -c $RESOURCE readme.txt
+pak -a $RESOURCE icons/ic_arrow_back_white_24dp.texz
+pak -a $RESOURCE icons/ic_info_outline_white_24dp.texz
+pak -a $RESOURCE shaders/vert.spv
+pak -a $RESOURCE shaders/frag.spv
+pak -a $RESOURCE textures/lava.png
+
+# cleanup shaders
+rm shaders/*.spv
 cd ..
 
 # VKUI

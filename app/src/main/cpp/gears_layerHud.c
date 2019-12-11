@@ -100,7 +100,7 @@ gears_layerHud_t* gears_layerHud_new(struct gears_overlay_s* overlay)
 
 	const char* sprite_about[] =
 	{
-		"ic_info_outline_white_24dp.texz",
+		"icons/ic_info_outline_white_24dp.texz",
 		NULL
 	};
 

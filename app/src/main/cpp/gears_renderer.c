@@ -288,8 +288,8 @@ gears_renderer_newGraphicsPipeline(gears_renderer_t* self)
 	{
 		.renderer          = vkk_engine_renderer(self->engine),
 		.pl                = self->pl,
-		.vs                = "vert.spv",
-		.fs                = "frag.spv",
+		.vs                = "shaders/vert.spv",
+		.fs                = "shaders/frag.spv",
 		.vb_count          = 2,
 		.vbi               = vbi,
 		.primitive         = VKK_PRIMITIVE_TRIANGLE_STRIP,
@@ -334,7 +334,7 @@ gears_renderer_newImage(gears_renderer_t* self)
 		return 0;
 	}
 
-	int size = pak_file_seek(pak, "lava.png");
+	int size = pak_file_seek(pak, "textures/lava.png");
 	if(size == 0)
 	{
 		LOGE("invalid lava.png");

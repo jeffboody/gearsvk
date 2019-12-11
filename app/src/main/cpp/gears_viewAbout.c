@@ -203,7 +203,7 @@ gears_viewAbout_t* gears_viewAbout_new(struct gears_overlay_s* overlay,
 
 	const char* sprite_about[] =
 	{
-		"ic_arrow_back_white_24dp.texz",
+		"icons/ic_arrow_back_white_24dp.texz",
 		NULL
 	};
 
