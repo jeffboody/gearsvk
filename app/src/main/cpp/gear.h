@@ -75,7 +75,9 @@ gear_t* gear_new(struct gears_renderer_s* renderer,
                  int teeth, float tooth_depth);
 void    gear_delete(gear_t** _self);
 void    gear_update(gear_t* self,
+                    vkk_renderer_t* renderer,
                     cc_mat4f_t* mvp, cc_mat4f_t* mvm);
-void    gear_draw(gear_t* self);
+void    gear_draw(gear_t* self,
+                  vkk_renderer_t* renderer);
 
 #endif

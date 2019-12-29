@@ -56,12 +56,12 @@ static void gears_renderer_step(gears_renderer_t* self)
 {
 	assert(self);
 
-	vkk_renderer_t* renderer;
-	renderer = vkk_engine_renderer(self->engine);
+	vkk_engine_t*   engine  = self->engine;
+	vkk_renderer_t* primary = vkk_engine_renderer(engine);
 
 	uint32_t width;
 	uint32_t height;
-	vkk_renderer_surfaceSize(renderer, &width, &height);
+	vkk_renderer_surfaceSize(primary, &width, &height);
 
 	// https://www.saschawillems.de/blog/2019/03/29/flipping-the-vulkan-viewport/
 	// Vulkan uses a top-left left origin while OpenGL
@@ -92,7 +92,7 @@ static void gears_renderer_step(gears_renderer_t* self)
 	cc_mat4f_translate(&self->mvm, 0, -3.0f, -2.0f, 0.0f);
 	cc_mat4f_rotate(&self->mvm, 0, self->angle, 0.0f, 0.0f, 1.0f);
 	cc_mat4f_mulm_copy(&self->pm, &self->mvm, &mvp);
-	gear_update(self->gear1, &mvp, &self->mvm);
+	gear_update(self->gear1, primary, &mvp, &self->mvm);
 	cc_stack4f_pop(self->mvm_stack, &self->mvm);
 
 	// Gear2
@@ -100,7 +100,7 @@ static void gears_renderer_step(gears_renderer_t* self)
 	cc_mat4f_translate(&self->mvm, 0, 3.1f, -2.0f, 0.0f);
 	cc_mat4f_rotate(&self->mvm, 0, -2.0f * self->angle - 9.0f, 0.0f, 0.0f, 1.0f);
 	cc_mat4f_mulm_copy(&self->pm, &self->mvm, &mvp);
-	gear_update(self->gear2, &mvp, &self->mvm);
+	gear_update(self->gear2, primary, &mvp, &self->mvm);
 	cc_stack4f_pop(self->mvm_stack, &self->mvm);
 
 	// Gear3
@@ -108,7 +108,7 @@ static void gears_renderer_step(gears_renderer_t* self)
 	cc_mat4f_translate(&self->mvm, 0, -3.1f, 4.2f, 0.0f);
 	cc_mat4f_rotate(&self->mvm, 0, -2.0f * self->angle - 25.0f, 0.0f, 0.0f, 1.0f);
 	cc_mat4f_mulm_copy(&self->pm, &self->mvm, &mvp);
-	gear_update(self->gear3, &mvp, &self->mvm);
+	gear_update(self->gear3, primary, &mvp, &self->mvm);
 	cc_stack4f_pop(self->mvm_stack, &self->mvm);
 
 	cc_stack4f_pop(self->mvm_stack, &self->mvm);
@@ -156,14 +156,14 @@ static void gears_renderer_rotate(gears_renderer_t* self,
 {
 	assert(self);
 
-	vkk_renderer_t* renderer;
-	renderer = vkk_engine_renderer(self->engine);
+	vkk_engine_t*   engine  = self->engine;
+	vkk_renderer_t* primary = vkk_engine_renderer(engine);
 
 	// TODO - vkk_renderer_surfaceSize shouldn't be called
 	// outside begin/end
 	uint32_t width;
 	uint32_t height;
-	vkk_renderer_surfaceSize(renderer, &width, &height);
+	vkk_renderer_surfaceSize(primary, &width, &height);
 
 	// rotating around x-axis is equivalent to moving up-and-down on touchscreen
 	// rotating around y-axis is equivalent to moving left-and-right on touchscreen
@@ -268,6 +268,9 @@ gears_renderer_newGraphicsPipeline(gears_renderer_t* self)
 {
 	assert(self);
 
+	vkk_engine_t*   engine  = self->engine;
+	vkk_renderer_t* primary = vkk_engine_renderer(engine);
+
 	vkk_vertexBufferInfo_t vbi[2] =
 	{
 		// layout(location=0) in vec3 vertex;
@@ -286,7 +289,7 @@ gears_renderer_newGraphicsPipeline(gears_renderer_t* self)
 
 	vkk_graphicsPipelineInfo_t gpi =
 	{
-		.renderer          = vkk_engine_renderer(self->engine),
+		.renderer          = primary,
 		.pl                = self->pl,
 		.vs                = "shaders/vert.spv",
 		.fs                = "shaders/frag.spv",
@@ -611,29 +614,31 @@ void gears_renderer_draw(gears_renderer_t* self)
 {
 	assert(self);
 
-	vkk_renderer_t* renderer;
-	renderer = vkk_engine_renderer(self->engine);
+	vkk_renderer_t* primary;
+	primary = vkk_engine_renderer(self->engine);
 
 	float clear_color[4] =
 	{
 		0.0f, 0.0f, 0.0f, 1.0f
 	};
-	if(vkk_renderer_beginDefault(renderer, clear_color) == 0)
+	if(vkk_renderer_beginDefault(primary,
+	                             VKK_RENDERER_MODE_PRIMARY,
+	                             clear_color) == 0)
 	{
 		return;
 	}
 
 	gears_renderer_step(self);
 
-	vkk_renderer_bindGraphicsPipeline(renderer, self->gp);
+	vkk_renderer_bindGraphicsPipeline(primary, self->gp);
 
-	gear_draw(self->gear1);
-	gear_draw(self->gear2);
-	gear_draw(self->gear3);
+	gear_draw(self->gear1, primary);
+	gear_draw(self->gear2, primary);
+	gear_draw(self->gear3, primary);
 
 	gears_overlay_draw(self->overlay, self->density);
 
-	vkk_renderer_end(renderer);
+	vkk_renderer_end(primary);
 }
 
 void gears_renderer_touch(gears_renderer_t* self,

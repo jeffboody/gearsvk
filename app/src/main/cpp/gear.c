@@ -507,15 +507,13 @@ void gear_delete(gear_t** _self)
 }
 
 void gear_update(gear_t* self,
+                 vkk_renderer_t* renderer,
                  cc_mat4f_t* mvp, cc_mat4f_t* mvm)
 {
 	assert(self);
+	assert(renderer);
 	assert(mvp);
 	assert(mvm);
-
-	vkk_engine_t*   engine = self->renderer->engine;
-	vkk_renderer_t* renderer;
-	renderer = vkk_engine_renderer(engine);
 
 	vkk_renderer_updateBuffer(renderer,
 	                          self->mvp_ub,
@@ -549,14 +547,12 @@ void gear_update(gear_t* self,
 	                          (const void*) &nm4);
 }
 
-void gear_draw(gear_t* self)
+void gear_draw(gear_t* self, vkk_renderer_t* renderer)
 {
 	assert(self);
+	assert(renderer);
 
-	vkk_engine_t*         engine = self->renderer->engine;
 	vkk_pipelineLayout_t* pl = self->renderer->pl;
-	vkk_renderer_t*       renderer;
-	renderer = vkk_engine_renderer(engine);
 
 	vkk_renderer_bindUniformSets(renderer, pl, 1, &self->us);
 

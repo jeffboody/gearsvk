@@ -61,6 +61,8 @@ gears_overlay_t* gears_overlay_new(struct gears_renderer_s* renderer)
 {
 	assert(renderer);
 
+	vkk_engine_t* engine = renderer->engine;
+
 	cc_vec4f_t clear =
 	{
 		.r = 0.0f,
@@ -77,7 +79,8 @@ gears_overlay_t* gears_overlay_new(struct gears_renderer_s* renderer)
 	}
 	self->renderer = renderer;
 
-	self->screen = vkui_screen_new(renderer->engine,
+	self->screen = vkui_screen_new(engine,
+	                               vkk_engine_renderer(engine),
 	                               GEARS_RESOURCE,
 	                               (void*) renderer,
 	                               gears_renderer_playClick);
