@@ -46,10 +46,6 @@
 #define GEARS_TOUCH_STATE_ZOOM    2
 #define GEARS_TOUCH_STATE_OVERLAY 3
 
-#define GEARS_CMD_PLAY_CLICK 1
-#define GEARS_CMD_EXIT       2
-#define GEARS_CMD_LOADURL    3
-
 #ifdef ANDROID
 	#define GEARS_RESOURCE  "/data/data/com.jeffboody.gearsvk/files/resource.pak"
 	#define GEARS_CACHE     "/data/data/com.jeffboody.gearsvk/files/pipeline.cache"
@@ -59,14 +55,13 @@
 	#define GEARS_CACHE    "pipeline.cache"
 #endif
 
-typedef void (*gears_renderer_cmd_fn)(int cmd, const char* msg);
-
 /***********************************************************
 * public                                                   *
 ***********************************************************/
 
 typedef struct gears_renderer_s
 {
+	vkk_platform_t*          platform;
 	vkk_engine_t*            engine;
 	vkk_uniformSetFactory_t* usf;
 	vkk_pipelineLayout_t*    pl;
@@ -109,22 +104,17 @@ typedef struct gears_renderer_s
 	gear_t* gear1;
 	gear_t* gear2;
 	gear_t* gear3;
-
-	// JNI callback(s)
-	gears_renderer_cmd_fn cmd_fn;
 } gears_renderer_t;
 
-gears_renderer_t* gears_renderer_new(void* app,
-                                     const char* app_name,
-                                     uint32_t app_version,
-                                     gears_renderer_cmd_fn cmd_fn);
+gears_renderer_t* gears_renderer_new(vkk_platform_t* platform);
 void              gears_renderer_delete(gears_renderer_t** _self);
 void              gears_renderer_exit(gears_renderer_t* self);
 void              gears_renderer_loadURL(gears_renderer_t* self,
                                          const char* url);
 void              gears_renderer_playClick(void* ptr);
 int               gears_renderer_resize(gears_renderer_t* self);
-void              gears_renderer_density(gears_renderer_t* self, float density);
+void              gears_renderer_density(gears_renderer_t* self,
+                                         float density);
 void              gears_renderer_draw(gears_renderer_t* self);
 void              gears_renderer_touch(gears_renderer_t* self,
                                        int action, int count, double ts,

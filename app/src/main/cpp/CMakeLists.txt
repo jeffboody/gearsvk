@@ -12,28 +12,19 @@ if(TEXGZ_USE_JPEG)
         myjpeg)
 endif()
 
-# native_app_glue
-add_library(native_app_glue
-            STATIC
-
-            # Source
-            ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
-
+# ANativeActivity interface
 set(CMAKE_SHARED_LINKER_FLAGS
     "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")
 
 # Compiler options
-add_compile_options(-Wall -DVK_USE_PLATFORM_ANDROID_KHR -DA3D_GLESv2)
+add_compile_options(-Wall)
 
 # Main library
 add_library(gearsvk
             SHARED
 
-            # Vulkan Wrapper
-            ${ANDROID_NDK}/sources/third_party/vulkan/src/common/vulkan_wrapper.cpp
-
             # Source
-            android_main.c
+            gearsvk.c
             gears_glsm.c
             gears_overlay.c
             gears_viewAbout.c
@@ -50,15 +41,6 @@ add_subdirectory("libvkk")
 add_subdirectory("libxmlstream")
 add_subdirectory("texgz")
 
-# Includes
-target_include_directories(gearsvk
-                           PRIVATE
-
-                           # PATH
-                           ${ANDROID_NDK}/sources/third_party/vulkan/src/include/vulkan
-                           ${ANDROID_NDK}/sources/third_party/vulkan/src/common
-                           ${ANDROID_NDK}/sources/android/native_app_glue)
-
 # Linking
 target_link_libraries(gearsvk
 
@@ -74,5 +56,4 @@ target_link_libraries(gearsvk
 
                       # NDK libraries
                       android
-                      native_app_glue
                       log)

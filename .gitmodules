@@ -22,3 +22,6 @@
 [submodule "app/src/main/cpp/jpeg"]
 	path = app/src/main/cpp/jpeg
 	url = git@github.com:jeffboody/myjpeg.git
+[submodule "app/src/main/java/com/jeffboody/vkk"]
+	path = app/src/main/java/com/jeffboody/vkk
+	url = git@github.com:jeffboody/vkk-java.git

@@ -33,7 +33,6 @@
 #include <string.h>
 
 #define LOG_TAG "gears"
-#include "libvkk/vkui/vkui_key.h"
 #include "libcc/math/cc_mat4f.h"
 #include "libcc/math/cc_vec4f.h"
 #include "libcc/cc_log.h"
@@ -405,17 +404,9 @@ gears_renderer_newSampler(gears_renderer_t* self)
 ***********************************************************/
 
 gears_renderer_t*
-gears_renderer_new(void* app,
-                   const char* app_name,
-                   uint32_t app_version,
-                   gears_renderer_cmd_fn cmd_fn)
+gears_renderer_new(vkk_platform_t* platform)
 {
-	#ifdef ANDROID
-		assert(app);
-	#else
-		assert(app == NULL);
-	#endif
-	assert(app_name);
+	assert(platform);
 
 	gears_renderer_t* self;
 	self = (gears_renderer_t*)
@@ -426,16 +417,16 @@ gears_renderer_new(void* app,
 		return NULL;
 	}
 
-	self->view_scale = 1.0f;
-	self->t0         = cc_timestamp();
-	self->density    = 1.0f;
+	self->platform    = platform;
+	self->view_scale  = 1.0f;
+	self->t0          = cc_timestamp();
+	self->density     = 1.0f;
 	self->touch_state = GEARS_TOUCH_STATE_INIT;
 	self->touch_ds    = 1.0f;
 	self->escape_t0   = cc_timestamp();
-	self->cmd_fn      = cmd_fn;
 
-	self->engine = vkk_engine_new(app, app_name,
-	                              app_version,
+	self->engine = vkk_engine_new(platform, "GearsVK",
+	                              VKK_MAKE_VERSION(1,0,2),
 	                              GEARS_RESOURCE,
 	                              GEARS_CACHE);
 	if(self->engine == NULL)
@@ -572,8 +563,8 @@ void gears_renderer_exit(gears_renderer_t* self)
 {
 	assert(self);
 
-	gears_renderer_cmd_fn cmd_fn = self->cmd_fn;
-	(*cmd_fn)(GEARS_CMD_EXIT, "");
+	vkk_platform_cmd(self->platform,
+	                 VKK_PLATFORM_CMD_EXIT, NULL);
 }
 
 void gears_renderer_loadURL(gears_renderer_t* self,
@@ -582,8 +573,8 @@ void gears_renderer_loadURL(gears_renderer_t* self,
 	assert(self);
 	assert(url);
 
-	gears_renderer_cmd_fn cmd_fn = self->cmd_fn;
-	(*cmd_fn)(GEARS_CMD_LOADURL, url);
+	vkk_platform_cmd(self->platform,
+	                 VKK_PLATFORM_CMD_LOADURL, url);
 }
 
 void gears_renderer_playClick(void* ptr)
@@ -591,8 +582,8 @@ void gears_renderer_playClick(void* ptr)
 	assert(ptr);
 
 	gears_renderer_t* self = (gears_renderer_t*) ptr;
-	gears_renderer_cmd_fn cmd_fn = self->cmd_fn;
-	(*cmd_fn)(GEARS_CMD_PLAY_CLICK, "");
+	vkk_platform_cmd(self->platform,
+	                 VKK_PLATFORM_CMD_PLAY_CLICK, NULL);
 }
 
 int gears_renderer_resize(gears_renderer_t* self)
@@ -720,7 +711,7 @@ void gears_renderer_keyPress(gears_renderer_t* self,
 {
 	assert(self);
 
-	if(keycode == VKUI_KEY_ESCAPE)
+	if(keycode == VKK_KEYCODE_ESCAPE)
 	{
 		if(gears_overlay_escape(self->overlay))
 		{
