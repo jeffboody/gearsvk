@@ -53,7 +53,7 @@ void gearsvk_onDraw(void* priv)
 	gears_renderer_draw((gears_renderer_t*) priv);
 }
 
-void gearsvk_onEvent(void* priv, vkk_event_t* event)
+int gearsvk_onEvent(void* priv, vkk_event_t* event)
 {
 	assert(priv);
 	assert(event);
@@ -74,6 +74,7 @@ void gearsvk_onEvent(void* priv, vkk_event_t* event)
 		                     event->action.coord[2].y,
 		                     event->action.coord[3].x,
 		                     event->action.coord[3].y);
+		return 1;
 	}
 	else if(event->type == VKK_EVENT_TYPE_ACTION_MOVE)
 	{
@@ -89,6 +90,7 @@ void gearsvk_onEvent(void* priv, vkk_event_t* event)
 		                     event->action.coord[2].y,
 		                     event->action.coord[3].x,
 		                     event->action.coord[3].y);
+		return 1;
 	}
 	else if(event->type == VKK_EVENT_TYPE_ACTION_UP)
 	{
@@ -104,11 +106,13 @@ void gearsvk_onEvent(void* priv, vkk_event_t* event)
 		                     event->action.coord[2].y,
 		                     event->action.coord[3].x,
 		                     event->action.coord[3].y);
+		return 1;
 	}
 	else if(event->type == VKK_EVENT_TYPE_DENSITY)
 	{
 		gears_renderer_density(renderer,
 		                       event->density);
+		return 1;
 	}
 	else if((event->type == VKK_EVENT_TYPE_KEY_UP) ||
 	        ((event->type == VKK_EVENT_TYPE_KEY_DOWN) &&
@@ -117,11 +121,14 @@ void gearsvk_onEvent(void* priv, vkk_event_t* event)
 		gears_renderer_keyPress(renderer,
 		                        event->key.keycode,
 		                        event->key.meta);
+		return 1;
 	}
 	else if(event->type == VKK_EVENT_TYPE_RESIZE)
 	{
-		gears_renderer_resize(renderer);
+		return gears_renderer_resize(renderer);
 	}
+
+	return 0;
 }
 
 vkk_platformCallbacks_t VKK_PLATFORM_CALLBACKS =
