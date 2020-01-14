@@ -593,6 +593,13 @@ int gears_renderer_resize(gears_renderer_t* self)
 	return vkk_engine_resize(self->engine);
 }
 
+int gears_renderer_recreate(gears_renderer_t* self)
+{
+	assert(self);
+
+	return vkk_engine_recreate(self->engine);
+}
+
 void gears_renderer_density(gears_renderer_t* self,
                             float density)
 {

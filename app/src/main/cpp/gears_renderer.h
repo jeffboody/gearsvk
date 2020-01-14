@@ -113,6 +113,7 @@ void              gears_renderer_loadURL(gears_renderer_t* self,
                                          const char* url);
 void              gears_renderer_playClick(void* ptr);
 int               gears_renderer_resize(gears_renderer_t* self);
+int               gears_renderer_recreate(gears_renderer_t* self);
 void              gears_renderer_density(gears_renderer_t* self,
                                          float density);
 void              gears_renderer_draw(gears_renderer_t* self);

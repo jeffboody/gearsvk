@@ -127,6 +127,10 @@ int gearsvk_onEvent(void* priv, vkk_event_t* event)
 	{
 		return gears_renderer_resize(renderer);
 	}
+	else if(event->type == VKK_EVENT_TYPE_RECREATE)
+	{
+		return gears_renderer_recreate(renderer);
+	}
 
 	return 0;
 }
