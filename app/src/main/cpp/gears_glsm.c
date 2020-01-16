@@ -21,7 +21,6 @@
  *
  */
 
-#include <assert.h>
 #include <stdlib.h>
 
 #define LOG_TAG "gears"
@@ -34,7 +33,7 @@
 
 static void gears_glsm_draincache(gears_glsm_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	// empty the vb list
 	cc_vec3f_t*    v;
@@ -58,7 +57,7 @@ static void gears_glsm_draincache(gears_glsm_t* self)
 
 static void gears_glsm_freebuffers(gears_glsm_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	free(self->vb);
 	free(self->nb);
@@ -114,7 +113,7 @@ gears_glsm_t* gears_glsm_new(void)
 void gears_glsm_delete(gears_glsm_t** _self)
 {
 	// *_self can be null
-	assert(_self);
+	ASSERT(_self);
 
 	gears_glsm_t* self = *_self;
 	if(self)
@@ -130,7 +129,7 @@ void gears_glsm_delete(gears_glsm_t** _self)
 
 void gears_glsm_begin(gears_glsm_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	self->normal.x = 0.0f;
 	self->normal.y = 0.0f;
@@ -143,7 +142,7 @@ void gears_glsm_begin(gears_glsm_t* self)
 
 void gears_glsm_normal3f(gears_glsm_t* self, float x, float y, float z)
 {
-	assert(self);
+	ASSERT(self);
 
 	if(self->status != GEARS_GLSM_INCOMPLETE)
 	{
@@ -157,7 +156,7 @@ void gears_glsm_normal3f(gears_glsm_t* self, float x, float y, float z)
 
 void gears_glsm_vertex3f(gears_glsm_t* self, float x, float y, float z)
 {
-	assert(self);
+	ASSERT(self);
 
 	if(self->status != GEARS_GLSM_INCOMPLETE)
 	{
@@ -213,7 +212,7 @@ void gears_glsm_vertex3f(gears_glsm_t* self, float x, float y, float z)
 
 void gears_glsm_end(gears_glsm_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	if(self->status != GEARS_GLSM_INCOMPLETE)
 	{
@@ -285,6 +284,6 @@ void gears_glsm_end(gears_glsm_t* self)
 
 int gears_glsm_status(gears_glsm_t* self)
 {
-	assert(self);
+	ASSERT(self);
 	return self->status;
 }

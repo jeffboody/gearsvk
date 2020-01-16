@@ -27,7 +27,6 @@
  *
  */
 
-#include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -53,7 +52,7 @@ static const cc_vec4f_t BLUE  = { .r=0.2f, .g=0.2f, .b=1.0f, .a=1.0f };
 
 static void gears_renderer_step(gears_renderer_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	vkk_engine_t*   engine  = self->engine;
 	vkk_renderer_t* primary = vkk_engine_renderer(engine);
@@ -153,7 +152,7 @@ static void gears_renderer_step(gears_renderer_t* self)
 static void gears_renderer_rotate(gears_renderer_t* self,
                                   float dx, float dy)
 {
-	assert(self);
+	ASSERT(self);
 
 	vkk_engine_t*   engine  = self->engine;
 	vkk_renderer_t* primary = vkk_engine_renderer(engine);
@@ -179,7 +178,7 @@ static void gears_renderer_rotate(gears_renderer_t* self,
 static void gears_renderer_scale(gears_renderer_t* self,
                                  float scale)
 {
-	assert(self);
+	ASSERT(self);
 
 	// scale range
 	float min = 0.25f;
@@ -193,7 +192,7 @@ static void gears_renderer_scale(gears_renderer_t* self,
 static int
 gears_renderer_newUniformSetFactory(gears_renderer_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	vkk_uniformBinding_t ub_array[4] =
 	{
@@ -250,7 +249,7 @@ gears_renderer_newUniformSetFactory(gears_renderer_t* self)
 static int
 gears_renderer_newPipelineLayout(gears_renderer_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	self->pl = vkk_pipelineLayout_new(self->engine,
 	                                  1, &self->usf);
@@ -265,7 +264,7 @@ gears_renderer_newPipelineLayout(gears_renderer_t* self)
 static int
 gears_renderer_newGraphicsPipeline(gears_renderer_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	vkk_engine_t*   engine  = self->engine;
 	vkk_renderer_t* primary = vkk_engine_renderer(engine);
@@ -315,7 +314,7 @@ gears_renderer_newGraphicsPipeline(gears_renderer_t* self)
 static int
 gears_renderer_newImage(gears_renderer_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	// check for the required image caps
 	int caps = vkk_engine_imageCaps(self->engine,
@@ -385,7 +384,7 @@ gears_renderer_newImage(gears_renderer_t* self)
 static int
 gears_renderer_newSampler(gears_renderer_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	self->sampler = vkk_sampler_new(self->engine,
 	                                VKK_SAMPLER_FILTER_LINEAR,
@@ -406,7 +405,7 @@ gears_renderer_newSampler(gears_renderer_t* self)
 gears_renderer_t*
 gears_renderer_new(vkk_platform_t* platform)
 {
-	assert(platform);
+	ASSERT(platform);
 
 	gears_renderer_t* self;
 	self = (gears_renderer_t*)
@@ -535,7 +534,7 @@ gears_renderer_new(vkk_platform_t* platform)
 void gears_renderer_delete(gears_renderer_t** _self)
 {
 	// *_self can be null
-	assert(_self);
+	ASSERT(_self);
 
 	gears_renderer_t* self = *_self;
 	if(self)
@@ -561,7 +560,7 @@ void gears_renderer_delete(gears_renderer_t** _self)
 
 void gears_renderer_exit(gears_renderer_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	vkk_platform_cmd(self->platform,
 	                 VKK_PLATFORM_CMD_EXIT, NULL);
@@ -570,8 +569,8 @@ void gears_renderer_exit(gears_renderer_t* self)
 void gears_renderer_loadURL(gears_renderer_t* self,
                             const char* url)
 {
-	assert(self);
-	assert(url);
+	ASSERT(self);
+	ASSERT(url);
 
 	vkk_platform_cmd(self->platform,
 	                 VKK_PLATFORM_CMD_LOADURL, url);
@@ -579,7 +578,7 @@ void gears_renderer_loadURL(gears_renderer_t* self,
 
 void gears_renderer_playClick(void* ptr)
 {
-	assert(ptr);
+	ASSERT(ptr);
 
 	gears_renderer_t* self = (gears_renderer_t*) ptr;
 	vkk_platform_cmd(self->platform,
@@ -588,14 +587,14 @@ void gears_renderer_playClick(void* ptr)
 
 int gears_renderer_resize(gears_renderer_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	return vkk_engine_resize(self->engine);
 }
 
 int gears_renderer_recreate(gears_renderer_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	return vkk_engine_recreate(self->engine);
 }
@@ -603,14 +602,14 @@ int gears_renderer_recreate(gears_renderer_t* self)
 void gears_renderer_density(gears_renderer_t* self,
                             float density)
 {
-	assert(self);
+	ASSERT(self);
 
 	self->density = density;
 }
 
 void gears_renderer_draw(gears_renderer_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	vkk_renderer_t* primary;
 	primary = vkk_engine_renderer(self->engine);
@@ -646,7 +645,7 @@ void gears_renderer_touch(gears_renderer_t* self,
                           float x2, float y2,
                           float x3, float y3)
 {
-	assert(self);
+	ASSERT(self);
 
 	if(action == GEARS_TOUCH_ACTION_UP)
 	{
@@ -716,7 +715,7 @@ void gears_renderer_touch(gears_renderer_t* self,
 void gears_renderer_keyPress(gears_renderer_t* self,
                              int keycode, int meta)
 {
-	assert(self);
+	ASSERT(self);
 
 	if(keycode == VKK_KEYCODE_ESCAPE)
 	{

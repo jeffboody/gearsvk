@@ -27,7 +27,6 @@
  *
  */
 
-#include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -80,7 +79,7 @@ static int gear_generate(gear_t* self,
                          float inner_radius, float outer_radius, float width,
                          int teeth, float tooth_depth)
 {
-	assert(self);
+	ASSERT(self);
 
 	gears_glsm_t* glsm = gears_glsm_new();
 	if(glsm == NULL)
@@ -341,7 +340,7 @@ static int gear_generate(gear_t* self,
 static int
 gear_createDescriptorSet(gear_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	gears_renderer_t* renderer = self->renderer;
 
@@ -484,7 +483,7 @@ gear_t* gear_new(struct gears_renderer_s* renderer,
 void gear_delete(gear_t** _self)
 {
 	// *_self can be null
-	assert(_self);
+	ASSERT(_self);
 
 	gear_t* self = *_self;
 	if(self)
@@ -510,10 +509,10 @@ void gear_update(gear_t* self,
                  vkk_renderer_t* renderer,
                  cc_mat4f_t* mvp, cc_mat4f_t* mvm)
 {
-	assert(self);
-	assert(renderer);
-	assert(mvp);
-	assert(mvm);
+	ASSERT(self);
+	ASSERT(renderer);
+	ASSERT(mvp);
+	ASSERT(mvm);
 
 	vkk_renderer_updateBuffer(renderer,
 	                          self->mvp_ub,
@@ -549,8 +548,8 @@ void gear_update(gear_t* self,
 
 void gear_draw(gear_t* self, vkk_renderer_t* renderer)
 {
-	assert(self);
-	assert(renderer);
+	ASSERT(self);
+	ASSERT(renderer);
 
 	vkk_pipelineLayout_t* pl = self->renderer->pl;
 

@@ -20,7 +20,6 @@
  * THE SOFTWARE.
  */
 
-#include <assert.h>
 #include <stdlib.h>
 
 #define LOG_TAG "gears"
@@ -34,29 +33,29 @@
 
 void* gearsvk_onCreate(vkk_platform_t* platform)
 {
-	assert(platform);
+	ASSERT(platform);
 
 	return (void*) gears_renderer_new(platform);
 }
 
 void gearsvk_onDestroy(void** _priv)
 {
-	assert(_priv);
+	ASSERT(_priv);
 
 	gears_renderer_delete((gears_renderer_t**) _priv);
 }
 
 void gearsvk_onDraw(void* priv)
 {
-	assert(priv);
+	ASSERT(priv);
 
 	gears_renderer_draw((gears_renderer_t*) priv);
 }
 
 int gearsvk_onEvent(void* priv, vkk_event_t* event)
 {
-	assert(priv);
-	assert(event);
+	ASSERT(priv);
+	ASSERT(event);
 
 	gears_renderer_t* renderer = (gears_renderer_t*) priv;
 

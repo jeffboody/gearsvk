@@ -2,7 +2,6 @@
  * Copyright (c) 2018 Jeff Boody
  */
 
-#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -20,8 +19,8 @@ static int clickGithub(vkui_widget_t* widget,
                        void* priv, int state,
                        float x, float y)
 {
-	assert(widget);
-	assert(priv);
+	ASSERT(widget);
+	ASSERT(priv);
 	LOGD("debug x=%f, y=%f", x, y);
 
 	if(state == VKUI_WIDGET_POINTER_UP)
@@ -37,8 +36,8 @@ static int clickIcons(vkui_widget_t* widget,
                       void* priv, int state,
                       float x, float y)
 {
-	assert(widget);
-	assert(priv);
+	ASSERT(widget);
+	ASSERT(priv);
 	LOGD("debug x=%f, y=%f", x, y);
 
 	if(state == VKUI_WIDGET_POINTER_UP)
@@ -54,8 +53,8 @@ static int clickBarlow(vkui_widget_t* widget,
                        void* priv, int state,
                        float x, float y)
 {
-	assert(widget);
-	assert(priv);
+	ASSERT(widget);
+	ASSERT(priv);
 	LOGD("debug x=%f, y=%f", x, y);
 
 	if(state == VKUI_WIDGET_POINTER_UP)
@@ -71,8 +70,8 @@ static int clickExpat(vkui_widget_t* widget,
                       void* priv, int state,
                       float x, float y)
 {
-	assert(widget);
-	assert(priv);
+	ASSERT(widget);
+	ASSERT(priv);
 	LOGD("debug x=%f, y=%f", x, y);
 
 	if(state == VKUI_WIDGET_POINTER_UP)
@@ -91,8 +90,8 @@ static int clickExpat(vkui_widget_t* widget,
 gears_viewAbout_t* gears_viewAbout_new(struct gears_overlay_s* overlay,
                                        vkui_widget_clickFn clickBack)
 {
-	assert(overlay);
-	assert(clickBack);
+	ASSERT(overlay);
+	ASSERT(clickBack);
 
 	vkui_widgetLayout_t layout_listbox =
 	{
@@ -598,7 +597,7 @@ gears_viewAbout_t* gears_viewAbout_new(struct gears_overlay_s* overlay,
 
 void gears_viewAbout_delete(gears_viewAbout_t** _self)
 {
-	assert(_self);
+	ASSERT(_self);
 
 	gears_viewAbout_t* self = *_self;
 	if(self)

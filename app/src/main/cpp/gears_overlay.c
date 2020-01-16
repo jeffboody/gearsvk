@@ -21,7 +21,6 @@
  *
  */
 
-#include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 
@@ -38,8 +37,8 @@ static int clickBack(vkui_widget_t* widget,
                      void* priv, int state,
                      float x, float y)
 {
-	assert(widget);
-	assert(priv);
+	ASSERT(widget);
+	ASSERT(priv);
 	LOGD("debug x=%f, y=%f", x, y);
 
 	gears_overlay_t* overlay = (gears_overlay_t*) priv;
@@ -59,7 +58,7 @@ static int clickBack(vkui_widget_t* widget,
 
 gears_overlay_t* gears_overlay_new(struct gears_renderer_s* renderer)
 {
-	assert(renderer);
+	ASSERT(renderer);
 
 	vkk_engine_t* engine = renderer->engine;
 
@@ -144,7 +143,7 @@ gears_overlay_t* gears_overlay_new(struct gears_renderer_s* renderer)
 
 void gears_overlay_delete(gears_overlay_t** _self)
 {
-	assert(_self);
+	ASSERT(_self);
 
 	gears_overlay_t* self = *_self;
 	if(self)
@@ -162,7 +161,7 @@ void gears_overlay_delete(gears_overlay_t** _self)
 
 int gears_overlay_escape(gears_overlay_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	if(self->draw_mode == GEARS_OVERLAY_DRAWMODE_ABOUT)
 	{
@@ -179,7 +178,7 @@ int gears_overlay_escape(gears_overlay_t* self)
 void gears_overlay_draw(gears_overlay_t* self,
                         float density)
 {
-	assert(self);
+	ASSERT(self);
 
 	vkui_screen_density(self->screen, density);
 	vkui_screen_draw(self->screen);
@@ -187,7 +186,7 @@ void gears_overlay_draw(gears_overlay_t* self,
 
 void gears_overlay_updateFps(gears_overlay_t* self, int fps)
 {
-	assert(self);
+	ASSERT(self);
 
 	gears_layerHud_updateFps(self->layer_hud, fps);
 }
@@ -195,20 +194,20 @@ void gears_overlay_updateFps(gears_overlay_t* self, int fps)
 int gears_overlay_pointerDown(gears_overlay_t* self,
                               float x, float y, double t0)
 {
-	assert(self);
+	ASSERT(self);
 	return vkui_screen_pointerDown(self->screen, x, y, t0);
 }
 
 int gears_overlay_pointerUp(gears_overlay_t* self,
                             float x, float y, double t0)
 {
-	assert(self);
+	ASSERT(self);
 	return vkui_screen_pointerUp(self->screen, x, y, t0);
 }
 
 int gears_overlay_pointerMove(gears_overlay_t* self,
                               float x, float y, double t0)
 {
-	assert(self);
+	ASSERT(self);
 	return vkui_screen_pointerMove(self->screen, x, y, t0);
 }

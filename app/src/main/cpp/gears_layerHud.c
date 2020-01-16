@@ -2,7 +2,6 @@
  * Copyright (c) 2018 Jeff Boody
  */
 
-#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -19,8 +18,8 @@ static int clickAbout(vkui_widget_t* widget,
                       void* priv, int state,
                       float x, float y)
 {
-	assert(widget);
-	assert(priv);
+	ASSERT(widget);
+	ASSERT(priv);
 
 	gears_overlay_t* overlay = (gears_overlay_t*) priv;
 	if(state == VKUI_WIDGET_POINTER_UP)
@@ -39,7 +38,7 @@ static int clickAbout(vkui_widget_t* widget,
 
 gears_layerHud_t* gears_layerHud_new(struct gears_overlay_s* overlay)
 {
-	assert(overlay);
+	ASSERT(overlay);
 
 	cc_vec4f_t clear =
 	{
@@ -168,7 +167,7 @@ gears_layerHud_t* gears_layerHud_new(struct gears_overlay_s* overlay)
 
 void gears_layerHud_delete(gears_layerHud_t** _self)
 {
-	assert(_self);
+	ASSERT(_self);
 
 	gears_layerHud_t* self = *_self;
 	if(self)
@@ -182,7 +181,7 @@ void gears_layerHud_delete(gears_layerHud_t** _self)
 
 void gears_layerHud_updateFps(gears_layerHud_t* self, int fps)
 {
-	assert(self);
+	ASSERT(self);
 
 	if(self->fps == fps)
 	{
