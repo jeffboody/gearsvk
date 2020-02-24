@@ -35,6 +35,7 @@
 #include "libcc/math/cc_vec3f.h"
 #include "libcc/math/cc_vec4f.h"
 #include "libcc/cc_log.h"
+#include "libcc/cc_memory.h"
 #include "gears_glsm.h"
 #include "gears_renderer.h"
 #include "gear.h"
@@ -401,10 +402,10 @@ gear_t* gear_new(struct gears_renderer_s* renderer,
                  float inner_radius, float outer_radius, float width,
                  int teeth, float tooth_depth)
 {
-	gear_t* self = (gear_t*) malloc(sizeof(gear_t));
+	gear_t* self = (gear_t*) MALLOC(sizeof(gear_t));
 	if(self == NULL)
 	{
-		LOGE("malloc failed");
+		LOGE("MALLOC failed");
 		return NULL;
 	}
 
@@ -476,7 +477,7 @@ gear_t* gear_new(struct gears_renderer_s* renderer,
 	fail_createUniformNm:
 		vkk_buffer_delete(&self->mvp_ub);
 	fail_createUniformMvp:
-		free(self);
+		FREE(self);
 	return NULL;
 }
 
@@ -500,7 +501,7 @@ void gear_delete(gear_t** _self)
 		vkk_buffer_delete(&self->color_ub);
 		vkk_buffer_delete(&self->nm_ub);
 		vkk_buffer_delete(&self->mvp_ub);
-		free(self);
+		FREE(self);
 		*_self = NULL;
 	}
 }

@@ -26,6 +26,7 @@
 
 #define LOG_TAG "gears"
 #include "libcc/cc_log.h"
+#include "libcc/cc_memory.h"
 #include "gears_overlay.h"
 #include "gears_renderer.h"
 
@@ -71,7 +72,7 @@ gears_overlay_t* gears_overlay_new(struct gears_renderer_s* renderer)
 	};
 
 	gears_overlay_t* self = (gears_overlay_t*)
-	                        malloc(sizeof(gears_overlay_t));
+	                        MALLOC(sizeof(gears_overlay_t));
 	if(self == NULL)
 	{
 		return NULL;
@@ -137,7 +138,7 @@ gears_overlay_t* gears_overlay_new(struct gears_renderer_s* renderer)
 	fail_layer_show:
 		vkui_screen_delete(&self->screen);
 	fail_screen:
-		free(self);
+		FREE(self);
 	return NULL;
 }
 
@@ -154,7 +155,7 @@ void gears_overlay_delete(gears_overlay_t** _self)
 		gears_viewAbout_delete(&self->view_about);
 		vkui_layer_delete(&self->layer_show);
 		vkui_screen_delete(&self->screen);
-		free(self);
+		FREE(self);
 		*_self = NULL;
 	}
 }

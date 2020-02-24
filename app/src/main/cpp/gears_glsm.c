@@ -25,6 +25,7 @@
 
 #define LOG_TAG "gears"
 #include "libcc/cc_log.h"
+#include "libcc/cc_memory.h"
 #include "gears_glsm.h"
 
 /***********************************************************
@@ -42,7 +43,7 @@ static void gears_glsm_draincache(gears_glsm_t* self)
 	{
 		v = (cc_vec3f_t*)
 		    cc_list_remove(self->cache_vb, &iter);
-		free(v);
+		FREE(v);
 	}
 
 	// empty the nb list
@@ -51,7 +52,7 @@ static void gears_glsm_draincache(gears_glsm_t* self)
 	{
 		v = (cc_vec3f_t*)
 		    cc_list_remove(self->cache_nb, &iter);
-		free(v);
+		FREE(v);
 	}
 }
 
@@ -59,8 +60,8 @@ static void gears_glsm_freebuffers(gears_glsm_t* self)
 {
 	ASSERT(self);
 
-	free(self->vb);
-	free(self->nb);
+	FREE(self->vb);
+	FREE(self->nb);
 	self->vb = NULL;
 	self->nb = NULL;
 }
@@ -72,10 +73,10 @@ static void gears_glsm_freebuffers(gears_glsm_t* self)
 gears_glsm_t* gears_glsm_new(void)
 {
 
-	gears_glsm_t* self = (gears_glsm_t*) malloc(sizeof(gears_glsm_t));
+	gears_glsm_t* self = (gears_glsm_t*) MALLOC(sizeof(gears_glsm_t));
 	if(self == NULL)
 	{
-		LOGE("malloc failed");
+		LOGE("MALLOC failed");
 		return NULL;
 	}
 
@@ -106,7 +107,7 @@ gears_glsm_t* gears_glsm_new(void)
 	fail_cache_nb:
 		cc_list_delete(&self->cache_vb);
 	fail_cache_vb:
-		free(self);
+		FREE(self);
 	return NULL;
 }
 
@@ -122,7 +123,7 @@ void gears_glsm_delete(gears_glsm_t** _self)
 		cc_list_delete(&self->cache_vb);
 		cc_list_delete(&self->cache_nb);
 		gears_glsm_freebuffers(self);
-		free(self);
+		FREE(self);
 		*_self = NULL;
 	}
 }
@@ -163,10 +164,10 @@ void gears_glsm_vertex3f(gears_glsm_t* self, float x, float y, float z)
 		return;
 	}
 
-	cc_vec3f_t* v = (cc_vec3f_t*) malloc(sizeof(cc_vec3f_t));
+	cc_vec3f_t* v = (cc_vec3f_t*) MALLOC(sizeof(cc_vec3f_t));
 	if(v == NULL)
 	{
-		LOGE("malloc failed");
+		LOGE("MALLOC failed");
 		goto fail_malloc_v;
 	}
 	v->x = x;
@@ -179,10 +180,10 @@ void gears_glsm_vertex3f(gears_glsm_t* self, float x, float y, float z)
 		goto fail_append_vb;
 	}
 
-	cc_vec3f_t* n = (cc_vec3f_t*) malloc(sizeof(cc_vec3f_t));
+	cc_vec3f_t* n = (cc_vec3f_t*) MALLOC(sizeof(cc_vec3f_t));
 	if(n == NULL)
 	{
-		LOGE("malloc failed");
+		LOGE("MALLOC failed");
 		goto fail_malloc_n;
 	}
 	n->x = self->normal.x;
@@ -200,11 +201,11 @@ void gears_glsm_vertex3f(gears_glsm_t* self, float x, float y, float z)
 
 	// failure
 	fail_append_nb:
-		free(n);
+		FREE(n);
 	fail_malloc_n:
 		// cache drained below
 	fail_append_vb:
-		free(v);
+		FREE(v);
 	fail_malloc_v:
 		gears_glsm_draincache(self);
 		self->status = GEARS_GLSM_ERROR;
@@ -221,11 +222,11 @@ void gears_glsm_end(gears_glsm_t* self)
 
 	// initialize buffers
 	self->ec = cc_list_size(self->cache_vb);   // vertex count
-	self->vb = (float*) malloc(3 * self->ec * sizeof(float));
-	self->nb = (float*) malloc(3 * self->ec * sizeof(float));
+	self->vb = (float*) MALLOC(3 * self->ec * sizeof(float));
+	self->nb = (float*) MALLOC(3 * self->ec * sizeof(float));
 	if((self->vb == NULL) || (self->nb == NULL))
 	{
-		LOGE("malloc failed");
+		LOGE("MALLOC failed");
 		goto fail_malloc;
 	}
 
@@ -264,8 +265,8 @@ void gears_glsm_end(gears_glsm_t* self)
 		self->nb[3 * vi + 2] = n->z;
 
 		// free the cache as we go
-		free(v);
-		free(n);
+		FREE(v);
+		FREE(n);
 	}
 
 	// success
@@ -274,7 +275,7 @@ void gears_glsm_end(gears_glsm_t* self)
 
 	// failure
 	fail_norm:
-		free(v);
+		FREE(v);
 	fail_vert:
 		gears_glsm_freebuffers(self);
 	fail_malloc:

@@ -35,6 +35,7 @@
 #include "libcc/math/cc_mat4f.h"
 #include "libcc/math/cc_vec4f.h"
 #include "libcc/cc_log.h"
+#include "libcc/cc_memory.h"
 #include "libcc/cc_timestamp.h"
 #include "libpak/pak_file.h"
 #include "texgz/texgz_png.h"
@@ -409,10 +410,10 @@ gears_renderer_new(vkk_platform_t* platform)
 
 	gears_renderer_t* self;
 	self = (gears_renderer_t*)
-	       calloc(1, sizeof(gears_renderer_t));
+	       CALLOC(1, sizeof(gears_renderer_t));
 	if(self == NULL)
 	{
-		LOGE("calloc failed");
+		LOGE("CALLOC failed");
 		return NULL;
 	}
 
@@ -425,7 +426,7 @@ gears_renderer_new(vkk_platform_t* platform)
 	self->escape_t0   = cc_timestamp();
 
 	self->engine = vkk_engine_new(platform, "GearsVK",
-	                              VKK_MAKE_VERSION(1,0,2),
+	                              VKK_MAKE_VERSION(1,0,3),
 	                              GEARS_RESOURCE,
 	                              GEARS_CACHE);
 	if(self->engine == NULL)
@@ -527,7 +528,7 @@ gears_renderer_new(vkk_platform_t* platform)
 		vkk_engine_shutdown(self->engine);
 		vkk_engine_delete(&self->engine);
 	fail_engine:
-		free(self);
+		FREE(self);
 	return NULL;
 }
 
@@ -553,7 +554,7 @@ void gears_renderer_delete(gears_renderer_t** _self)
 		vkk_uniformSetFactory_delete(&self->usf);
 		vkk_sampler_delete(&self->sampler);
 		vkk_engine_delete(&self->engine);
-		free(self);
+		FREE(self);
 		*_self = NULL;
 	}
 }
