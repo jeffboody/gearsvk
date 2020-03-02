@@ -1,11 +1,15 @@
 # Update SDK to point to the Android SDK
 SDK=$HOME/Android/Sdk
+export SDK
 
-# Vulkan SDK for SDL
-source ${HOME}/vulkan/1.1.121.1/setup-env.sh
+# Setup Vulkan for Linux SDL
+if [[ "$OSTYPE" != "darwin"* ]]; then
+	source ${HOME}/vulkan/1.2.131.2/setup-env.sh
+fi
 
 #-- DON'T CHANGE BELOW LINE --
 
+export ANDROID_SDK_ROOT=$SDK
 export PATH=$SDK/tools:$PATH
 export PATH=$SDK/platform-tools:$PATH
 export PATH=$SDK/platform-tools/systrace:$PATH
