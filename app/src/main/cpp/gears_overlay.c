@@ -22,6 +22,7 @@
  */
 
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #define LOG_TAG "gears"
@@ -79,9 +80,15 @@ gears_overlay_t* gears_overlay_new(struct gears_renderer_s* renderer)
 	}
 	self->renderer = renderer;
 
+	const char* resource_path;
+	resource_path = vkk_engine_resourcePath(engine);
+
+	char resource[256];
+	snprintf(resource, 256, "%s/resource.pak", resource_path);
+
 	self->screen = vkui_screen_new(engine,
-	                               vkk_engine_renderer(engine),
-	                               GEARS_RESOURCE,
+	                               vkk_engine_defaultRenderer(engine),
+	                               resource,
 	                               (void*) renderer,
 	                               gears_renderer_playClick);
 	if(self->screen == NULL)

@@ -24,18 +24,18 @@
 
 #define LOG_TAG "gears"
 #include "libcc/cc_log.h"
-#include "libvkk/vkk.h"
+#include "libvkk/vkk_platform.h"
 #include "gears_renderer.h"
 
 /***********************************************************
 * callbacks                                                *
 ***********************************************************/
 
-void* gearsvk_onCreate(vkk_platform_t* platform)
+void* gearsvk_onCreate(vkk_engine_t* engine)
 {
-	ASSERT(platform);
+	ASSERT(engine);
 
-	return (void*) gears_renderer_new(platform);
+	return (void*) gears_renderer_new(engine);
 }
 
 void gearsvk_onDestroy(void** _priv)
@@ -52,7 +52,14 @@ void gearsvk_onDraw(void* priv)
 	gears_renderer_draw((gears_renderer_t*) priv);
 }
 
-int gearsvk_onEvent(void* priv, vkk_event_t* event)
+void gearsvk_onPause(void* priv)
+{
+	ASSERT(priv);
+
+	// ignore
+}
+
+void gearsvk_onEvent(void* priv, vkk_event_t* event)
 {
 	ASSERT(priv);
 	ASSERT(event);
@@ -73,7 +80,6 @@ int gearsvk_onEvent(void* priv, vkk_event_t* event)
 		                     event->action.coord[2].y,
 		                     event->action.coord[3].x,
 		                     event->action.coord[3].y);
-		return 1;
 	}
 	else if(event->type == VKK_EVENT_TYPE_ACTION_MOVE)
 	{
@@ -89,7 +95,6 @@ int gearsvk_onEvent(void* priv, vkk_event_t* event)
 		                     event->action.coord[2].y,
 		                     event->action.coord[3].x,
 		                     event->action.coord[3].y);
-		return 1;
 	}
 	else if(event->type == VKK_EVENT_TYPE_ACTION_UP)
 	{
@@ -105,13 +110,11 @@ int gearsvk_onEvent(void* priv, vkk_event_t* event)
 		                     event->action.coord[2].y,
 		                     event->action.coord[3].x,
 		                     event->action.coord[3].y);
-		return 1;
 	}
 	else if(event->type == VKK_EVENT_TYPE_DENSITY)
 	{
 		gears_renderer_density(renderer,
 		                       event->density);
-		return 1;
 	}
 	else if((event->type == VKK_EVENT_TYPE_KEY_UP) ||
 	        ((event->type == VKK_EVENT_TYPE_KEY_DOWN) &&
@@ -120,24 +123,21 @@ int gearsvk_onEvent(void* priv, vkk_event_t* event)
 		gears_renderer_keyPress(renderer,
 		                        event->key.keycode,
 		                        event->key.meta);
-		return 1;
 	}
-	else if(event->type == VKK_EVENT_TYPE_RESIZE)
-	{
-		return gears_renderer_resize(renderer);
-	}
-	else if(event->type == VKK_EVENT_TYPE_RECREATE)
-	{
-		return gears_renderer_recreate(renderer);
-	}
-
-	return 0;
 }
 
-vkk_platformCallbacks_t VKK_PLATFORM_CALLBACKS =
+vkk_platformInfo_t VKK_PLATFORM_INFO =
 {
-	.onCreate  = gearsvk_onCreate,
-	.onDestroy = gearsvk_onDestroy,
-	.onDraw    = gearsvk_onDraw,
-	.onEvent   = gearsvk_onEvent,
+	.app_name    = "GearsVK",
+	.app_version =
+	{
+		.major = 1,
+		.minor = 0,
+		.patch = 4,
+	},
+	.onCreate    = gearsvk_onCreate,
+	.onDestroy   = gearsvk_onDestroy,
+	.onPause     = gearsvk_onPause,
+	.onDraw      = gearsvk_onDraw,
+	.onEvent     = gearsvk_onEvent,
 };

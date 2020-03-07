@@ -38,6 +38,7 @@
 #include "libcc/cc_memory.h"
 #include "libcc/cc_timestamp.h"
 #include "libpak/pak_file.h"
+#include "libvkk/vkk_platform.h"
 #include "texgz/texgz_png.h"
 #include "texgz/texgz_tex.h"
 #include "gears_renderer.h"
@@ -55,8 +56,8 @@ static void gears_renderer_step(gears_renderer_t* self)
 {
 	ASSERT(self);
 
-	vkk_engine_t*   engine  = self->engine;
-	vkk_renderer_t* primary = vkk_engine_renderer(engine);
+	vkk_renderer_t* primary;
+	primary = vkk_engine_defaultRenderer(self->engine);
 
 	uint32_t width;
 	uint32_t height;
@@ -155,8 +156,8 @@ static void gears_renderer_rotate(gears_renderer_t* self,
 {
 	ASSERT(self);
 
-	vkk_engine_t*   engine  = self->engine;
-	vkk_renderer_t* primary = vkk_engine_renderer(engine);
+	vkk_renderer_t* primary;
+	primary = vkk_engine_defaultRenderer(self->engine);
 
 	// TODO - vkk_renderer_surfaceSize shouldn't be called
 	// outside begin/end
@@ -267,8 +268,8 @@ gears_renderer_newGraphicsPipeline(gears_renderer_t* self)
 {
 	ASSERT(self);
 
-	vkk_engine_t*   engine  = self->engine;
-	vkk_renderer_t* primary = vkk_engine_renderer(engine);
+	vkk_renderer_t* primary;
+	primary = vkk_engine_defaultRenderer(self->engine);
 
 	vkk_vertexBufferInfo_t vbi[2] =
 	{
@@ -329,8 +330,14 @@ gears_renderer_newImage(gears_renderer_t* self)
 		return 0;
 	}
 
+	const char* resource_path;
+	resource_path = vkk_engine_resourcePath(self->engine);
+
+	char resource[256];
+	snprintf(resource, 256, "%s/resource.pak", resource_path);
+
 	pak_file_t* pak;
-	pak = pak_file_open(GEARS_RESOURCE, PAK_FLAG_READ);
+	pak = pak_file_open(resource, PAK_FLAG_READ);
 	if(pak == NULL)
 	{
 		return 0;
@@ -404,9 +411,9 @@ gears_renderer_newSampler(gears_renderer_t* self)
 ***********************************************************/
 
 gears_renderer_t*
-gears_renderer_new(vkk_platform_t* platform)
+gears_renderer_new(vkk_engine_t* engine)
 {
-	ASSERT(platform);
+	ASSERT(engine);
 
 	gears_renderer_t* self;
 	self = (gears_renderer_t*)
@@ -417,22 +424,13 @@ gears_renderer_new(vkk_platform_t* platform)
 		return NULL;
 	}
 
-	self->platform    = platform;
 	self->view_scale  = 1.0f;
 	self->t0          = cc_timestamp();
 	self->density     = 1.0f;
 	self->touch_state = GEARS_TOUCH_STATE_INIT;
 	self->touch_ds    = 1.0f;
 	self->escape_t0   = cc_timestamp();
-
-	self->engine = vkk_engine_new(platform, "GearsVK",
-	                              VKK_MAKE_VERSION(1,0,3),
-	                              GEARS_RESOURCE,
-	                              GEARS_CACHE);
-	if(self->engine == NULL)
-	{
-		goto fail_engine;
-	}
+	self->engine      = engine;
 
 	if(gears_renderer_newSampler(self) == 0)
 	{
@@ -525,9 +523,6 @@ gears_renderer_new(vkk_platform_t* platform)
 	fail_usf:
 		vkk_sampler_delete(&self->sampler);
 	fail_sampler:
-		vkk_engine_shutdown(self->engine);
-		vkk_engine_delete(&self->engine);
-	fail_engine:
 		FREE(self);
 	return NULL;
 }
@@ -540,8 +535,6 @@ void gears_renderer_delete(gears_renderer_t** _self)
 	gears_renderer_t* self = *_self;
 	if(self)
 	{
-		vkk_engine_shutdown(self->engine);
-
 		gears_overlay_delete(&self->overlay);
 		cc_stack4f_delete(&self->mvm_stack);
 		gear_delete(&self->gear3);
@@ -553,7 +546,6 @@ void gears_renderer_delete(gears_renderer_t** _self)
 		vkk_pipelineLayout_delete(&self->pl);
 		vkk_uniformSetFactory_delete(&self->usf);
 		vkk_sampler_delete(&self->sampler);
-		vkk_engine_delete(&self->engine);
 		FREE(self);
 		*_self = NULL;
 	}
@@ -563,8 +555,8 @@ void gears_renderer_exit(gears_renderer_t* self)
 {
 	ASSERT(self);
 
-	vkk_platform_cmd(self->platform,
-	                 VKK_PLATFORM_CMD_EXIT, NULL);
+	vkk_engine_platformCmd(self->engine,
+	                       VKK_PLATFORM_CMD_EXIT, NULL);
 }
 
 void gears_renderer_loadURL(gears_renderer_t* self,
@@ -573,8 +565,8 @@ void gears_renderer_loadURL(gears_renderer_t* self,
 	ASSERT(self);
 	ASSERT(url);
 
-	vkk_platform_cmd(self->platform,
-	                 VKK_PLATFORM_CMD_LOADURL, url);
+	vkk_engine_platformCmd(self->engine,
+	                       VKK_PLATFORM_CMD_LOADURL, url);
 }
 
 void gears_renderer_playClick(void* ptr)
@@ -582,22 +574,9 @@ void gears_renderer_playClick(void* ptr)
 	ASSERT(ptr);
 
 	gears_renderer_t* self = (gears_renderer_t*) ptr;
-	vkk_platform_cmd(self->platform,
-	                 VKK_PLATFORM_CMD_PLAY_CLICK, NULL);
-}
 
-int gears_renderer_resize(gears_renderer_t* self)
-{
-	ASSERT(self);
-
-	return vkk_engine_resize(self->engine);
-}
-
-int gears_renderer_recreate(gears_renderer_t* self)
-{
-	ASSERT(self);
-
-	return vkk_engine_recreate(self->engine);
+	vkk_engine_platformCmd(self->engine,
+	                       VKK_PLATFORM_CMD_PLAY_CLICK, NULL);
 }
 
 void gears_renderer_density(gears_renderer_t* self,
@@ -613,7 +592,7 @@ void gears_renderer_draw(gears_renderer_t* self)
 	ASSERT(self);
 
 	vkk_renderer_t* primary;
-	primary = vkk_engine_renderer(self->engine);
+	primary = vkk_engine_defaultRenderer(self->engine);
 
 	float clear_color[4] =
 	{

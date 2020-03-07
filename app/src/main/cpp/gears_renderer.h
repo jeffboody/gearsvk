@@ -46,22 +46,12 @@
 #define GEARS_TOUCH_STATE_ZOOM    2
 #define GEARS_TOUCH_STATE_OVERLAY 3
 
-#ifdef ANDROID
-	#define GEARS_RESOURCE  "/data/data/com.jeffboody.gearsvk/files/resource.pak"
-	#define GEARS_CACHE     "/data/data/com.jeffboody.gearsvk/files/pipeline.cache"
-	#define GEARS_TIMESTAMP "/data/data/com.jeffboody.gearsvk/files/timestamp.raw"
-#else
-	#define GEARS_RESOURCE "resource.pak"
-	#define GEARS_CACHE    "pipeline.cache"
-#endif
-
 /***********************************************************
 * public                                                   *
 ***********************************************************/
 
 typedef struct gears_renderer_s
 {
-	vkk_platform_t*          platform;
 	vkk_engine_t*            engine;
 	vkk_uniformSetFactory_t* usf;
 	vkk_pipelineLayout_t*    pl;
@@ -106,7 +96,7 @@ typedef struct gears_renderer_s
 	gear_t* gear3;
 } gears_renderer_t;
 
-gears_renderer_t* gears_renderer_new(vkk_platform_t* platform);
+gears_renderer_t* gears_renderer_new(vkk_engine_t* engine);
 void              gears_renderer_delete(gears_renderer_t** _self);
 void              gears_renderer_exit(gears_renderer_t* self);
 void              gears_renderer_loadURL(gears_renderer_t* self,
