@@ -376,7 +376,7 @@ gear_createDescriptorSet(gear_t* self)
 		},
 		// layout(set=0, binding=3) uniform sampler2D lava_sampler;
 		{
-			.type    = VKK_UNIFORM_TYPE_SAMPLER,
+			.type    = VKK_UNIFORM_TYPE_IMAGE,
 			.binding = 3,
 			.image   = renderer->image
 		},

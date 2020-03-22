@@ -206,7 +206,6 @@ gears_renderer_newUniformSetFactory(gears_renderer_t* self)
 			.binding = 0,
 			.type    = VKK_UNIFORM_TYPE_BUFFER,
 			.stage   = VKK_STAGE_VS,
-			.sampler = NULL
 		},
 		// layout(std140, set=0, binding=1) uniform uniformNm
 		// {
@@ -216,7 +215,6 @@ gears_renderer_newUniformSetFactory(gears_renderer_t* self)
 			.binding = 1,
 			.type    = VKK_UNIFORM_TYPE_BUFFER,
 			.stage   = VKK_STAGE_VS,
-			.sampler = NULL
 		},
 		// layout(std140, set=0, binding=2) uniform uniformColor
 		// {
@@ -226,14 +224,18 @@ gears_renderer_newUniformSetFactory(gears_renderer_t* self)
 			.binding = 2,
 			.type    = VKK_UNIFORM_TYPE_BUFFER,
 			.stage   = VKK_STAGE_FS,
-			.sampler = NULL
 		},
 		// layout(set=0, binding=3) uniform sampler2D lava_sampler;
 		{
 			.binding = 3,
-			.type    = VKK_UNIFORM_TYPE_SAMPLER,
+			.type    = VKK_UNIFORM_TYPE_IMAGE,
 			.stage   = VKK_STAGE_FS,
-			.sampler = self->sampler
+			.si      =
+			{
+				VKK_SAMPLER_FILTER_LINEAR,
+				VKK_SAMPLER_FILTER_LINEAR,
+				VKK_SAMPLER_MIPMAP_MODE_NEAREST,
+			}
 		}
 	};
 
@@ -389,23 +391,6 @@ gears_renderer_newImage(gears_renderer_t* self)
 	return 0;
 }
 
-static int
-gears_renderer_newSampler(gears_renderer_t* self)
-{
-	ASSERT(self);
-
-	self->sampler = vkk_sampler_new(self->engine,
-	                                VKK_SAMPLER_FILTER_LINEAR,
-	                                VKK_SAMPLER_FILTER_LINEAR,
-	                                VKK_SAMPLER_MIPMAP_MODE_NEAREST);
-	if(self->sampler == NULL)
-	{
-		return 0;
-	}
-
-	return 1;
-}
-
 /***********************************************************
 * public                                                   *
 ***********************************************************/
@@ -431,11 +416,6 @@ gears_renderer_new(vkk_engine_t* engine)
 	self->touch_ds    = 1.0f;
 	self->escape_t0   = cc_timestamp();
 	self->engine      = engine;
-
-	if(gears_renderer_newSampler(self) == 0)
-	{
-		goto fail_sampler;
-	}
 
 	if(gears_renderer_newUniformSetFactory(self) == 0)
 	{
@@ -521,8 +501,6 @@ gears_renderer_new(vkk_engine_t* engine)
 	fail_pl:
 		vkk_uniformSetFactory_delete(&self->usf);
 	fail_usf:
-		vkk_sampler_delete(&self->sampler);
-	fail_sampler:
 		FREE(self);
 	return NULL;
 }
@@ -545,7 +523,6 @@ void gears_renderer_delete(gears_renderer_t** _self)
 		vkk_graphicsPipeline_delete(&self->gp);
 		vkk_pipelineLayout_delete(&self->pl);
 		vkk_uniformSetFactory_delete(&self->usf);
-		vkk_sampler_delete(&self->sampler);
 		FREE(self);
 		*_self = NULL;
 	}

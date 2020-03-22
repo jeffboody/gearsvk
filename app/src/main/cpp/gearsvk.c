@@ -133,7 +133,7 @@ vkk_platformInfo_t VKK_PLATFORM_INFO =
 	{
 		.major = 1,
 		.minor = 0,
-		.patch = 4,
+		.patch = 5,
 	},
 	.onCreate    = gearsvk_onCreate,
 	.onDestroy   = gearsvk_onDestroy,
