@@ -321,14 +321,15 @@ gears_renderer_newImage(gears_renderer_t* self)
 	ASSERT(self);
 
 	// check for the required image caps
-	int caps = vkk_engine_imageCaps(self->engine,
-	                                VKK_IMAGE_FORMAT_RGBA8888);
-	int req  = VKK_IMAGE_CAPS_TEXTURE |
-	           VKK_IMAGE_CAPS_MIPMAP  |
-	           VKK_IMAGE_CAPS_FILTER_LINEAR;
-	if((caps & req) != req)
+	vkk_imageCaps_t caps;
+	vkk_engine_imageCaps(self->engine,
+	                     VKK_IMAGE_FORMAT_RGBA8888, &caps);
+	if((caps.texture == 0) || (caps.mipmap == 0) ||
+	   (caps.filter_linear == 0))
 	{
-		LOGE("caps=0x%X, req=0x%X", caps, req);
+		LOGE("invalid texture=%i, mipmap=%i, filter_linear=%i",
+		     (int) caps.texture, (int) caps.mipmap,
+		     (int) caps.filter_linear);
 		return 0;
 	}
 
