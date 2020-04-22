@@ -4,7 +4,7 @@ export SDK
 
 # Setup Vulkan for Linux SDL
 if [[ "$OSTYPE" != "darwin"* ]]; then
-	source ${HOME}/vulkan/1.2.131.2/setup-env.sh
+	source ${HOME}/vulkan/1.2.135.0/setup-env.sh
 fi
 
 #-- DON'T CHANGE BELOW LINE --
