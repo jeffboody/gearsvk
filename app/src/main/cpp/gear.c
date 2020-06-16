@@ -552,9 +552,7 @@ void gear_draw(gear_t* self, vkk_renderer_t* renderer)
 	ASSERT(self);
 	ASSERT(renderer);
 
-	vkk_pipelineLayout_t* pl = self->renderer->pl;
-
-	vkk_renderer_bindUniformSets(renderer, pl, 1, &self->us);
+	vkk_renderer_bindUniformSets(renderer, 1, &self->us);
 
 	// front face
 	vkk_buffer_t* vertex_buffers[2] =

@@ -15,7 +15,7 @@
 	url = git@github.com:jeffboody/libcc.git
 [submodule "app/src/main/cpp/lodepng"]
 	path = app/src/main/cpp/lodepng
-	url = git@github.com:jeffboody/lodepng.git
+	url = git@github.com:lvandeve/lodepng.git
 [submodule "app/src/main/cpp/libxmlstream"]
 	path = app/src/main/cpp/libxmlstream
 	url = git@github.com:jeffboody/libxmlstream.git
