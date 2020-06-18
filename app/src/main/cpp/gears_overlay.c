@@ -219,3 +219,12 @@ int gears_overlay_pointerMove(gears_overlay_t* self,
 	ASSERT(self);
 	return vkui_screen_pointerMove(self->screen, x, y, t0);
 }
+
+void gears_overlay_contentRect(gears_overlay_t* self,
+                               uint32_t t, uint32_t l,
+                               uint32_t b, uint32_t r)
+{
+	ASSERT(self);
+
+	vkui_screen_contentRect(self->screen, t, l, b, r);
+}

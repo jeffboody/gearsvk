@@ -58,5 +58,8 @@ int              gears_overlay_pointerUp(gears_overlay_t* self,
                                          float x, float y, double t0);
 int              gears_overlay_pointerMove(gears_overlay_t* self,
                                            float x, float y, double t0);
+void             gears_overlay_contentRect(gears_overlay_t* self,
+                                           uint32_t t, uint32_t l,
+                                           uint32_t b, uint32_t r);
 
 #endif

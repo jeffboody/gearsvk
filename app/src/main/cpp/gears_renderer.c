@@ -59,24 +59,46 @@ static void gears_renderer_step(gears_renderer_t* self)
 	vkk_renderer_t* primary;
 	primary = vkk_engine_defaultRenderer(self->engine);
 
-	uint32_t width;
-	uint32_t height;
-	vkk_renderer_surfaceSize(primary, &width, &height);
+	vkk_renderer_surfaceSize(primary,
+	                         &self->screen_w,
+	                         &self->screen_h);
+
+	// update screen, viewport and scissor
+	float screen_x = 0.0f;
+	float screen_y = 0.0f;
+	float screen_w = (float) self->screen_w;
+	float screen_h = (float) self->screen_h;
+	if((self->content_rect_width  > 0) &&
+	   (self->content_rect_height > 0) &&
+	   (self->content_rect_width  <= self->screen_w) &&
+	   (self->content_rect_height <= self->screen_h))
+	{
+		screen_x = (float) self->content_rect_left;
+		screen_y = (float) self->content_rect_top;
+		screen_w = (float) self->content_rect_width;
+		screen_h = (float) self->content_rect_height;
+
+		vkk_renderer_viewport(primary, screen_x, screen_y,
+		                      screen_w, screen_h);
+		vkk_renderer_scissor(primary,
+		                     self->content_rect_left,
+		                     self->content_rect_top,
+		                     self->content_rect_width,
+		                     self->content_rect_height);
+	}
 
 	// https://www.saschawillems.de/blog/2019/03/29/flipping-the-vulkan-viewport/
 	// Vulkan uses a top-left left origin while OpenGL
 	// uses a bottom-left origin so the frustum top and
 	// bottom should be swapped to compensate
-	float w = (float) width;
-	float h = (float) height;
-	if(h > w)
+	if(screen_h > screen_w)
 	{
-		float a = h / w;
+		float a = screen_h/screen_w;
 		cc_mat4f_frustum(&self->pm, 1, -1.0f, 1.0f, a, -a, 5.0f, 60.0f);
 	}
 	else
 	{
-		float a = w / h;
+		float a = screen_w/screen_h;
 		cc_mat4f_frustum(&self->pm, 1, -a, a, 1.0f, -1.0f, 5.0f, 60.0f);
 	}
 	cc_mat4f_translate(&self->mvm, 1, 0.0f, 0.0f, -40.0f);
@@ -156,25 +178,19 @@ static void gears_renderer_rotate(gears_renderer_t* self,
 {
 	ASSERT(self);
 
-	vkk_renderer_t* primary;
-	primary = vkk_engine_defaultRenderer(self->engine);
-
-	// TODO - vkk_renderer_surfaceSize shouldn't be called
-	// outside begin/end
-	uint32_t width;
-	uint32_t height;
-	vkk_renderer_surfaceSize(primary, &width, &height);
-
 	// rotating around x-axis is equivalent to moving up-and-down on touchscreen
 	// rotating around y-axis is equivalent to moving left-and-right on touchscreen
 	// 360 degrees is equivalent to moving completly across the touchscreen
-	float w  = (float) width;
-	float h  = (float) height;
-	float rx = 360.0f * dy / h;
-	float ry = 360.0f * dx / w;
-	cc_quaternion_t q;
-	cc_quaternion_loadeuler(&q, rx, ry, 0.0f);
-	cc_quaternion_rotateq(&self->view_q, &q);
+	if(self->screen_w && self->screen_h)
+	{
+		float w  = (float) self->screen_w;
+		float h  = (float) self->screen_h;
+		float rx = 360.0f * dy / h;
+		float ry = 360.0f * dx / w;
+		cc_quaternion_t q;
+		cc_quaternion_loadeuler(&q, rx, ry, 0.0f);
+		cc_quaternion_rotateq(&self->view_q, &q);
+	}
 }
 
 static void gears_renderer_scale(gears_renderer_t* self,
@@ -695,4 +711,17 @@ void gears_renderer_keyPress(gears_renderer_t* self,
 			}
 		}
 	}
+}
+
+void gears_renderer_contentRect(gears_renderer_t* self,
+                                uint32_t t, uint32_t l,
+                                uint32_t b, uint32_t r)
+{
+	ASSERT(self);
+
+	self->content_rect_top    = t;
+	self->content_rect_left   = l;
+	self->content_rect_width  = r - l;
+	self->content_rect_height = b - t;
+	gears_overlay_contentRect(self->overlay, t, l, b, r);
 }

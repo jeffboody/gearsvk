@@ -62,6 +62,16 @@ typedef struct gears_renderer_s
 	float           view_scale;
 	cc_quaternion_t view_q;
 
+	// screen state
+	uint32_t screen_w;
+	uint32_t screen_h;
+
+	// content rect
+	uint32_t content_rect_top;
+	uint32_t content_rect_left;
+	uint32_t content_rect_width;
+	uint32_t content_rect_height;
+
 	// animation state
 	float angle;
 
@@ -114,5 +124,10 @@ void              gears_renderer_touch(gears_renderer_t* self,
                                        float x3, float y3);
 void              gears_renderer_keyPress(gears_renderer_t* self,
                                           int keycode, int meta);
+void              gears_renderer_contentRect(gears_renderer_t* self,
+                                             uint32_t top,
+                                             uint32_t left,
+                                             uint32_t bottom,
+                                             uint32_t right);
 
 #endif

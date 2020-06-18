@@ -124,6 +124,14 @@ void gearsvk_onEvent(void* priv, vkk_event_t* event)
 		                        event->key.keycode,
 		                        event->key.meta);
 	}
+	else if(event->type == VKK_EVENT_TYPE_CONTENT_RECT)
+	{
+		gears_renderer_contentRect(renderer,
+		                           event->content_rect.t,
+		                           event->content_rect.l,
+		                           event->content_rect.b,
+		                           event->content_rect.r);
+	}
 }
 
 vkk_platformInfo_t VKK_PLATFORM_INFO =
@@ -133,7 +141,7 @@ vkk_platformInfo_t VKK_PLATFORM_INFO =
 	{
 		.major = 1,
 		.minor = 0,
-		.patch = 6,
+		.patch = 7,
 	},
 	.onCreate    = gearsvk_onCreate,
 	.onDestroy   = gearsvk_onDestroy,
