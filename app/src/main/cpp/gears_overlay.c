@@ -81,7 +81,7 @@ gears_overlay_t* gears_overlay_new(struct gears_renderer_s* renderer)
 	self->renderer = renderer;
 
 	const char* resource_path;
-	resource_path = vkk_engine_resourcePath(engine);
+	resource_path = vkk_engine_internalPath(engine);
 
 	char resource[256];
 	snprintf(resource, 256, "%s/resource.pak", resource_path);

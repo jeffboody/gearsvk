@@ -350,7 +350,7 @@ gears_renderer_newImage(gears_renderer_t* self)
 	}
 
 	const char* resource_path;
-	resource_path = vkk_engine_resourcePath(self->engine);
+	resource_path = vkk_engine_internalPath(self->engine);
 
 	char resource[256];
 	snprintf(resource, 256, "%s/resource.pak", resource_path);
