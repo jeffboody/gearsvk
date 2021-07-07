@@ -415,7 +415,7 @@ gear_t* gear_new(struct gears_renderer_s* renderer,
 
 	vkk_engine_t* engine = renderer->engine;
 	self->mvp_ub = vkk_buffer_new(engine,
-	                              VKK_UPDATE_MODE_DEFAULT,
+	                              VKK_UPDATE_MODE_ASYNCHRONOUS,
 	                              VKK_BUFFER_USAGE_UNIFORM,
 	                              sizeof(cc_mat4f_t),
 	                              NULL);
@@ -425,7 +425,7 @@ gear_t* gear_new(struct gears_renderer_s* renderer,
 	}
 
 	self->nm_ub = vkk_buffer_new(engine,
-	                             VKK_UPDATE_MODE_DEFAULT,
+	                             VKK_UPDATE_MODE_ASYNCHRONOUS,
 	                             VKK_BUFFER_USAGE_UNIFORM,
 	                             sizeof(cc_mat4f_t),
 	                             NULL);

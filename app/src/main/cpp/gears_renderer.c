@@ -56,10 +56,10 @@ static void gears_renderer_step(gears_renderer_t* self)
 {
 	ASSERT(self);
 
-	vkk_renderer_t* primary;
-	primary = vkk_engine_defaultRenderer(self->engine);
+	vkk_renderer_t* rend;
+	rend = vkk_engine_defaultRenderer(self->engine);
 
-	vkk_renderer_surfaceSize(primary,
+	vkk_renderer_surfaceSize(rend,
 	                         &self->screen_w,
 	                         &self->screen_h);
 
@@ -78,9 +78,9 @@ static void gears_renderer_step(gears_renderer_t* self)
 		screen_w = (float) self->content_rect_width;
 		screen_h = (float) self->content_rect_height;
 
-		vkk_renderer_viewport(primary, screen_x, screen_y,
+		vkk_renderer_viewport(rend, screen_x, screen_y,
 		                      screen_w, screen_h);
-		vkk_renderer_scissor(primary,
+		vkk_renderer_scissor(rend,
 		                     self->content_rect_left,
 		                     self->content_rect_top,
 		                     self->content_rect_width,
@@ -114,7 +114,7 @@ static void gears_renderer_step(gears_renderer_t* self)
 	cc_mat4f_translate(&self->mvm, 0, -3.0f, -2.0f, 0.0f);
 	cc_mat4f_rotate(&self->mvm, 0, self->angle, 0.0f, 0.0f, 1.0f);
 	cc_mat4f_mulm_copy(&self->pm, &self->mvm, &mvp);
-	gear_update(self->gear1, primary, &mvp, &self->mvm);
+	gear_update(self->gear1, rend, &mvp, &self->mvm);
 	cc_stack4f_pop(self->mvm_stack, &self->mvm);
 
 	// Gear2
@@ -122,7 +122,7 @@ static void gears_renderer_step(gears_renderer_t* self)
 	cc_mat4f_translate(&self->mvm, 0, 3.1f, -2.0f, 0.0f);
 	cc_mat4f_rotate(&self->mvm, 0, -2.0f * self->angle - 9.0f, 0.0f, 0.0f, 1.0f);
 	cc_mat4f_mulm_copy(&self->pm, &self->mvm, &mvp);
-	gear_update(self->gear2, primary, &mvp, &self->mvm);
+	gear_update(self->gear2, rend, &mvp, &self->mvm);
 	cc_stack4f_pop(self->mvm_stack, &self->mvm);
 
 	// Gear3
@@ -130,7 +130,7 @@ static void gears_renderer_step(gears_renderer_t* self)
 	cc_mat4f_translate(&self->mvm, 0, -3.1f, 4.2f, 0.0f);
 	cc_mat4f_rotate(&self->mvm, 0, -2.0f * self->angle - 25.0f, 0.0f, 0.0f, 1.0f);
 	cc_mat4f_mulm_copy(&self->pm, &self->mvm, &mvp);
-	gear_update(self->gear3, primary, &mvp, &self->mvm);
+	gear_update(self->gear3, rend, &mvp, &self->mvm);
 	cc_stack4f_pop(self->mvm_stack, &self->mvm);
 
 	cc_stack4f_pop(self->mvm_stack, &self->mvm);
@@ -256,7 +256,7 @@ gears_renderer_newUniformSetFactory(gears_renderer_t* self)
 	};
 
 	self->usf = vkk_uniformSetFactory_new(self->engine,
-	                                      VKK_UPDATE_MODE_DEFAULT,
+	                                      VKK_UPDATE_MODE_ASYNCHRONOUS,
 	                                      4, ub_array);
 	if(self->usf == NULL)
 	{
@@ -286,8 +286,8 @@ gears_renderer_newGraphicsPipeline(gears_renderer_t* self)
 {
 	ASSERT(self);
 
-	vkk_renderer_t* primary;
-	primary = vkk_engine_defaultRenderer(self->engine);
+	vkk_renderer_t* rend;
+	rend = vkk_engine_defaultRenderer(self->engine);
 
 	vkk_vertexBufferInfo_t vbi[2] =
 	{
@@ -307,7 +307,7 @@ gears_renderer_newGraphicsPipeline(gears_renderer_t* self)
 
 	vkk_graphicsPipelineInfo_t gpi =
 	{
-		.renderer          = primary,
+		.renderer          = rend,
 		.pl                = self->pl,
 		.vs                = "shaders/vert.spv",
 		.fs                = "shaders/frag.spv",
@@ -585,15 +585,15 @@ void gears_renderer_draw(gears_renderer_t* self)
 {
 	ASSERT(self);
 
-	vkk_renderer_t* primary;
-	primary = vkk_engine_defaultRenderer(self->engine);
+	vkk_renderer_t* rend;
+	rend = vkk_engine_defaultRenderer(self->engine);
 
 	float clear_color[4] =
 	{
 		0.0f, 0.0f, 0.0f, 1.0f
 	};
-	if(vkk_renderer_beginDefault(primary,
-	                             VKK_RENDERER_MODE_PRIMARY,
+	if(vkk_renderer_beginDefault(rend,
+	                             VKK_RENDERER_MODE_DRAW,
 	                             clear_color) == 0)
 	{
 		return;
@@ -601,15 +601,15 @@ void gears_renderer_draw(gears_renderer_t* self)
 
 	gears_renderer_step(self);
 
-	vkk_renderer_bindGraphicsPipeline(primary, self->gp);
+	vkk_renderer_bindGraphicsPipeline(rend, self->gp);
 
-	gear_draw(self->gear1, primary);
-	gear_draw(self->gear2, primary);
-	gear_draw(self->gear3, primary);
+	gear_draw(self->gear1, rend);
+	gear_draw(self->gear2, rend);
+	gear_draw(self->gear3, rend);
 
 	gears_overlay_draw(self->overlay, self->density);
 
-	vkk_renderer_end(primary);
+	vkk_renderer_end(rend);
 }
 
 void gears_renderer_touch(gears_renderer_t* self,
