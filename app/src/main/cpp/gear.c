@@ -378,13 +378,13 @@ gear_createDescriptorSet(gear_t* self)
 		{
 			.type    = VKK_UNIFORM_TYPE_IMAGE,
 			.binding = 3,
-			.image   = renderer->image
+			.image   = renderer->draw_lava
 		},
 	};
 
 	self->us = vkk_uniformSet_new(renderer->engine,
 	                              0, 4, ua_array,
-	                              renderer->usf);
+	                              renderer->draw_usf);
 	if(self->us == NULL)
 	{
 		return 0;

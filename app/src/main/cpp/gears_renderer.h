@@ -46,17 +46,37 @@
 #define GEARS_TOUCH_STATE_ZOOM    2
 #define GEARS_TOUCH_STATE_OVERLAY 3
 
+#define GEARS_SCALER_DEFAULT    0
+#define GEARS_SCALER_UPSCALE    1
+#define GEARS_SCALER_SUPERSCALE 2
+
 /***********************************************************
 * public                                                   *
 ***********************************************************/
 
 typedef struct gears_renderer_s
 {
-	vkk_engine_t*            engine;
-	vkk_uniformSetFactory_t* usf;
-	vkk_pipelineLayout_t*    pl;
-	vkk_graphicsPipeline_t*  gp;
-	vkk_image_t*             image;
+	vkk_engine_t* engine;
+
+	// draw state
+	// draw_rend may be the default renderer or
+	// an upscaling renderer (image stream renderer)
+	// draw_gp is created on demand
+	// draw_image is a reference
+	vkk_renderer_t*          draw_rend;
+	vkk_uniformSetFactory_t* draw_usf;
+	vkk_pipelineLayout_t*    draw_pl;
+	vkk_graphicsPipeline_t*  draw_gp;
+	vkk_image_t*             draw_lava;
+	vkk_image_t*             draw_image;
+
+	// scaler state
+	vkk_uniformSetFactory_t* scaler_usf0;
+	vkk_pipelineLayout_t*    scaler_pl;
+	vkk_graphicsPipeline_t*  scaler_gp;
+	vkk_buffer_t*            scaler_vb_xyuv;
+	vkk_buffer_t*            scaler_ub00_mvp;
+	vkk_uniformSet_t*        scaler_us0;
 
 	// view state
 	float           view_scale;
@@ -71,6 +91,9 @@ typedef struct gears_renderer_s
 	uint32_t content_rect_left;
 	uint32_t content_rect_width;
 	uint32_t content_rect_height;
+
+	// scaler mode
+	int scaler_mode;
 
 	// animation state
 	float angle;

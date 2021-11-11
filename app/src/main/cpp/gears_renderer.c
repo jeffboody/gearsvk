@@ -47,6 +47,15 @@
 * private                                                  *
 ***********************************************************/
 
+static const float XYUV[] =
+{
+	-1.0f,  1.0f, 0.0f, 0.0f,   // top-left
+	-1.0f, -1.0f, 0.0f, 1.0f,   // bottom-left
+	 1.0f,  1.0f, 1.0f, 0.0f,   // top-right
+	 1.0f, -1.0f, 1.0f, 1.0f,   // bottom-right
+};
+
+
 // gear colors
 static const cc_vec4f_t RED   = { .r=0.8f, .g=0.1f, .b=0.0f, .a=1.0f };
 static const cc_vec4f_t GREEN = { .r=0.0f, .g=0.8f, .b=0.2f, .a=1.0f };
@@ -56,10 +65,7 @@ static void gears_renderer_step(gears_renderer_t* self)
 {
 	ASSERT(self);
 
-	vkk_renderer_t* rend;
-	rend = vkk_engine_defaultRenderer(self->engine);
-
-	vkk_renderer_surfaceSize(rend,
+	vkk_renderer_surfaceSize(self->draw_rend,
 	                         &self->screen_w,
 	                         &self->screen_h);
 
@@ -78,9 +84,10 @@ static void gears_renderer_step(gears_renderer_t* self)
 		screen_w = (float) self->content_rect_width;
 		screen_h = (float) self->content_rect_height;
 
-		vkk_renderer_viewport(rend, screen_x, screen_y,
+		vkk_renderer_viewport(self->draw_rend,
+		                      screen_x, screen_y,
 		                      screen_w, screen_h);
-		vkk_renderer_scissor(rend,
+		vkk_renderer_scissor(self->draw_rend,
 		                     self->content_rect_left,
 		                     self->content_rect_top,
 		                     self->content_rect_width,
@@ -114,7 +121,7 @@ static void gears_renderer_step(gears_renderer_t* self)
 	cc_mat4f_translate(&self->mvm, 0, -3.0f, -2.0f, 0.0f);
 	cc_mat4f_rotate(&self->mvm, 0, self->angle, 0.0f, 0.0f, 1.0f);
 	cc_mat4f_mulm_copy(&self->pm, &self->mvm, &mvp);
-	gear_update(self->gear1, rend, &mvp, &self->mvm);
+	gear_update(self->gear1, self->draw_rend, &mvp, &self->mvm);
 	cc_stack4f_pop(self->mvm_stack, &self->mvm);
 
 	// Gear2
@@ -122,7 +129,7 @@ static void gears_renderer_step(gears_renderer_t* self)
 	cc_mat4f_translate(&self->mvm, 0, 3.1f, -2.0f, 0.0f);
 	cc_mat4f_rotate(&self->mvm, 0, -2.0f * self->angle - 9.0f, 0.0f, 0.0f, 1.0f);
 	cc_mat4f_mulm_copy(&self->pm, &self->mvm, &mvp);
-	gear_update(self->gear2, rend, &mvp, &self->mvm);
+	gear_update(self->gear2, self->draw_rend, &mvp, &self->mvm);
 	cc_stack4f_pop(self->mvm_stack, &self->mvm);
 
 	// Gear3
@@ -130,7 +137,7 @@ static void gears_renderer_step(gears_renderer_t* self)
 	cc_mat4f_translate(&self->mvm, 0, -3.1f, 4.2f, 0.0f);
 	cc_mat4f_rotate(&self->mvm, 0, -2.0f * self->angle - 25.0f, 0.0f, 0.0f, 1.0f);
 	cc_mat4f_mulm_copy(&self->pm, &self->mvm, &mvp);
-	gear_update(self->gear3, rend, &mvp, &self->mvm);
+	gear_update(self->gear3, self->draw_rend, &mvp, &self->mvm);
 	cc_stack4f_pop(self->mvm_stack, &self->mvm);
 
 	cc_stack4f_pop(self->mvm_stack, &self->mvm);
@@ -208,130 +215,6 @@ static void gears_renderer_scale(gears_renderer_t* self,
 }
 
 static int
-gears_renderer_newUniformSetFactory(gears_renderer_t* self)
-{
-	ASSERT(self);
-
-	vkk_uniformBinding_t ub_array[4] =
-	{
-		// layout(std140, set=0, binding=0) uniform uniformMvp
-		// {
-		//     mat4 mvp;
-		// };
-		{
-			.binding = 0,
-			.type    = VKK_UNIFORM_TYPE_BUFFER,
-			.stage   = VKK_STAGE_VS,
-		},
-		// layout(std140, set=0, binding=1) uniform uniformNm
-		// {
-		//     mat4 nm;
-		// };
-		{
-			.binding = 1,
-			.type    = VKK_UNIFORM_TYPE_BUFFER,
-			.stage   = VKK_STAGE_VS,
-		},
-		// layout(std140, set=0, binding=2) uniform uniformColor
-		// {
-		//     vec4 color;
-		// };
-		{
-			.binding = 2,
-			.type    = VKK_UNIFORM_TYPE_BUFFER,
-			.stage   = VKK_STAGE_FS,
-		},
-		// layout(set=0, binding=3) uniform sampler2D lava_sampler;
-		{
-			.binding = 3,
-			.type    = VKK_UNIFORM_TYPE_IMAGE,
-			.stage   = VKK_STAGE_FS,
-			.si      =
-			{
-				VKK_SAMPLER_FILTER_LINEAR,
-				VKK_SAMPLER_FILTER_LINEAR,
-				VKK_SAMPLER_MIPMAP_MODE_NEAREST,
-			}
-		}
-	};
-
-	self->usf = vkk_uniformSetFactory_new(self->engine,
-	                                      VKK_UPDATE_MODE_ASYNCHRONOUS,
-	                                      4, ub_array);
-	if(self->usf == NULL)
-	{
-		return 0;
-	}
-
-	return 1;
-}
-
-static int
-gears_renderer_newPipelineLayout(gears_renderer_t* self)
-{
-	ASSERT(self);
-
-	self->pl = vkk_pipelineLayout_new(self->engine,
-	                                  1, &self->usf);
-	if(self->pl == NULL)
-	{
-		return 0;
-	}
-
-	return 1;
-}
-
-static int
-gears_renderer_newGraphicsPipeline(gears_renderer_t* self)
-{
-	ASSERT(self);
-
-	vkk_renderer_t* rend;
-	rend = vkk_engine_defaultRenderer(self->engine);
-
-	vkk_vertexBufferInfo_t vbi[2] =
-	{
-		// layout(location=0) in vec3 vertex;
-		{
-			.location   = 0,
-			.components = 3,
-			.format     = VKK_VERTEX_FORMAT_FLOAT
-		},
-		// layout(location=1) in vec3 normal;
-		{
-			.location   = 1,
-			.components = 3,
-			.format     = VKK_VERTEX_FORMAT_FLOAT
-		}
-	};
-
-	vkk_graphicsPipelineInfo_t gpi =
-	{
-		.renderer          = rend,
-		.pl                = self->pl,
-		.vs                = "shaders/vert.spv",
-		.fs                = "shaders/frag.spv",
-		.vb_count          = 2,
-		.vbi               = vbi,
-		.primitive         = VKK_PRIMITIVE_TRIANGLE_STRIP,
-		.primitive_restart = 0,
-		.cull_back         = 0,
-		.depth_test        = 1,
-		.depth_write       = 1,
-		.blend_mode        = 0
-	};
-
-	self->gp = vkk_graphicsPipeline_new(self->engine,
-	                                    &gpi);
-	if(self->gp == NULL)
-	{
-		return 0;
-	}
-
-	return 1;
-}
-
-static int
 gears_renderer_newImage(gears_renderer_t* self)
 {
 	ASSERT(self);
@@ -385,15 +268,15 @@ gears_renderer_newImage(gears_renderer_t* self)
 		goto fail_convert;
 	}
 
-	self->image = vkk_image_new(self->engine,
-	                            (uint32_t) tex->width,
-	                            (uint32_t) tex->height,
-	                            1, VKK_IMAGE_FORMAT_RGBA8888,
-	                            1, VKK_STAGE_FS,
-	                            tex->pixels);
-	if(self->image == NULL)
+	self->draw_lava = vkk_image_new(self->engine,
+	                                (uint32_t) tex->width,
+	                                (uint32_t) tex->height,
+	                                1, VKK_IMAGE_FORMAT_RGBA8888,
+	                                1, VKK_STAGE_FS,
+	                                tex->pixels);
+	if(self->draw_lava == NULL)
 	{
-		goto fail_image;
+		goto fail_draw_lava;
 	}
 
 	texgz_tex_delete(&tex);
@@ -402,10 +285,226 @@ gears_renderer_newImage(gears_renderer_t* self)
 	return 1;
 
 	// failure
-	fail_image:
+	fail_draw_lava:
 	fail_convert:
 		texgz_tex_delete(&tex);
 	return 0;
+}
+
+int gears_renderer_begin(gears_renderer_t* self)
+{
+	ASSERT(self);
+
+	vkk_renderer_t* default_rend;
+	default_rend = vkk_engine_defaultRenderer(self->engine);
+
+	// get the default renderer size
+	uint32_t w1;
+	uint32_t h1;
+	vkk_renderer_surfaceSize(default_rend, &w1, &h1);
+
+	// compute the scalar size if needed
+	// ensuring it is an even size
+	uint32_t w2 = w1;
+	uint32_t h2 = h1;
+	if(self->scaler_mode == GEARS_SCALER_UPSCALE)
+	{
+		w2 = (w1/2) + (w1%2);
+		h2 = (h1/2) + (h1%2);
+	}
+	else if(self->scaler_mode == GEARS_SCALER_SUPERSCALE)
+	{
+		w2 = w1*2;
+		h2 = h1*2;
+	}
+
+	// validate the current draw renderer
+	int reset = 0;
+	if(self->scaler_mode)
+	{
+		if((self->draw_rend == NULL) ||
+		   (self->draw_rend == default_rend))
+		{
+			reset = 1;
+		}
+		else
+		{
+			// get the draw renderer size
+			uint32_t w3;
+			uint32_t h3;
+			vkk_renderer_surfaceSize(self->draw_rend, &w3, &h3);
+
+			// validate the size
+			if((w2 != w3) || (h2 != h3))
+			{
+				reset = 1;
+			}
+		}
+	}
+	else if(self->draw_rend != default_rend)
+	{
+		reset = 1;
+	}
+
+	// reset the graphics state
+	if(reset)
+	{
+		vkk_renderer_delete(&self->draw_rend);
+		vkk_graphicsPipeline_delete(&self->draw_gp);
+
+		// note that vkk_renderer_delete will not set to NULL
+		// for the default renderer
+		self->draw_rend = NULL;
+	}
+
+	// setup renderer
+	if(self->scaler_mode == 0)
+	{
+		self->draw_rend = default_rend;
+	}
+	else if(self->scaler_mode && (self->draw_rend == NULL))
+	{
+		self->draw_rend =
+			vkk_renderer_newImageStream(default_rend,
+			                            w2, h2,
+			                            VKK_IMAGE_FORMAT_RGBA8888,
+			                            0, VKK_STAGE_FS);
+	}
+
+	// check renderer
+	if(self->draw_rend == NULL)
+	{
+		return 0;
+	}
+
+	// setup graphics pipeline
+	if(self->draw_gp == NULL)
+	{
+		// recreate the graphics pipeline
+		vkk_vertexBufferInfo_t draw_vbi[2] =
+		{
+			// layout(location=0) in vec3 vertex;
+			{
+				.location   = 0,
+				.components = 3,
+				.format     = VKK_VERTEX_FORMAT_FLOAT
+			},
+			// layout(location=1) in vec3 normal;
+			{
+				.location   = 1,
+				.components = 3,
+				.format     = VKK_VERTEX_FORMAT_FLOAT
+			}
+		};
+
+		vkk_graphicsPipelineInfo_t draw_gpi =
+		{
+			.renderer          = self->draw_rend,
+			.pl                = self->draw_pl,
+			.vs                = "shaders/draw_vert.spv",
+			.fs                = "shaders/draw_frag.spv",
+			.vb_count          = 2,
+			.vbi               = draw_vbi,
+			.primitive         = VKK_PRIMITIVE_TRIANGLE_STRIP,
+			.primitive_restart = 0,
+			.cull_back         = 0,
+			.depth_test        = 1,
+			.depth_write       = 1,
+			.blend_mode        = 0
+		};
+
+		self->draw_gp = vkk_graphicsPipeline_new(self->engine,
+		                                         &draw_gpi);
+		if(self->draw_gp == NULL)
+		{
+			return 0;
+		}
+	}
+
+	// optionally begin rendering to image stream
+	if(self->scaler_mode)
+	{
+		float red[4] =
+		{
+			1.0f, 0.0f, 0.0f, 1.0f
+		};
+
+		float green[4] =
+		{
+			0.0f, 1.0f, 0.0f, 1.0f
+		};
+
+		float* clear_color = red;
+		if(self->scaler_mode == GEARS_SCALER_SUPERSCALE)
+		{
+			clear_color = green;
+		}
+
+		self->draw_image =
+			vkk_renderer_beginImageStream(self->draw_rend,
+			                              VKK_RENDERER_MODE_DRAW,
+			                              clear_color);
+		if(self->draw_image == NULL)
+		{
+			return 0;
+		}
+	}
+
+	return 1;
+}
+
+void gears_renderer_end(gears_renderer_t* self)
+{
+	ASSERT(self);
+
+	vkk_renderer_t* default_rend;
+	default_rend = vkk_engine_defaultRenderer(self->engine);
+
+	// check if upscaling was used
+	if(self->draw_image == NULL)
+	{
+		return;
+	}
+
+	// end upscaling
+	vkk_renderer_end(self->draw_rend);
+
+	vkk_renderer_bindGraphicsPipeline(default_rend,
+	                                  self->scaler_gp);
+
+	uint32_t w;
+	uint32_t h;
+	vkk_renderer_surfaceSize(default_rend, &w, &h);
+
+	cc_mat4f_t mvp;
+	cc_mat4f_orthoVK(&mvp, 1, -1.0f, 1.0f,
+	                 -1.0f, 1.0f, 0.0f, 2.0f);
+	vkk_renderer_updateBuffer(default_rend,
+	                          self->scaler_ub00_mvp,
+	                          sizeof(cc_mat4f_t),
+	                          (const void*) &mvp);
+
+	vkk_uniformAttachment_t ua01 =
+	{
+		.binding = 1,
+		.type    = VKK_UNIFORM_TYPE_IMAGE_REF,
+		.image   = self->draw_image
+	};
+	vkk_renderer_updateUniformSetRefs(default_rend,
+	                                  self->scaler_us0,
+	                                  1, &ua01);
+
+	vkk_uniformSet_t* us_array0[] =
+	{
+		self->scaler_us0,
+	};
+	vkk_renderer_bindUniformSets(default_rend, 1, us_array0);
+
+	vkk_renderer_draw(default_rend, 4, 1,
+	                  &self->scaler_vb_xyuv);
+
+	// reset upscaling
+	self->draw_image = NULL;
 }
 
 /***********************************************************
@@ -416,6 +515,9 @@ gears_renderer_t*
 gears_renderer_new(vkk_engine_t* engine)
 {
 	ASSERT(engine);
+
+	vkk_renderer_t* default_rend;
+	default_rend = vkk_engine_defaultRenderer(engine);
 
 	gears_renderer_t* self;
 	self = (gears_renderer_t*)
@@ -434,24 +536,177 @@ gears_renderer_new(vkk_engine_t* engine)
 	self->escape_t0   = cc_timestamp();
 	self->engine      = engine;
 
-	if(gears_renderer_newUniformSetFactory(self) == 0)
+	vkk_uniformBinding_t draw_ub_array[] =
 	{
-		goto fail_usf;
+		// layout(std140, set=0, binding=0) uniform uniformMvp
+		// {
+		//     mat4 mvp;
+		// };
+		{
+			.binding = 0,
+			.type    = VKK_UNIFORM_TYPE_BUFFER,
+			.stage   = VKK_STAGE_VS,
+		},
+		// layout(std140, set=0, binding=1) uniform uniformNm
+		// {
+		//     mat4 nm;
+		// };
+		{
+			.binding = 1,
+			.type    = VKK_UNIFORM_TYPE_BUFFER,
+			.stage   = VKK_STAGE_VS,
+		},
+		// layout(std140, set=0, binding=2) uniform uniformColor
+		// {
+		//     vec4 color;
+		// };
+		{
+			.binding = 2,
+			.type    = VKK_UNIFORM_TYPE_BUFFER,
+			.stage   = VKK_STAGE_FS,
+		},
+		// layout(set=0, binding=3) uniform sampler2D lava_sampler;
+		{
+			.binding = 3,
+			.type    = VKK_UNIFORM_TYPE_IMAGE,
+			.stage   = VKK_STAGE_FS,
+			.si      =
+			{
+				VKK_SAMPLER_FILTER_LINEAR,
+				VKK_SAMPLER_FILTER_LINEAR,
+				VKK_SAMPLER_MIPMAP_MODE_NEAREST,
+			}
+		}
+	};
+
+	self->draw_usf = vkk_uniformSetFactory_new(self->engine,
+	                                           VKK_UPDATE_MODE_ASYNCHRONOUS,
+	                                           4, draw_ub_array);
+	if(self->draw_usf == NULL)
+	{
+		goto fail_draw_usf;
 	}
 
-	if(gears_renderer_newPipelineLayout(self) == 0)
+	self->draw_pl = vkk_pipelineLayout_new(self->engine,
+	                                       1, &self->draw_usf);
+	if(self->draw_pl == NULL)
 	{
-		goto fail_pl;
-	}
-
-	if(gears_renderer_newGraphicsPipeline(self) == 0)
-	{
-		goto fail_gp;
+		goto fail_draw_pl;
 	}
 
 	if(gears_renderer_newImage(self) == 0)
 	{
-		goto fail_image;
+		goto fail_draw_lava;
+	}
+
+	vkk_uniformBinding_t scaler_ub_array0[] =
+	{
+		// layout(std140, set=0, binding=0) uniform uniformMvp
+		// {
+		// 	mat4 mvp;
+		// };
+		{
+			.binding = 0,
+			.type    = VKK_UNIFORM_TYPE_BUFFER,
+			.stage   = VKK_STAGE_VS,
+		},
+		// layout(set=0, binding=1) uniform sampler2D image;
+		{
+			.binding = 1,
+			.type    = VKK_UNIFORM_TYPE_IMAGE_REF,
+			.stage   = VKK_STAGE_FS,
+			.si      =
+			{
+				VKK_SAMPLER_FILTER_LINEAR,
+				VKK_SAMPLER_FILTER_LINEAR,
+				VKK_SAMPLER_MIPMAP_MODE_NEAREST,
+			}
+		}
+	};
+
+	self->scaler_usf0 = vkk_uniformSetFactory_new(self->engine,
+	                                                VKK_UPDATE_MODE_ASYNCHRONOUS,
+	                                                2, scaler_ub_array0);
+	if(self->scaler_usf0 == NULL)
+	{
+		goto fail_scaler_usf0;
+	}
+
+	self->scaler_pl = vkk_pipelineLayout_new(self->engine,
+	                                           1, &self->scaler_usf0);
+	if(self->scaler_pl == NULL)
+	{
+		goto fail_scaler_pl;
+	}
+
+	vkk_vertexBufferInfo_t scaler_vbi[1] =
+	{
+		// layout(location=0) in vec4 xyuv;
+		{
+			.location   = 0,
+			.components = 4,
+			.format     = VKK_VERTEX_FORMAT_FLOAT
+		},
+	};
+
+	vkk_graphicsPipelineInfo_t scaler_gpi =
+	{
+		.renderer          = default_rend,
+		.pl                = self->scaler_pl,
+		.vs                = "shaders/scaler_vert.spv",
+		.fs                = "shaders/scaler_frag.spv",
+		.vb_count          = 1,
+		.vbi               = scaler_vbi,
+		.primitive         = VKK_PRIMITIVE_TRIANGLE_STRIP,
+		.primitive_restart = 0,
+		.cull_back         = 0,
+		.depth_test        = 0,
+		.depth_write       = 0,
+		.blend_mode        = 0
+	};
+
+	self->scaler_gp = vkk_graphicsPipeline_new(self->engine,
+	                                             &scaler_gpi);
+	if(self->scaler_gp == NULL)
+	{
+		goto fail_scaler_gp;
+	}
+
+	self->scaler_vb_xyuv = vkk_buffer_new(self->engine,
+	                                        VKK_UPDATE_MODE_STATIC,
+	                                        VKK_BUFFER_USAGE_VERTEX,
+	                                        16*sizeof(float),
+	                                        (const void*) XYUV);
+	if(self->scaler_vb_xyuv == NULL)
+	{
+		goto fail_scaler_vb_xyuv;
+	}
+
+	self->scaler_ub00_mvp = vkk_buffer_new(self->engine,
+	                                         VKK_UPDATE_MODE_ASYNCHRONOUS,
+	                                         VKK_BUFFER_USAGE_UNIFORM,
+	                                         sizeof(cc_mat4f_t), NULL);
+	if(self->scaler_ub00_mvp == NULL)
+	{
+		goto fail_scaler_ub00_mvp;
+	}
+
+	vkk_uniformAttachment_t ua_array0[] =
+	{
+		// layout(std140, set=0, binding=0) uniform uniformMvp
+		{
+			.binding = 0,
+			.type    = VKK_UNIFORM_TYPE_BUFFER,
+			.buffer  = self->scaler_ub00_mvp
+		},
+	};
+
+	self->scaler_us0 = vkk_uniformSet_new(self->engine, 0, 1,
+	                                        ua_array0,
+	                                        self->scaler_usf0);
+	if(self->scaler_us0 == NULL)
+	{
+		goto fail_scaler_us0;
 	}
 
 	cc_quaternion_t qx;
@@ -510,14 +765,24 @@ gears_renderer_new(vkk_engine_t* engine)
 	fail_gear2:
 		gear_delete(&self->gear1);
 	fail_gear1:
-		vkk_image_delete(&self->image);
-	fail_image:
-		vkk_graphicsPipeline_delete(&self->gp);
-	fail_gp:
-		vkk_pipelineLayout_delete(&self->pl);
-	fail_pl:
-		vkk_uniformSetFactory_delete(&self->usf);
-	fail_usf:
+		vkk_uniformSet_delete(&self->scaler_us0);
+	fail_scaler_us0:
+		vkk_buffer_delete(&self->scaler_ub00_mvp);
+	fail_scaler_ub00_mvp:
+		vkk_buffer_delete(&self->scaler_vb_xyuv);
+	fail_scaler_vb_xyuv:
+		vkk_graphicsPipeline_delete(&self->scaler_gp);
+	fail_scaler_gp:
+		vkk_pipelineLayout_delete(&self->scaler_pl);
+	fail_scaler_pl:
+		vkk_uniformSetFactory_delete(&self->scaler_usf0);
+	fail_scaler_usf0:
+		vkk_image_delete(&self->draw_lava);
+	fail_draw_lava:
+		vkk_pipelineLayout_delete(&self->draw_pl);
+	fail_draw_pl:
+		vkk_uniformSetFactory_delete(&self->draw_usf);
+	fail_draw_usf:
 		FREE(self);
 	return NULL;
 }
@@ -536,10 +801,17 @@ void gears_renderer_delete(gears_renderer_t** _self)
 		gear_delete(&self->gear2);
 		gear_delete(&self->gear1);
 
-		vkk_image_delete(&self->image);
-		vkk_graphicsPipeline_delete(&self->gp);
-		vkk_pipelineLayout_delete(&self->pl);
-		vkk_uniformSetFactory_delete(&self->usf);
+		vkk_uniformSet_delete(&self->scaler_us0);
+		vkk_buffer_delete(&self->scaler_ub00_mvp);
+		vkk_buffer_delete(&self->scaler_vb_xyuv);
+		vkk_graphicsPipeline_delete(&self->scaler_gp);
+		vkk_pipelineLayout_delete(&self->scaler_pl);
+		vkk_uniformSetFactory_delete(&self->scaler_usf0);
+		vkk_image_delete(&self->draw_lava);
+		vkk_graphicsPipeline_delete(&self->draw_gp);
+		vkk_pipelineLayout_delete(&self->draw_pl);
+		vkk_uniformSetFactory_delete(&self->draw_usf);
+		vkk_renderer_delete(&self->draw_rend);
 		FREE(self);
 		*_self = NULL;
 	}
@@ -585,31 +857,38 @@ void gears_renderer_draw(gears_renderer_t* self)
 {
 	ASSERT(self);
 
-	vkk_renderer_t* rend;
-	rend = vkk_engine_defaultRenderer(self->engine);
+	vkk_renderer_t* default_rend;
+	default_rend = vkk_engine_defaultRenderer(self->engine);
 
 	float clear_color[4] =
 	{
-		0.0f, 0.0f, 0.0f, 1.0f
+		0.0f, 1.0f, 1.0f, 1.0f
 	};
-	if(vkk_renderer_beginDefault(rend,
+	if(vkk_renderer_beginDefault(default_rend,
 	                             VKK_RENDERER_MODE_DRAW,
 	                             clear_color) == 0)
 	{
 		return;
 	}
 
-	gears_renderer_step(self);
+	// draw scene using draw renderer
+	if(gears_renderer_begin(self))
+	{
+		gears_renderer_step(self);
 
-	vkk_renderer_bindGraphicsPipeline(rend, self->gp);
+		vkk_renderer_bindGraphicsPipeline(self->draw_rend,
+		                                  self->draw_gp);
 
-	gear_draw(self->gear1, rend);
-	gear_draw(self->gear2, rend);
-	gear_draw(self->gear3, rend);
+		gear_draw(self->gear1, self->draw_rend);
+		gear_draw(self->gear2, self->draw_rend);
+		gear_draw(self->gear3, self->draw_rend);
+		gears_renderer_end(self);
+	}
 
+	// draw overlay using default renderer
 	gears_overlay_draw(self->overlay, self->density);
 
-	vkk_renderer_end(rend);
+	vkk_renderer_end(default_rend);
 }
 
 void gears_renderer_touch(gears_renderer_t* self,
@@ -710,6 +989,18 @@ void gears_renderer_keyPress(gears_renderer_t* self,
 				self->escape_t0 = t1;
 			}
 		}
+	}
+	else if(keycode == '1')
+	{
+		self->scaler_mode = 0;
+	}
+	else if(keycode == '2')
+	{
+		self->scaler_mode = 1;
+	}
+	else if(keycode == '3')
+	{
+		self->scaler_mode = 2;
 	}
 }
 
