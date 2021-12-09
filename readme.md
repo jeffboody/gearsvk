@@ -26,6 +26,15 @@ You may find the Github project for Gears VK at
 
 Send questions or comments to Jeff Boody at jeffboody@gmail.com
 
+Scaler Test
+===========
+
+The scaler mode can be switched by pressing 1-3 number keys.
+
+1. Default
+2. Upscaling
+3. Super Scaling
+
 Setup
 =====
 
