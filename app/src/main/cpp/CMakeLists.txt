@@ -36,7 +36,8 @@ add_library(gearsvk
 add_subdirectory("jpeg")
 add_subdirectory("libcc")
 add_subdirectory("libexpat/expat/lib")
-add_subdirectory("libpak")
+add_subdirectory("libbfs")
+add_subdirectory("libsqlite3")
 add_subdirectory("libvkk")
 add_subdirectory("libxmlstream")
 add_subdirectory("texgz")
@@ -50,7 +51,8 @@ target_link_libraries(gearsvk
                       xmlstream
                       expat
                       myjpeg
-                      pak
+                      bfs
+                      sqlite3
                       texgz
                       vkk
 

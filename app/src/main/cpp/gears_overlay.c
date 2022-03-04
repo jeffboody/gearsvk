@@ -84,7 +84,7 @@ gears_overlay_t* gears_overlay_new(struct gears_renderer_s* renderer)
 	resource_path = vkk_engine_internalPath(engine);
 
 	char resource[256];
-	snprintf(resource, 256, "%s/resource.pak", resource_path);
+	snprintf(resource, 256, "%s/resource.bfs", resource_path);
 
 	self->screen = vkui_screen_new(engine,
 	                               vkk_engine_defaultRenderer(engine),

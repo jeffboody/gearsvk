@@ -1,9 +1,6 @@
 [submodule "app/src/main/cpp/texgz"]
 	path = app/src/main/cpp/texgz
 	url = git@github.com:jeffboody/texgz.git
-[submodule "app/src/main/cpp/libpak"]
-	path = app/src/main/cpp/libpak
-	url = git@github.com:jeffboody/libpak.git
 [submodule "app/src/main/cpp/libexpat"]
 	path = app/src/main/cpp/libexpat
 	url = git@github.com:jeffboody/libexpat.git
@@ -25,3 +22,9 @@
 [submodule "app/src/main/java/com/jeffboody/vkk"]
 	path = app/src/main/java/com/jeffboody/vkk
 	url = git@github.com:jeffboody/vkk-java.git
+[submodule "app/src/main/cpp/libbfs"]
+	path = app/src/main/cpp/libbfs
+	url = git@github.com:jeffboody/libbfs.git
+[submodule "app/src/main/cpp/libsqlite3"]
+	path = app/src/main/cpp/libsqlite3
+	url = git@github.com:jeffboody/libsqlite3.git

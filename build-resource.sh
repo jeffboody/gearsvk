@@ -1,4 +1,7 @@
-export RESOURCE=$PWD/app/src/main/assets/resource.pak
+export RESOURCE=$PWD/app/src/main/assets/resource.bfs
+
+# clean resource
+rm $RESOURCE
 
 echo RESOURCES
 cd resource
@@ -9,13 +12,13 @@ glslangValidator -V shader.vert -o vert.spv
 glslangValidator -V shader.frag -o frag.spv
 cd ..
 
-# pak resources
-pak -c $RESOURCE readme.txt
-pak -a $RESOURCE icons/ic_arrow_back_white_24dp.texz
-pak -a $RESOURCE icons/ic_info_outline_white_24dp.texz
-pak -a $RESOURCE shaders/vert.spv
-pak -a $RESOURCE shaders/frag.spv
-pak -a $RESOURCE textures/lava.png
+# add resources
+bfs $RESOURCE blobSet readme.txt
+bfs $RESOURCE blobSet icons/ic_arrow_back_white_24dp.texz
+bfs $RESOURCE blobSet icons/ic_info_outline_white_24dp.texz
+bfs $RESOURCE blobSet shaders/vert.spv
+bfs $RESOURCE blobSet shaders/frag.spv
+bfs $RESOURCE blobSet textures/lava.png
 
 # cleanup shaders
 rm shaders/*.spv
@@ -27,4 +30,4 @@ cd app/src/main/cpp/libvkk/vkui/resource
 cd ../../../../../../..
 
 echo CONTENTS
-pak -l $RESOURCE
+bfs $RESOURCE blobList

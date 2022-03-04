@@ -6,8 +6,8 @@ android {
         applicationId "com.jeffboody.gearsvk"
         minSdkVersion 24
         targetSdkVersion 28
-        versionCode 10
-        versionName "20211112-1.0.14"
+        versionCode 11
+        versionName "20220304-1.0.15"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {

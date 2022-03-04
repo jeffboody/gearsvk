@@ -37,7 +37,7 @@
 #include "libcc/cc_log.h"
 #include "libcc/cc_memory.h"
 #include "libcc/cc_timestamp.h"
-#include "libpak/pak_file.h"
+#include "libbfs/bfs_file.h"
 #include "libvkk/vkk_platform.h"
 #include "texgz/texgz_png.h"
 #include "texgz/texgz_tex.h"
@@ -353,31 +353,35 @@ gears_renderer_newImage(gears_renderer_t* self)
 	resource_path = vkk_engine_internalPath(self->engine);
 
 	char resource[256];
-	snprintf(resource, 256, "%s/resource.pak", resource_path);
+	snprintf(resource, 256, "%s/resource.bfs", resource_path);
 
-	pak_file_t* pak;
-	pak = pak_file_open(resource, PAK_FLAG_READ);
-	if(pak == NULL)
+	bfs_file_t* bfs;
+	bfs = bfs_file_open(resource, 1, BFS_MODE_RDONLY);
+	if(bfs == NULL)
 	{
 		return 0;
 	}
 
-	int size = pak_file_seek(pak, "textures/lava.png");
+	size_t size = 0;
+	void*  data = NULL;
+	if(bfs_file_blobGet(bfs, 0, "textures/lava.png",
+	                    &size, &data) == 0)
+	{
+		goto fail_get;
+	}
+
+	// check for empty data
 	if(size == 0)
 	{
-		LOGE("invalid lava.png");
-		pak_file_close(&pak);
-		return 0;
+		goto fail_empty;
 	}
 
 	texgz_tex_t* tex;
-	tex = texgz_png_importf(pak->f, (size_t) size);
+	tex = texgz_png_importd(size, data);
 	if(tex == NULL)
 	{
-		pak_file_close(&pak);
-		return 0;
+		goto fail_import;
 	}
-	pak_file_close(&pak);
 
 	if(texgz_tex_convert(tex, TEXGZ_UNSIGNED_BYTE,
 	                     TEXGZ_RGBA) == 0)
@@ -397,6 +401,8 @@ gears_renderer_newImage(gears_renderer_t* self)
 	}
 
 	texgz_tex_delete(&tex);
+	FREE(data);
+	bfs_file_close(&bfs);
 
 	// success
 	return 1;
@@ -405,6 +411,11 @@ gears_renderer_newImage(gears_renderer_t* self)
 	fail_image:
 	fail_convert:
 		texgz_tex_delete(&tex);
+	fail_import:
+	fail_empty:
+		FREE(data);
+	fail_get:
+		bfs_file_close(&bfs);
 	return 0;
 }
 
