@@ -5,17 +5,13 @@
 #ifndef gears_layerHud_H
 #define gears_layerHud_H
 
-#include "libcc/math/cc_vec4f.h"
-#include "libvkk/vkui/vkui_layer.h"
-#include "libvkk/vkui/vkui.h"
+#include "libvkk/vkui.h"
 
 struct gears_overlay_s;
 
 typedef struct
 {
-	vkui_layer_t layer;
-
-	// widgets
+	vkui_window_t     base;
 	vkui_bulletbox_t* bulletbox_about;
 	vkui_text_t*      text_fps;
 

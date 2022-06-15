@@ -402,10 +402,10 @@ gear_t* gear_new(struct gears_renderer_s* renderer,
                  float inner_radius, float outer_radius, float width,
                  int teeth, float tooth_depth)
 {
-	gear_t* self = (gear_t*) MALLOC(sizeof(gear_t));
+	gear_t* self = (gear_t*) CALLOC(1, sizeof(gear_t));
 	if(self == NULL)
 	{
-		LOGE("MALLOC failed");
+		LOGE("CALLOC failed");
 		return NULL;
 	}
 

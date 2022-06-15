@@ -14,8 +14,7 @@ cd ..
 
 # add resources
 bfs $RESOURCE blobSet readme.txt
-bfs $RESOURCE blobSet icons/ic_arrow_back_white_24dp.texz
-bfs $RESOURCE blobSet icons/ic_info_outline_white_24dp.texz
+bfs $RESOURCE blobSet icons/ic_info_outline_white_24dp.png
 bfs $RESOURCE blobSet shaders/vert.spv
 bfs $RESOURCE blobSet shaders/frag.spv
 bfs $RESOURCE blobSet textures/lava.png

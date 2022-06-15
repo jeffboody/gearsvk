@@ -26,21 +26,15 @@
 
 #include "gears_layerHud.h"
 #include "gears_viewAbout.h"
-#include "libvkk/vkui/vkui.h"
-
-#define GEARS_OVERLAY_DRAWMODE_HUD   0
-#define GEARS_OVERLAY_DRAWMODE_ABOUT 1
+#include "libvkk/vkui.h"
 
 struct gears_renderer_s;
 
 typedef struct gears_overlay_s
 {
-	int draw_mode;
-
 	struct gears_renderer_s* renderer;
 
 	vkui_screen_t*     screen;
-	vkui_layer_t*      layer_show;
 	gears_layerHud_t*  layer_hud;
 	gears_viewAbout_t* view_about;
 } gears_overlay_t;

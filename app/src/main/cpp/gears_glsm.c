@@ -73,10 +73,11 @@ static void gears_glsm_freebuffers(gears_glsm_t* self)
 gears_glsm_t* gears_glsm_new(void)
 {
 
-	gears_glsm_t* self = (gears_glsm_t*) MALLOC(sizeof(gears_glsm_t));
+	gears_glsm_t* self;
+	self = (gears_glsm_t*) CALLOC(1, sizeof(gears_glsm_t));
 	if(self == NULL)
 	{
-		LOGE("MALLOC failed");
+		LOGE("CALLOC failed");
 		return NULL;
 	}
 
@@ -164,10 +165,11 @@ void gears_glsm_vertex3f(gears_glsm_t* self, float x, float y, float z)
 		return;
 	}
 
-	cc_vec3f_t* v = (cc_vec3f_t*) MALLOC(sizeof(cc_vec3f_t));
+	cc_vec3f_t* v;
+	v = (cc_vec3f_t*) CALLOC(1, sizeof(cc_vec3f_t));
 	if(v == NULL)
 	{
-		LOGE("MALLOC failed");
+		LOGE("CALLOC failed");
 		goto fail_malloc_v;
 	}
 	v->x = x;
@@ -180,10 +182,11 @@ void gears_glsm_vertex3f(gears_glsm_t* self, float x, float y, float z)
 		goto fail_append_vb;
 	}
 
-	cc_vec3f_t* n = (cc_vec3f_t*) MALLOC(sizeof(cc_vec3f_t));
+	cc_vec3f_t* n;
+	n = (cc_vec3f_t*) CALLOC(1, sizeof(cc_vec3f_t));
 	if(n == NULL)
 	{
-		LOGE("MALLOC failed");
+		LOGE("CALLOC failed");
 		goto fail_malloc_n;
 	}
 	n->x = self->normal.x;
@@ -222,11 +225,11 @@ void gears_glsm_end(gears_glsm_t* self)
 
 	// initialize buffers
 	self->ec = cc_list_size(self->cache_vb);   // vertex count
-	self->vb = (float*) MALLOC(3 * self->ec * sizeof(float));
-	self->nb = (float*) MALLOC(3 * self->ec * sizeof(float));
+	self->vb = (float*) CALLOC(1, 3 * self->ec * sizeof(float));
+	self->nb = (float*) CALLOC(1, 3 * self->ec * sizeof(float));
 	if((self->vb == NULL) || (self->nb == NULL))
 	{
-		LOGE("MALLOC failed");
+		LOGE("CALLOC failed");
 		goto fail_malloc;
 	}
 

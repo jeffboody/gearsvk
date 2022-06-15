@@ -32,48 +32,18 @@
 #include "gears_renderer.h"
 
 /***********************************************************
-* private                                                  *
-***********************************************************/
-
-static int clickBack(vkui_widget_t* widget,
-                     void* priv, int state,
-                     float x, float y)
-{
-	ASSERT(widget);
-	ASSERT(priv);
-	LOGD("debug x=%f, y=%f", x, y);
-
-	gears_overlay_t* overlay = (gears_overlay_t*) priv;
-	if(state == VKUI_WIDGET_POINTER_UP)
-	{
-		overlay->draw_mode = GEARS_OVERLAY_DRAWMODE_HUD;
-		vkui_layer_clear(overlay->layer_show);
-		vkui_layer_add(overlay->layer_show,
-		               (vkui_widget_t*) overlay->layer_hud);
-	}
-	return 1;
-}
-
-/***********************************************************
 * public                                                   *
 ***********************************************************/
 
-gears_overlay_t* gears_overlay_new(struct gears_renderer_s* renderer)
+gears_overlay_t*
+gears_overlay_new(struct gears_renderer_s* renderer)
 {
 	ASSERT(renderer);
 
 	vkk_engine_t* engine = renderer->engine;
 
-	cc_vec4f_t clear =
-	{
-		.r = 0.0f,
-		.g = 0.0f,
-		.b = 0.0f,
-		.a = 0.0f
-	};
-
 	gears_overlay_t* self = (gears_overlay_t*)
-	                        MALLOC(sizeof(gears_overlay_t));
+	                        CALLOC(1, sizeof(gears_overlay_t));
 	if(self == NULL)
 	{
 		return NULL;
@@ -86,53 +56,63 @@ gears_overlay_t* gears_overlay_new(struct gears_renderer_s* renderer)
 	char resource[256];
 	snprintf(resource, 256, "%s/resource.bfs", resource_path);
 
-	self->screen = vkui_screen_new(engine,
+	vkui_widgetStyle_t widget_style =
+	{
+		.color_primary =
+		{
+			.r=0.306f,
+			.g=0.8f,
+			.b=0.639f,
+			.a=1.0f
+		},
+		.color_secondary =
+		{
+			.r=0.224f,
+			.g=0.243f,
+			.b=0.275f,
+			.a=1.0f
+		},
+		.color_text =
+		{
+			.r=1.0f,
+			.g=1.0f,
+			.b=1.0f,
+			.a=1.0f
+		},
+		.color_background =
+		{
+			.r=0.122f,
+			.g=0.122f,
+			.b=0.122f,
+			.a=1.0f
+		},
+	};
+
+	self->screen = vkui_screen_new(0, engine,
 	                               vkk_engine_defaultRenderer(engine),
 	                               resource,
 	                               (void*) renderer,
-	                               gears_renderer_playClick);
+	                               gears_renderer_playClick,
+	                               &widget_style);
 	if(self->screen == NULL)
 	{
-		LOGE("fail_screen");
 		goto fail_screen;
 	}
 
-	vkui_widgetLayout_t layout_show =
-	{
-		.wrapx    = VKUI_WIDGET_WRAP_STRETCH_PARENT,
-		.wrapy    = VKUI_WIDGET_WRAP_STRETCH_PARENT,
-		.stretchx = 1.0f,
-		.stretchy = 1.0f
-	};
-
-	self->layer_show = vkui_layer_new(self->screen, 0,
-	                                  &layout_show, &clear);
-	if(self->layer_show == NULL)
-	{
-		LOGE("fail_layer_show");
-		goto fail_layer_show;
-	}
-
-	self->view_about = gears_viewAbout_new(self, clickBack);
+	self->view_about = gears_viewAbout_new(self);
 	if(self->view_about == NULL)
 	{
-		LOGE("fail_view_about");
 		goto fail_view_about;
 	}
 
 	self->layer_hud = gears_layerHud_new(self);
 	if(self->layer_hud == NULL)
 	{
-		LOGE("fail_layer_hud");
 		goto fail_layer_hud;
 	}
 
-	vkui_screen_top(self->screen,
-	                (vkui_widget_t*) self->layer_show);
-	self->draw_mode = GEARS_OVERLAY_DRAWMODE_HUD;
-	vkui_layer_clear(self->layer_show);
-	vkui_layer_add(self->layer_show,
-	               (vkui_widget_t*) self->layer_hud);
+	vkui_screen_windowReset(self->screen,
+	                        (vkui_window_t*) self->layer_hud);
 
 	// success
 	return self;
@@ -141,8 +121,6 @@ gears_overlay_t* gears_overlay_new(struct gears_renderer_s* renderer)
 	fail_layer_hud:
 		gears_viewAbout_delete(&self->view_about);
 	fail_view_about:
-		vkui_layer_delete(&self->layer_show);
-	fail_layer_show:
 		vkui_screen_delete(&self->screen);
 	fail_screen:
 		FREE(self);
@@ -156,11 +134,9 @@ void gears_overlay_delete(gears_overlay_t** _self)
 	gears_overlay_t* self = *_self;
 	if(self)
 	{
-		vkui_screen_top(self->screen, NULL);
-		vkui_layer_clear(self->layer_show);
+		vkui_screen_windowReset(self->screen, NULL);
 		gears_layerHud_delete(&self->layer_hud);
 		gears_viewAbout_delete(&self->view_about);
-		vkui_layer_delete(&self->layer_show);
 		vkui_screen_delete(&self->screen);
 		FREE(self);
 		*_self = NULL;
@@ -171,16 +147,7 @@ int gears_overlay_escape(gears_overlay_t* self)
 {
 	ASSERT(self);
 
-	if(self->draw_mode == GEARS_OVERLAY_DRAWMODE_ABOUT)
-	{
-		self->draw_mode = GEARS_OVERLAY_DRAWMODE_HUD;
-		vkui_layer_clear(self->layer_show);
-		vkui_layer_add(self->layer_show,
-		               (vkui_widget_t*) self->layer_hud);
-		return 1;
-	}
-
-	return 0;
+	return vkui_screen_windowPop(self->screen);
 }
 
 void gears_overlay_draw(gears_overlay_t* self,

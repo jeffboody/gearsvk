@@ -2,10 +2,10 @@ About
 =====
 
 Gears VK is a heavily modified port of the famous "gears"
-demo to Vulkan/Android/Linux.
+demo.
 
 The Gears demo is an open source project intended to help
-developers learn how to create Vulkan programs. The Gears
+developers to learn graphics APIs. The Gears
 demo was originally written by Brian Paul for the OpenGL
 API as part of the Mesa3D project. I've ported this app
 between multiple languages and graphics APIs over the
@@ -19,12 +19,6 @@ The vulkan-tutorial branch contains my original port to
 Vulkan which uses the Vulkan library directly and includes
 an in depth tutorial. Going forward only the VKK version
 will be maintained.
-
-You may find the Github project for Gears VK at
-
-	https://github.com/jeffboody/gearsvk
-
-Send questions or comments to Jeff Boody at jeffboody@gmail.com
 
 Setup
 =====
@@ -70,15 +64,15 @@ API level to API 24 (Android 7.0/Nougat) for Vulkan apps.
 Building
 ========
 
-Edit profile.sdl or profile.android as needed for your
-development environment before building.
+Edit profile as needed for your development environment
+before building.
 
 Linux
 -----
 
 Command line
 
-	source profile.sdl
+	source profile
 	cd app/src/main/cpp
 	make
 	./gearsvk
@@ -111,3 +105,52 @@ Guide to Learning Vulkan" book.
 This app was ported from the Gears2 implementation found here:
 
 	https://github.com/jeffboody/gears2
+
+The Gears demo also depends on the following projects.
+
+	https://github.com/jeffboody/libbfs
+	https://github.com/jeffboody/libcc
+	https://github.com/jeffboody/libexpat
+	https://github.com/jeffboody/libsqlite3
+	https://github.com/jeffboody/libvkk
+	https://github.com/jeffboody/jpeg
+	https://github.com/jeffboody/texgz
+	https://github.com/lvandeve/lodepng
+
+Screenshot
+==========
+
+![Gears VK](docs/gearsvk.jpg?raw=true "Gears VK")
+
+License
+=======
+
+This port of Gears VK was implemented by
+[Jeff Boody](mailto:jeffboody@gmail.com)
+under The MIT License.
+
+	Copyright (c) 2009-2010 Jeff Boody
+
+	Gears for Android is a heavily modified port of the famous "gears" demo.
+	As such, it is a derived work subject to the license requirements (below)
+	of the original work.
+
+	Copyright (c) 1999-2001  Brian Paul   All Rights Reserved.
+
+	Permission is hereby granted, free of charge, to any person obtaining a
+	copy of this software and associated documentation files (the "Software"),
+	to deal in the Software without restriction, including without limitation
+	the rights to use, copy, modify, merge, publish, distribute, sublicense,
+	and/or sell copies of the Software, and to permit persons to whom the
+	Software is furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included
+	in all copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+	THE SOFTWARE.

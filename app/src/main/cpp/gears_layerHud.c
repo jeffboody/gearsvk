@@ -14,20 +14,21 @@
 * private                                                  *
 ***********************************************************/
 
-static int clickAbout(vkui_widget_t* widget,
-                      void* priv, int state,
-                      float x, float y)
+int
+clickTransition(vkui_widget_t* widget,
+                int state, float x, float y)
 {
 	ASSERT(widget);
-	ASSERT(priv);
 
-	gears_overlay_t* overlay = (gears_overlay_t*) priv;
 	if(state == VKUI_WIDGET_POINTER_UP)
 	{
-		overlay->draw_mode = GEARS_OVERLAY_DRAWMODE_ABOUT;
-		vkui_layer_clear(overlay->layer_show);
-		vkui_layer_add(overlay->layer_show,
-		               (vkui_widget_t*) overlay->view_about);
+		vkui_screen_t* screen = widget->screen;
+
+		vkui_window_t** _window;
+		_window = (vkui_window_t**)
+		          vkui_widget_widgetFnArg(widget);
+
+		vkui_screen_windowPush(screen, *_window);
 	}
 	return 1;
 }
@@ -36,85 +37,49 @@ static int clickAbout(vkui_widget_t* widget,
 * public                                                   *
 ***********************************************************/
 
-gears_layerHud_t* gears_layerHud_new(struct gears_overlay_s* overlay)
+gears_layerHud_t*
+gears_layerHud_new(struct gears_overlay_s* overlay)
 {
 	ASSERT(overlay);
 
-	cc_vec4f_t clear =
-	{
-		.r = 0.0f,
-		.g = 0.0f,
-		.b = 0.0f,
-		.a = 0.0f
-	};
+	vkui_screen_t* screen = overlay->screen;
 
-	vkui_widgetLayout_t layout_hud =
+	vkui_windowInfo_t info =
 	{
-		.border   = VKUI_WIDGET_BORDER_LARGE,
-		.wrapx    = VKUI_WIDGET_WRAP_STRETCH_PARENT,
-		.wrapy    = VKUI_WIDGET_WRAP_STRETCH_PARENT,
-		.stretchx = 1.0f,
-		.stretchy = 1.0f
+		.flags = VKUI_WINDOW_FLAG_LAYER1 |
+		         VKUI_WINDOW_FLAG_TRANSPARENT
 	};
 
 	gears_layerHud_t* self;
 	self = (gears_layerHud_t*)
-	       vkui_layer_new(overlay->screen,
-	                      sizeof(gears_layerHud_t),
-	                      &layout_hud, &clear);
+	       vkui_window_new(screen,
+	                       sizeof(gears_layerHud_t),
+	                       &info);
 	if(self == NULL)
 	{
 		return NULL;
 	}
 
-	vkui_bulletboxStyle_t style_about =
-	{
-		.color_icon =
-		{
-			.r = 1.0f,
-			.g = 1.0f,
-			.b = 1.0f,
-			.a = 1.0f
-		},
-		.text_style =
-		{
-			.font_type = VKUI_TEXT_FONTTYPE_REGULAR,
-			.size      = VKUI_TEXT_SIZE_MEDIUM,
-			.spacing   = VKUI_TEXT_SPACING_MEDIUM,
-			.color     =
-			{
-				.r = 1.0f,
-				.g = 1.0f,
-				.b = 1.0f,
-				.a = 1.0f
-			}
-		}
-	};
-
-	vkui_widgetFn_t fn =
-	{
-		.priv     = (void*) overlay,
-		.click_fn = clickAbout,
-	};
-
 	const char* sprite_about[] =
 	{
-		"icons/ic_info_outline_white_24dp.texz",
+		"icons/ic_info_outline_white_24dp.png",
 		NULL
 	};
 
-	self->bulletbox_about = vkui_bulletbox_new(overlay->screen,
-	                                           0,
-	                                           VKUI_WIDGET_ANCHOR_TL,
-	                                           &fn,
-	                                           &style_about,
-	                                           sprite_about);
+	vkui_widgetFn_t about_fn =
+	{
+		.arg      = (void*) &overlay->view_about,
+		.click_fn = clickTransition
+	};
+	self->bulletbox_about = vkui_bulletbox_newPageItem(screen,
+	                                                   &about_fn,
+	                                                   sprite_about);
 	if(self->bulletbox_about == NULL)
 	{
 		goto fail_bulletbox_about;
 	}
 	vkui_bulletbox_label(self->bulletbox_about,
-	                     "%s", "Gears");
+	                     "%s", "Gears VK");
 
 	vkui_textLayout_t text_layout =
 	{
@@ -134,10 +99,20 @@ gears_layerHud_t* gears_layerHud_new(struct gears_overlay_s* overlay)
 		}
 	};
 
-	vkui_textFn_t text_fn_fps;
-	memset(&text_fn_fps, 0, sizeof(vkui_textFn_t));
+	vkui_textFn_t text_fn_fps =
+	{
+		.fn =
+		{
+			.priv = NULL
+		}
+	};
 
-	self->text_fps = vkui_text_new(overlay->screen, 0,
+	cc_vec4f_t clear =
+	{
+		.a = 0.0f
+	};
+
+	self->text_fps = vkui_text_new(screen, 0,
 	                               &text_layout,
 	                               &text_style_fps,
 	                               &text_fn_fps,
@@ -149,10 +124,10 @@ gears_layerHud_t* gears_layerHud_new(struct gears_overlay_s* overlay)
 	vkui_text_label(self->text_fps, "%s", "0 fps");
 	self->fps = 0;
 
-	vkui_layer_t* layer = (vkui_layer_t*) self;
-	vkui_layer_add(layer,
-	               (vkui_widget_t*) self->bulletbox_about);
-	vkui_layer_add(layer, (vkui_widget_t*) self->text_fps);
+	vkui_window_t* window = (vkui_window_t*) self;
+	vkui_layer_t*  layer1 = vkui_window_layer1(window);
+	vkui_layer_add(layer1, (vkui_widget_t*) self->bulletbox_about);
+	vkui_layer_add(layer1, (vkui_widget_t*) self->text_fps);
 
 	// success
 	return self;
@@ -161,7 +136,7 @@ gears_layerHud_t* gears_layerHud_new(struct gears_overlay_s* overlay)
 	fail_text_fps:
 		vkui_bulletbox_delete(&self->bulletbox_about);
 	fail_bulletbox_about:
-		vkui_layer_delete((vkui_layer_t**) &self);
+		vkui_window_delete((vkui_window_t**) &self);
 	return NULL;
 }
 
@@ -172,10 +147,12 @@ void gears_layerHud_delete(gears_layerHud_t** _self)
 	gears_layerHud_t* self = *_self;
 	if(self)
 	{
-		vkui_layer_clear((vkui_layer_t*) self);
+		vkui_window_t* window = (vkui_window_t*) self;
+		vkui_layer_t*  layer1 = vkui_window_layer1(window);
+		vkui_layer_clear(layer1);
 		vkui_text_delete(&self->text_fps);
 		vkui_bulletbox_delete(&self->bulletbox_about);
-		vkui_layer_delete((vkui_layer_t**) _self);
+		vkui_window_delete((vkui_window_t**) &self);
 	}
 }
 
