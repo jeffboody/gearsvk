@@ -5,15 +5,15 @@
 #ifndef gears_layerHud_H
 #define gears_layerHud_H
 
-#include "libvkk/vkui.h"
+#include "libvkk/vkk_ui.h"
 
 struct gears_overlay_s;
 
 typedef struct
 {
-	vkui_window_t     base;
-	vkui_bulletbox_t* bulletbox_about;
-	vkui_text_t*      text_fps;
+	vkk_uiWindow_t     base;
+	vkk_uiBulletbox_t* bulletbox_about;
+	vkk_uiText_t*      text_fps;
 
 	// cached state
 	int fps;

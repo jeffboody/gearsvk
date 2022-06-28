@@ -26,7 +26,7 @@
 
 #include "gears_layerHud.h"
 #include "gears_viewAbout.h"
-#include "libvkk/vkui.h"
+#include "libvkk/vkk_ui.h"
 
 struct gears_renderer_s;
 
@@ -34,7 +34,7 @@ typedef struct gears_overlay_s
 {
 	struct gears_renderer_s* renderer;
 
-	vkui_screen_t*     screen;
+	vkk_uiScreen_t*    screen;
 	gears_layerHud_t*  layer_hud;
 	gears_viewAbout_t* view_about;
 } gears_overlay_t;

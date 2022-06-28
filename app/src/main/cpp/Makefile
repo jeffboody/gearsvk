@@ -1,5 +1,5 @@
-export CC_USE_MATH  = 1
-export VKK_USE_VKUI = 1
+export CC_USE_MATH = 1
+export VKK_USE_UI  = 1
 
 TARGET   = gearsvk
 CLASSES  = gears_renderer gear gears_glsm gears_overlay gears_viewAbout gears_layerHud

@@ -56,7 +56,7 @@ gears_overlay_new(struct gears_renderer_s* renderer)
 	char resource[256];
 	snprintf(resource, 256, "%s/resource.bfs", resource_path);
 
-	vkui_widgetStyle_t widget_style =
+	vkk_uiWidgetStyle_t widget_style =
 	{
 		.color_primary =
 		{
@@ -88,12 +88,12 @@ gears_overlay_new(struct gears_renderer_s* renderer)
 		},
 	};
 
-	self->screen = vkui_screen_new(0, engine,
-	                               vkk_engine_defaultRenderer(engine),
-	                               resource,
-	                               (void*) renderer,
-	                               gears_renderer_playClick,
-	                               &widget_style);
+	self->screen = vkk_uiScreen_new(0, engine,
+	                                vkk_engine_defaultRenderer(engine),
+	                                resource,
+	                                (void*) renderer,
+	                                gears_renderer_playClick,
+	                                &widget_style);
 	if(self->screen == NULL)
 	{
 		goto fail_screen;
@@ -111,8 +111,8 @@ gears_overlay_new(struct gears_renderer_s* renderer)
 		goto fail_layer_hud;
 	}
 
-	vkui_screen_windowReset(self->screen,
-	                        (vkui_window_t*) self->layer_hud);
+	vkk_uiScreen_windowReset(self->screen,
+	                         (vkk_uiWindow_t*) self->layer_hud);
 
 	// success
 	return self;
@@ -121,7 +121,7 @@ gears_overlay_new(struct gears_renderer_s* renderer)
 	fail_layer_hud:
 		gears_viewAbout_delete(&self->view_about);
 	fail_view_about:
-		vkui_screen_delete(&self->screen);
+		vkk_uiScreen_delete(&self->screen);
 	fail_screen:
 		FREE(self);
 	return NULL;
@@ -134,10 +134,10 @@ void gears_overlay_delete(gears_overlay_t** _self)
 	gears_overlay_t* self = *_self;
 	if(self)
 	{
-		vkui_screen_windowReset(self->screen, NULL);
+		vkk_uiScreen_windowReset(self->screen, NULL);
 		gears_layerHud_delete(&self->layer_hud);
 		gears_viewAbout_delete(&self->view_about);
-		vkui_screen_delete(&self->screen);
+		vkk_uiScreen_delete(&self->screen);
 		FREE(self);
 		*_self = NULL;
 	}
@@ -147,7 +147,7 @@ int gears_overlay_escape(gears_overlay_t* self)
 {
 	ASSERT(self);
 
-	return vkui_screen_windowPop(self->screen);
+	return vkk_uiScreen_windowPop(self->screen);
 }
 
 void gears_overlay_draw(gears_overlay_t* self,
@@ -155,8 +155,8 @@ void gears_overlay_draw(gears_overlay_t* self,
 {
 	ASSERT(self);
 
-	vkui_screen_density(self->screen, density);
-	vkui_screen_draw(self->screen);
+	vkk_uiScreen_density(self->screen, density);
+	vkk_uiScreen_draw(self->screen);
 }
 
 void gears_overlay_updateFps(gears_overlay_t* self, int fps)
@@ -170,21 +170,21 @@ int gears_overlay_pointerDown(gears_overlay_t* self,
                               float x, float y, double t0)
 {
 	ASSERT(self);
-	return vkui_screen_pointerDown(self->screen, x, y, t0);
+	return vkk_uiScreen_pointerDown(self->screen, x, y, t0);
 }
 
 int gears_overlay_pointerUp(gears_overlay_t* self,
                             float x, float y, double t0)
 {
 	ASSERT(self);
-	return vkui_screen_pointerUp(self->screen, x, y, t0);
+	return vkk_uiScreen_pointerUp(self->screen, x, y, t0);
 }
 
 int gears_overlay_pointerMove(gears_overlay_t* self,
                               float x, float y, double t0)
 {
 	ASSERT(self);
-	return vkui_screen_pointerMove(self->screen, x, y, t0);
+	return vkk_uiScreen_pointerMove(self->screen, x, y, t0);
 }
 
 void gears_overlay_contentRect(gears_overlay_t* self,
@@ -193,5 +193,5 @@ void gears_overlay_contentRect(gears_overlay_t* self,
 {
 	ASSERT(self);
 
-	vkui_screen_contentRect(self->screen, t, l, b, r);
+	vkk_uiScreen_contentRect(self->screen, t, l, b, r);
 }

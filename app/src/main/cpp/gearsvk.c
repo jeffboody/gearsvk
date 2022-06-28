@@ -59,14 +59,14 @@ void gearsvk_onPause(void* priv)
 	// ignore
 }
 
-void gearsvk_onEvent(void* priv, vkk_event_t* event)
+void gearsvk_onEvent(void* priv, vkk_platformEvent_t* event)
 {
 	ASSERT(priv);
 	ASSERT(event);
 
 	gears_renderer_t* renderer = (gears_renderer_t*) priv;
 
-	if(event->type == VKK_EVENT_TYPE_ACTION_DOWN)
+	if(event->type == VKK_PLATFORM_EVENTTYPE_ACTION_DOWN)
 	{
 		gears_renderer_touch(renderer,
 		                     GEARS_TOUCH_ACTION_DOWN,
@@ -81,7 +81,7 @@ void gearsvk_onEvent(void* priv, vkk_event_t* event)
 		                     event->action.coord[3].x,
 		                     event->action.coord[3].y);
 	}
-	else if(event->type == VKK_EVENT_TYPE_ACTION_MOVE)
+	else if(event->type == VKK_PLATFORM_EVENTTYPE_ACTION_MOVE)
 	{
 		gears_renderer_touch(renderer,
 		                     GEARS_TOUCH_ACTION_MOVE,
@@ -96,7 +96,7 @@ void gearsvk_onEvent(void* priv, vkk_event_t* event)
 		                     event->action.coord[3].x,
 		                     event->action.coord[3].y);
 	}
-	else if(event->type == VKK_EVENT_TYPE_ACTION_UP)
+	else if(event->type == VKK_PLATFORM_EVENTTYPE_ACTION_UP)
 	{
 		gears_renderer_touch(renderer,
 		                     GEARS_TOUCH_ACTION_UP,
@@ -111,20 +111,20 @@ void gearsvk_onEvent(void* priv, vkk_event_t* event)
 		                     event->action.coord[3].x,
 		                     event->action.coord[3].y);
 	}
-	else if(event->type == VKK_EVENT_TYPE_DENSITY)
+	else if(event->type == VKK_PLATFORM_EVENTTYPE_DENSITY)
 	{
 		gears_renderer_density(renderer,
 		                       event->density);
 	}
-	else if((event->type == VKK_EVENT_TYPE_KEY_UP) ||
-	        ((event->type == VKK_EVENT_TYPE_KEY_DOWN) &&
+	else if((event->type == VKK_PLATFORM_EVENTTYPE_KEY_UP) ||
+	        ((event->type == VKK_PLATFORM_EVENTTYPE_KEY_DOWN) &&
 	         (event->key.repeat)))
 	{
 		gears_renderer_keyPress(renderer,
 		                        event->key.keycode,
 		                        event->key.meta);
 	}
-	else if(event->type == VKK_EVENT_TYPE_CONTENT_RECT)
+	else if(event->type == VKK_PLATFORM_EVENTTYPE_CONTENT_RECT)
 	{
 		gears_renderer_contentRect(renderer,
 		                           event->content_rect.t,
@@ -141,7 +141,7 @@ vkk_platformInfo_t VKK_PLATFORM_INFO =
 	{
 		.major = 1,
 		.minor = 0,
-		.patch = 16,
+		.patch = 17,
 	},
 	.app_dir     = "GearsVK",
 	.onCreate    = gearsvk_onCreate,

@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.4.1)
 set(CC_USE_MATH    true)
 set(TEXGZ_USE_JPEG true)
 set(TEXGZ_USE_PNG  true)
-set(VKK_USE_VKUI   true)
+set(VKK_USE_UI     true)
 
 # Optional libraries
 if(TEXGZ_USE_JPEG)

@@ -702,7 +702,7 @@ void gears_renderer_keyPress(gears_renderer_t* self,
 {
 	ASSERT(self);
 
-	if(keycode == VKK_KEYCODE_ESCAPE)
+	if(keycode == VKK_PLATFORM_KEYCODE_ESCAPE)
 	{
 		if(gears_overlay_escape(self->overlay))
 		{

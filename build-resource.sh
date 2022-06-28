@@ -24,7 +24,7 @@ rm shaders/*.spv
 cd ..
 
 # VKUI
-cd app/src/main/cpp/libvkk/vkui/resource
+cd app/src/main/cpp/libvkk/ui/resource
 ./build-resource.sh $RESOURCE
 cd ../../../../../../..
 

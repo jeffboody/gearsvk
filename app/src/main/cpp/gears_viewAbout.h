@@ -5,18 +5,18 @@
 #ifndef gears_viewAbout_H
 #define gears_viewAbout_H
 
-#include "libvkk/vkui.h"
+#include "libvkk/vkk_ui.h"
 
 struct gears_overlay_s;
 
 typedef struct
 {
-	vkui_window_t   base;
-	vkui_text_t*    text_intro;
-	vkui_text_t*    text_license;
-	vkui_textbox_t* textbox_intro;
-	vkui_textbox_t* textbox_license;
-	vkui_textbox_t* linkbox_github;
+	vkk_uiWindow_t   base;
+	vkk_uiText_t*    text_intro;
+	vkk_uiText_t*    text_license;
+	vkk_uiTextbox_t* textbox_intro;
+	vkk_uiTextbox_t* textbox_license;
+	vkk_uiTextbox_t* linkbox_github;
 } gears_viewAbout_t;
 
 gears_viewAbout_t* gears_viewAbout_new(struct gears_overlay_s* overlay);
