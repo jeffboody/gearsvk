@@ -4,6 +4,8 @@ About
 Gears VK is a heavily modified port of the famous "gears"
 demo.
 
+![Gears VK](docs/gearsvk.gif?raw=true "Gears VK")
+
 The Gears demo is an open source project intended to help
 developers to learn graphics APIs. The Gears
 demo was originally written by Brian Paul for the OpenGL
@@ -102,7 +104,7 @@ The following websites were useful in making this port.
 In addition to the "Vulkan Programming Guide: The Official
 Guide to Learning Vulkan" book.
 
-This app was ported from the Gears2 implementation found here:
+This app was ported from the Gears2 implementation.
 
 	https://github.com/jeffboody/gears2
 
@@ -116,6 +118,11 @@ The Gears demo also depends on the following projects.
 	https://github.com/jeffboody/jpeg
 	https://github.com/jeffboody/texgz
 	https://github.com/lvandeve/lodepng
+
+GIF created by ffmpeg.
+
+	sudo apt install ffmpeg
+	ffmpeg -i gearsvk.mp4 -s 256x256 -r 30 gearsvk.gif
 
 Screenshot
 ==========
