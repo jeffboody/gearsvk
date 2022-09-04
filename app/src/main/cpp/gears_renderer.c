@@ -561,7 +561,7 @@ void gears_renderer_exit(gears_renderer_t* self)
 	ASSERT(self);
 
 	vkk_engine_platformCmd(self->engine,
-	                       VKK_PLATFORM_CMD_EXIT, NULL);
+	                       VKK_PLATFORM_CMD_EXIT);
 }
 
 void gears_renderer_loadURL(gears_renderer_t* self,
@@ -570,18 +570,7 @@ void gears_renderer_loadURL(gears_renderer_t* self,
 	ASSERT(self);
 	ASSERT(url);
 
-	vkk_engine_platformCmd(self->engine,
-	                       VKK_PLATFORM_CMD_LOADURL, url);
-}
-
-void gears_renderer_playClick(void* ptr)
-{
-	ASSERT(ptr);
-
-	gears_renderer_t* self = (gears_renderer_t*) ptr;
-
-	vkk_engine_platformCmd(self->engine,
-	                       VKK_PLATFORM_CMD_PLAY_CLICK, NULL);
+	vkk_engine_platformCmdLoadUrl(self->engine, url);
 }
 
 void gears_renderer_density(gears_renderer_t* self,

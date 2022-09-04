@@ -91,8 +91,6 @@ gears_overlay_new(struct gears_renderer_s* renderer)
 	self->screen = vkk_uiScreen_new(0, engine,
 	                                vkk_engine_defaultRenderer(engine),
 	                                resource,
-	                                (void*) renderer,
-	                                gears_renderer_playClick,
 	                                &widget_style);
 	if(self->screen == NULL)
 	{
