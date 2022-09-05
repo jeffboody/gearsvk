@@ -12,7 +12,7 @@ struct gears_overlay_s;
 typedef struct
 {
 	vkk_uiWindow_t     base;
-	vkk_uiBulletbox_t* bulletbox_about;
+	vkk_uiBulletBox_t* bulletbox_about;
 	vkk_uiText_t*      text_fps;
 
 	// cached state

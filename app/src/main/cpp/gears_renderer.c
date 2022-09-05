@@ -691,24 +691,21 @@ void gears_renderer_keyPress(gears_renderer_t* self,
 {
 	ASSERT(self);
 
-	if(keycode == VKK_PLATFORM_KEYCODE_ESCAPE)
+	if(gears_overlay_keyPress(self->overlay, keycode, meta))
 	{
-		if(gears_overlay_escape(self->overlay))
+		// ignore
+	}
+	else if(keycode == VKK_PLATFORM_KEYCODE_ESCAPE)
+	{
+		// double tap back to exit
+		double t1 = cc_timestamp();
+		if((t1 - self->escape_t0) < 0.5)
 		{
-			// ignore
+			gears_renderer_exit(self);
 		}
 		else
 		{
-			// double tap back to exit
-			double t1 = cc_timestamp();
-			if((t1 - self->escape_t0) < 0.5)
-			{
-				gears_renderer_exit(self);
-			}
-			else
-			{
-				self->escape_t0 = t1;
-			}
+			self->escape_t0 = t1;
 		}
 	}
 }

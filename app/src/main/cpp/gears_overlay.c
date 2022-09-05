@@ -141,11 +141,13 @@ void gears_overlay_delete(gears_overlay_t** _self)
 	}
 }
 
-int gears_overlay_escape(gears_overlay_t* self)
+int gears_overlay_keyPress(gears_overlay_t* self,
+                           int keycode,
+                           int meta)
 {
 	ASSERT(self);
 
-	return vkk_uiScreen_windowPop(self->screen);
+	return vkk_uiScreen_keyPress(self->screen, keycode, meta);
 }
 
 void gears_overlay_draw(gears_overlay_t* self,
