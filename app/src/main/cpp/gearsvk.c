@@ -141,7 +141,7 @@ vkk_platformInfo_t VKK_PLATFORM_INFO =
 	{
 		.major = 1,
 		.minor = 0,
-		.patch = 19,
+		.patch = 20,
 	},
 	.app_dir     = "GearsVK",
 	.onCreate    = gearsvk_onCreate,

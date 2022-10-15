@@ -5,16 +5,18 @@
                   android:version="0x400003"
                   android:required="true" />
     <application
-        android:label="GearsVK"
+        android:label="@string/app_name"
         android:icon="@drawable/logo"
         android:roundIcon="@drawable/logo"
         android:allowBackup="true"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".GearsVK"
-            android:configChanges="orientation|keyboard|keyboardHidden|screenLayout"
+            android:configChanges="orientation|keyboard|keyboardHidden|screenLayout|screenSize|smallestScreenSize"
             android:windowSoftInputMode="adjustResize"
-            android:launchMode="singleTask">
+            android:launchMode="singleTask"
+            android:exported="true"
+            android:label="@string/app_name">
             <meta-data android:name="android.app.lib_name" android:value="gearsvk" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

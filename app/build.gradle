@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 31
     defaultConfig {
         applicationId "com.jeffboody.gearsvk"
         minSdkVersion 24
-        targetSdkVersion 28
-        versionCode 15
-        versionName "20220911-1.0.19"
+        targetSdkVersion 31
+        versionCode 16
+        versionName "20221014-1.0.20"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
