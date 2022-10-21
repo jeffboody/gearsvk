@@ -28,34 +28,30 @@
 #include "gears_viewAbout.h"
 #include "libvkk/vkk_ui.h"
 
-struct gears_renderer_s;
+typedef struct gears_renderer_s gears_renderer_t;
 
 typedef struct gears_overlay_s
 {
-	struct gears_renderer_s* renderer;
-
 	vkk_uiScreen_t*    screen;
-	gears_layerHud_t*  layer_hud;
+	vkk_engine_t*      engine;
 	gears_viewAbout_t* view_about;
+	gears_layerHud_t*  layer_hud;
+
+	gears_renderer_t* renderer;
 } gears_overlay_t;
 
-gears_overlay_t* gears_overlay_new(struct gears_renderer_s* renderer);
+gears_overlay_t* gears_overlay_new(vkk_engine_t* engine);
 void             gears_overlay_delete(gears_overlay_t** _self);
-int              gears_overlay_keyPress(gears_overlay_t* self,
-                                        int keycode,
-                                        int meta);
-void             gears_overlay_draw(gears_overlay_t* self,
-                                    float density);
-void             gears_overlay_updateFps(gears_overlay_t* self,
-                                         int fps);
-int              gears_overlay_pointerDown(gears_overlay_t* self,
-                                           float x, float y, double t0);
-int              gears_overlay_pointerUp(gears_overlay_t* self,
-                                         float x, float y, double t0);
-int              gears_overlay_pointerMove(gears_overlay_t* self,
-                                           float x, float y, double t0);
-void             gears_overlay_contentRect(gears_overlay_t* self,
-                                           uint32_t t, uint32_t l,
-                                           uint32_t b, uint32_t r);
+void             gears_overlay_draw(gears_overlay_t* self);
+void             gears_overlay_eventAction(gears_overlay_t* self,
+                                           vkk_platformEvent_t* event);
+void             gears_overlay_eventContentRect(gears_overlay_t* self,
+                                                vkk_platformEventContentRect_t* ecr);
+void             gears_overlay_eventDensity(gears_overlay_t* self,
+                                            float density);
+int              gears_overlay_eventKey(gears_overlay_t* self,
+                                        vkk_platformEventKey_t* ek);
+int              gears_overlay_event(gears_overlay_t* self,
+                                     vkk_platformEvent_t* event);
 
 #endif

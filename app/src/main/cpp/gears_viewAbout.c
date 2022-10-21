@@ -14,11 +14,64 @@
 const char* GEARS_URL = "https://github.com/jeffboody/gearsvk/";
 
 /***********************************************************
+* private                                                  *
+***********************************************************/
+
+static vkk_uiWidget_t*
+gears_viewAbout_rendererAction(vkk_uiWidget_t* widget,
+                               vkk_uiWidgetActionInfo_t* info)
+{
+	ASSERT(widget);
+	ASSERT(info);
+
+	// widget is gb_renderer
+
+	gears_overlay_t* overlay;
+	overlay = (gears_overlay_t*) vkk_uiWidget_priv(widget);
+
+	if(info->action == VKK_UI_WIDGET_ACTION_DOWN)
+	{
+		return widget;
+	}
+	else if(info->action == VKK_UI_WIDGET_ACTION_DRAG)
+	{
+		// accept 1 or 2 finger drags
+		gears_renderer_rotate(overlay->renderer,
+		                      info->drag.x, info->drag.y);
+		return widget;
+	}
+	else if(info->action == VKK_UI_WIDGET_ACTION_SCALE)
+	{
+		gears_renderer_scale(overlay->renderer, info->scale);
+		return widget;
+	}
+
+	return NULL;
+}
+
+static void
+gears_viewAbout_rendererDraw(vkk_uiWidget_t* widget)
+{
+	ASSERT(widget);
+
+	// widget is gb_renderer
+
+	gears_overlay_t* overlay;
+	overlay = (gears_overlay_t*) vkk_uiWidget_priv(widget);
+
+	cc_rect1f_t* rect_draw = vkk_uiWidget_rectDraw(widget);
+
+	gears_renderer_draw(overlay->renderer,
+	                    (float) rect_draw->w,
+	                    (float) rect_draw->h);
+}
+
+/***********************************************************
 * public                                                   *
 ***********************************************************/
 
 gears_viewAbout_t*
-gears_viewAbout_new(struct gears_overlay_s* overlay)
+gears_viewAbout_new(gears_overlay_t* overlay)
 {
 	ASSERT(overlay);
 
@@ -40,6 +93,33 @@ gears_viewAbout_new(struct gears_overlay_s* overlay)
 	if(self == NULL)
 	{
 		return NULL;
+	}
+
+	vkk_uiGraphicsBoxFn_t gbfn =
+	{
+		.priv      = overlay,
+		.action_fn = gears_viewAbout_rendererAction,
+		.draw_fn   = gears_viewAbout_rendererDraw,
+	};
+
+	vkk_uiWidgetLayout_t gb_layout =
+	{
+		.border   = VKK_UI_WIDGET_BORDER_LARGE,
+		.anchor   = VKK_UI_WIDGET_ANCHOR_TC,
+		.wrapx    = VKK_UI_WIDGET_WRAP_STRETCH_TEXT_VLARGE,
+		.wrapy    = VKK_UI_WIDGET_WRAP_STRETCH_TEXT_VLARGE,
+		.stretchx = 5.5f,
+		.stretchy = 5.5f
+	};
+
+	cc_vec4f_t color = { .a=1.0f };
+	self->gb_renderer = vkk_uiGraphicsBox_new(screen, 0,
+	                                          &gbfn,
+	                                          &gb_layout,
+	                                          1, &color);
+	if(self->gb_renderer == NULL)
+	{
+		goto fail_gb_renderer;
 	}
 
 	self->text_intro = vkk_uiText_newPageHeading(screen);
@@ -125,6 +205,7 @@ gears_viewAbout_new(struct gears_overlay_s* overlay)
 	vkk_uiTextBox_printf(self->textbox_license, "%s", "THE SOFTWARE.");
 
 	vkk_uiListBox_t* page   = vkk_uiWindow_page(window);
+	vkk_uiListBox_add(page, (vkk_uiWidget_t*) self->gb_renderer);
 	vkk_uiListBox_add(page, (vkk_uiWidget_t*) self->text_intro);
 	vkk_uiListBox_add(page, (vkk_uiWidget_t*) self->textbox_intro);
 	vkk_uiListBox_add(page, (vkk_uiWidget_t*) self->linkbox_github);
@@ -144,6 +225,8 @@ gears_viewAbout_new(struct gears_overlay_s* overlay)
 	fail_text_license:
 		vkk_uiText_delete(&self->text_intro);
 	fail_text_intro:
+		vkk_uiGraphicsBox_delete(&self->gb_renderer);
+	fail_gb_renderer:
 		vkk_uiWindow_delete((vkk_uiWindow_t**) &self);
 	return NULL;
 }
@@ -163,6 +246,7 @@ void gears_viewAbout_delete(gears_viewAbout_t** _self)
 		vkk_uiTextBox_delete(&self->textbox_intro);
 		vkk_uiText_delete(&self->text_license);
 		vkk_uiText_delete(&self->text_intro);
+		vkk_uiGraphicsBox_delete(&self->gb_renderer);
 		vkk_uiWindow_delete((vkk_uiWindow_t**) _self);
 	}
 }

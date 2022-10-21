@@ -397,7 +397,7 @@ gear_createDescriptorSet(gear_t* self)
 * public                                                   *
 ***********************************************************/
 
-gear_t* gear_new(struct gears_renderer_s* renderer,
+gear_t* gear_new(gears_renderer_t* renderer,
                  const cc_vec4f_t* color,
                  float inner_radius, float outer_radius, float width,
                  int teeth, float tooth_depth)

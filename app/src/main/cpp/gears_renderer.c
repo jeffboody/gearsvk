@@ -36,9 +36,7 @@
 #include "libcc/math/cc_vec4f.h"
 #include "libcc/cc_log.h"
 #include "libcc/cc_memory.h"
-#include "libcc/cc_timestamp.h"
 #include "libbfs/bfs_file.h"
-#include "libvkk/vkk_platform.h"
 #include "texgz/texgz_png.h"
 #include "texgz/texgz_tex.h"
 #include "gears_renderer.h"
@@ -59,47 +57,19 @@ static void gears_renderer_step(gears_renderer_t* self)
 	vkk_renderer_t* rend;
 	rend = vkk_engine_defaultRenderer(self->engine);
 
-	vkk_renderer_surfaceSize(rend,
-	                         &self->screen_w,
-	                         &self->screen_h);
-
-	// update screen, viewport and scissor
-	float screen_x = 0.0f;
-	float screen_y = 0.0f;
-	float screen_w = (float) self->screen_w;
-	float screen_h = (float) self->screen_h;
-	if((self->content_rect_width  > 0) &&
-	   (self->content_rect_height > 0) &&
-	   (self->content_rect_width  <= self->screen_w) &&
-	   (self->content_rect_height <= self->screen_h))
-	{
-		screen_x = (float) self->content_rect_left;
-		screen_y = (float) self->content_rect_top;
-		screen_w = (float) self->content_rect_width;
-		screen_h = (float) self->content_rect_height;
-
-		vkk_renderer_viewport(rend, screen_x, screen_y,
-		                      screen_w, screen_h);
-		vkk_renderer_scissor(rend,
-		                     self->content_rect_left,
-		                     self->content_rect_top,
-		                     self->content_rect_width,
-		                     self->content_rect_height);
-	}
-
 	// https://www.saschawillems.de/blog/2019/03/29/flipping-the-vulkan-viewport/
 	// Vulkan uses a top-left left origin while OpenGL
 	// uses a bottom-left origin so the frustum top and
 	// bottom should be swapped to compensate
-	if(screen_h > screen_w)
+	if(self->draw_h > self->draw_w)
 	{
-		float a = screen_h/screen_w;
-		cc_mat4f_frustum(&self->pm, 1, -1.0f, 1.0f, a, -a, 5.0f, 60.0f);
+		float a = self->draw_h/self->draw_w;
+		cc_mat4f_frustum(&self->pm, 1, -1.0f, 1.0f, a, -a, 5.0f, 1000.0f);
 	}
 	else
 	{
-		float a = screen_w/screen_h;
-		cc_mat4f_frustum(&self->pm, 1, -a, a, 1.0f, -1.0f, 5.0f, 60.0f);
+		float a = self->draw_w/self->draw_h;
+		cc_mat4f_frustum(&self->pm, 1, -a, a, 1.0f, -1.0f, 5.0f, 1000.0f);
 	}
 	cc_mat4f_translate(&self->mvm, 1, 0.0f, 0.0f, -40.0f);
 
@@ -135,76 +105,20 @@ static void gears_renderer_step(gears_renderer_t* self)
 
 	cc_stack4f_pop(self->mvm_stack, &self->mvm);
 
-	double t     = cc_timestamp();
-	double dt0   = t - self->t0;
-	++self->frames;
-
-	// don't update fps every frame
-	if(dt0 >= 1.0)
+	// query fps
+	int fps = vkk_renderer_fps(rend);
+	if(fps == 0)
 	{
-		float seconds  = (float) dt0;
-		self->last_fps = ((float) self->frames)/seconds;
-
-		//LOGI("%i frames in %.2lf seconds = %.2lf FPS", self->frames, seconds, self->last_fps);
-		gears_overlay_updateFps(self->overlay, (int) (self->last_fps + 0.5f));
-
-		self->t0     = t;
-		self->frames = 0;
+		fps = 60;
 	}
 
-	// next frame
-	if(self->t_last > 0.0)
+	// make the gears rotate at a constant rate
+	// red gear rotates at 1 revolution per 7 seconds
+	self->angle += 360.0f/(7.0f*fps);
+	if(self->angle >= 360.0f)
 	{
-		float dt_last = (float) (t - self->t_last);
-
-		if(self->last_fps > 30.0f)
-		{
-			dt_last = 1.0f/self->last_fps;
-		}
-
-		// make the gears rotate at a constant rate
-		// red gear rotates at 1 revolution per 7 seconds
-		self->angle += 360.0f * dt_last / 7.0f;
-		if(self->angle >= 360.0f)
-		{
-			self->angle -= 360.0f;
-		}
+		self->angle -= 360.0f;
 	}
-	self->t_last = t;
-}
-
-static void gears_renderer_rotate(gears_renderer_t* self,
-                                  float dx, float dy)
-{
-	ASSERT(self);
-
-	// rotating around x-axis is equivalent to moving up-and-down on touchscreen
-	// rotating around y-axis is equivalent to moving left-and-right on touchscreen
-	// 360 degrees is equivalent to moving completly across the touchscreen
-	if(self->screen_w && self->screen_h)
-	{
-		float w  = (float) self->screen_w;
-		float h  = (float) self->screen_h;
-		float rx = 360.0f * dy / h;
-		float ry = 360.0f * dx / w;
-		cc_quaternion_t q;
-		cc_quaternion_loadeuler(&q, rx, ry, 0.0f);
-		cc_quaternion_rotateq(&self->view_q, &q);
-	}
-}
-
-static void gears_renderer_scale(gears_renderer_t* self,
-                                 float scale)
-{
-	ASSERT(self);
-
-	// scale range
-	float min = 0.25f;
-	float max = 2.0f;
-
-	self->view_scale *= scale;
-	if(self->view_scale < min)  self->view_scale = min;
-	if(self->view_scale >= max) self->view_scale = max;
 }
 
 static int
@@ -437,13 +351,8 @@ gears_renderer_new(vkk_engine_t* engine)
 		return NULL;
 	}
 
-	self->view_scale  = 1.0f;
-	self->t0          = cc_timestamp();
-	self->density     = 1.0f;
-	self->touch_state = GEARS_TOUCH_STATE_INIT;
-	self->touch_ds    = 1.0f;
-	self->escape_t0   = cc_timestamp();
-	self->engine      = engine;
+	self->view_scale = 1.0f;
+	self->engine     = engine;
 
 	if(gears_renderer_newUniformSetFactory(self) == 0)
 	{
@@ -502,18 +411,10 @@ gears_renderer_new(vkk_engine_t* engine)
 		goto fail_stack;
 	}
 
-	self->overlay = gears_overlay_new(self);
-	if(self->overlay == NULL)
-	{
-		goto fail_overlay;
-	}
-
 	// success
 	return self;
 
 	// failure
-	fail_overlay:
-		cc_stack4f_delete(&self->mvm_stack);
 	fail_stack:
 		gear_delete(&self->gear3);
 	fail_gear3:
@@ -541,7 +442,6 @@ void gears_renderer_delete(gears_renderer_t** _self)
 	gears_renderer_t* self = *_self;
 	if(self)
 	{
-		gears_overlay_delete(&self->overlay);
 		cc_stack4f_delete(&self->mvm_stack);
 		gear_delete(&self->gear3);
 		gear_delete(&self->gear2);
@@ -556,48 +456,16 @@ void gears_renderer_delete(gears_renderer_t** _self)
 	}
 }
 
-void gears_renderer_exit(gears_renderer_t* self)
-{
-	ASSERT(self);
-
-	vkk_engine_platformCmd(self->engine,
-	                       VKK_PLATFORM_CMD_EXIT);
-}
-
-void gears_renderer_loadURL(gears_renderer_t* self,
-                            const char* url)
-{
-	ASSERT(self);
-	ASSERT(url);
-
-	vkk_engine_platformCmdLoadUrl(self->engine, url);
-}
-
-void gears_renderer_density(gears_renderer_t* self,
-                            float density)
-{
-	ASSERT(self);
-
-	self->density = density;
-}
-
-void gears_renderer_draw(gears_renderer_t* self)
+void gears_renderer_draw(gears_renderer_t* self,
+                         float draw_w, float draw_h)
 {
 	ASSERT(self);
 
 	vkk_renderer_t* rend;
 	rend = vkk_engine_defaultRenderer(self->engine);
 
-	float clear_color[4] =
-	{
-		0.0f, 0.0f, 0.0f, 1.0f
-	};
-	if(vkk_renderer_beginDefault(rend,
-	                             VKK_RENDERER_MODE_DRAW,
-	                             clear_color) == 0)
-	{
-		return;
-	}
+	self->draw_w = draw_w;
+	self->draw_h = draw_h;
 
 	gears_renderer_step(self);
 
@@ -606,119 +474,44 @@ void gears_renderer_draw(gears_renderer_t* self)
 	gear_draw(self->gear1, rend);
 	gear_draw(self->gear2, rend);
 	gear_draw(self->gear3, rend);
-
-	gears_overlay_draw(self->overlay, self->density);
-
-	vkk_renderer_end(rend);
 }
 
-void gears_renderer_touch(gears_renderer_t* self,
-                          int action, int count, double ts,
-                          float x0, float y0,
-                          float x1, float y1,
-                          float x2, float y2,
-                          float x3, float y3)
+void gears_renderer_rotate(gears_renderer_t* self,
+                           float dx, float dy)
 {
 	ASSERT(self);
 
-	if(action == GEARS_TOUCH_ACTION_UP)
+	// rotating around x-axis is equivalent to moving up-and-down on touchscreen
+	// rotating around y-axis is equivalent to moving left-and-right on touchscreen
+	// 360 degrees is equivalent to moving completly across the touchscreen
+	if((self->draw_w > 0.0f) && (self->draw_h > 0.0f))
 	{
-		if(self->touch_state == GEARS_TOUCH_STATE_OVERLAY)
-		{
-			gears_overlay_pointerUp(self->overlay, x0, y0, ts);
-		}
-
-		// Do nothing
-		self->touch_state = GEARS_TOUCH_STATE_INIT;
-	}
-	else if(count == 1)
-	{
-		if((self->touch_state == GEARS_TOUCH_STATE_INIT) &&
-		   (action == GEARS_TOUCH_ACTION_DOWN) &&
-		   gears_overlay_pointerDown(self->overlay, x0, y0, ts))
-		{
-			self->touch_state = GEARS_TOUCH_STATE_OVERLAY;
-		}
-		else if(self->touch_state == GEARS_TOUCH_STATE_OVERLAY)
-		{
-			gears_overlay_pointerMove(self->overlay, x0, y0, ts);
-		}
-		else if(self->touch_state == GEARS_TOUCH_STATE_ROTATE)
-		{
-			float dx = x0 - self->touch_x1;
-			float dy = y0 - self->touch_y1;
-			gears_renderer_rotate(self, dx, dy);
-			self->touch_x1 = x0;
-			self->touch_y1 = y0;
-		}
-		else if(action == GEARS_TOUCH_ACTION_DOWN)
-		{
-			self->touch_x1    = x0;
-			self->touch_y1    = y0;
-			self->touch_state = GEARS_TOUCH_STATE_ROTATE;
-		}
-	}
-	else if(count == 2)
-	{
-		if(self->touch_state == GEARS_TOUCH_STATE_OVERLAY)
-		{
-			// ignore
-		}
-		else if(self->touch_state == GEARS_TOUCH_STATE_ZOOM)
-		{
-			float dx = fabsf(x1 - x0);
-			float dy = fabsf(y1 - y0);
-			float ds = sqrtf(dx*dx + dy*dy);
-
-			gears_renderer_scale(self, ds/self->touch_ds);
-
-			self->touch_ds = ds;
-		}
-		else
-		{
-			float dx = fabsf(x1 - x0);
-			float dy = fabsf(y1 - y0);
-			float ds = sqrtf(dx*dx + dy*dy);
-
-			self->touch_ds    = ds;
-			self->touch_state = GEARS_TOUCH_STATE_ZOOM;
-		}
+		float w  = self->draw_w;
+		float h  = self->draw_h;
+		float rx = 360.0f * dy / h;
+		float ry = 360.0f * dx / w;
+		cc_quaternion_t q;
+		cc_quaternion_loadeuler(&q, rx, ry, 0.0f);
+		cc_quaternion_rotateq(&self->view_q, &q);
 	}
 }
 
-void gears_renderer_keyPress(gears_renderer_t* self,
-                             int keycode, int meta)
+void gears_renderer_scale(gears_renderer_t* self,
+                          float scale)
 {
 	ASSERT(self);
 
-	if(gears_overlay_keyPress(self->overlay, keycode, meta))
-	{
-		// ignore
-	}
-	else if(keycode == VKK_PLATFORM_KEYCODE_ESCAPE)
-	{
-		// double tap back to exit
-		double t1 = cc_timestamp();
-		if((t1 - self->escape_t0) < 0.5)
-		{
-			gears_renderer_exit(self);
-		}
-		else
-		{
-			self->escape_t0 = t1;
-		}
-	}
-}
+	self->view_scale *= scale;
 
-void gears_renderer_contentRect(gears_renderer_t* self,
-                                uint32_t t, uint32_t l,
-                                uint32_t b, uint32_t r)
-{
-	ASSERT(self);
-
-	self->content_rect_top    = t;
-	self->content_rect_left   = l;
-	self->content_rect_width  = r - l;
-	self->content_rect_height = b - t;
-	gears_overlay_contentRect(self->overlay, t, l, b, r);
+	// clamp view_scale
+	float min = 0.25f;
+	float max = 2.0f;
+	if(self->view_scale < min)
+	{
+		self->view_scale = min;
+	}
+	else if(self->view_scale >= max)
+	{
+		self->view_scale = max;
+	}
 }

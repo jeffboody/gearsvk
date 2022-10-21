@@ -34,11 +34,11 @@
 #include "libcc/math/cc_vec4f.h"
 #include "libvkk/vkk.h"
 
-struct gears_renderer_s;
+typedef struct gears_renderer_s gears_renderer_t;
 
-typedef struct
+typedef struct gear_s
 {
-	struct gears_renderer_s* renderer;
+	gears_renderer_t* renderer;
 
 	// color
 	cc_vec4f_t color;
@@ -68,7 +68,7 @@ typedef struct
 	vkk_uniformSet_t* us;
 } gear_t;
 
-gear_t* gear_new(struct gears_renderer_s* renderer,
+gear_t* gear_new(gears_renderer_t* renderer,
                  const cc_vec4f_t* color,
                  float inner_radius, float outer_radius,
                  float width,

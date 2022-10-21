@@ -36,11 +36,9 @@
 ***********************************************************/
 
 gears_overlay_t*
-gears_overlay_new(struct gears_renderer_s* renderer)
+gears_overlay_new(vkk_engine_t* engine)
 {
-	ASSERT(renderer);
-
-	vkk_engine_t* engine = renderer->engine;
+	ASSERT(engine);
 
 	gears_overlay_t* self = (gears_overlay_t*)
 	                        CALLOC(1, sizeof(gears_overlay_t));
@@ -48,7 +46,7 @@ gears_overlay_new(struct gears_renderer_s* renderer)
 	{
 		return NULL;
 	}
-	self->renderer = renderer;
+	self->engine = engine;
 
 	const char* resource_path;
 	resource_path = vkk_engine_internalPath(engine);
@@ -109,6 +107,12 @@ gears_overlay_new(struct gears_renderer_s* renderer)
 		goto fail_layer_hud;
 	}
 
+	self->renderer = gears_renderer_new(engine);
+	if(self->renderer == NULL)
+	{
+		goto fail_renderer;
+	}
+
 	vkk_uiScreen_windowReset(self->screen,
 	                         (vkk_uiWindow_t*) self->layer_hud);
 
@@ -116,6 +120,8 @@ gears_overlay_new(struct gears_renderer_s* renderer)
 	return self;
 
 	// failure
+	fail_renderer:
+		gears_layerHud_delete(&self->layer_hud);
 	fail_layer_hud:
 		gears_viewAbout_delete(&self->view_about);
 	fail_view_about:
@@ -133,6 +139,7 @@ void gears_overlay_delete(gears_overlay_t** _self)
 	if(self)
 	{
 		vkk_uiScreen_windowReset(self->screen, NULL);
+		gears_renderer_delete(&self->renderer);
 		gears_layerHud_delete(&self->layer_hud);
 		gears_viewAbout_delete(&self->view_about);
 		vkk_uiScreen_delete(&self->screen);
@@ -141,57 +148,54 @@ void gears_overlay_delete(gears_overlay_t** _self)
 	}
 }
 
-int gears_overlay_keyPress(gears_overlay_t* self,
-                           int keycode,
-                           int meta)
+void gears_overlay_draw(gears_overlay_t* self)
 {
 	ASSERT(self);
 
-	return vkk_uiScreen_keyPress(self->screen, keycode, meta);
-}
+	vkk_renderer_t* rend;
+	rend = vkk_engine_defaultRenderer(self->engine);
 
-void gears_overlay_draw(gears_overlay_t* self,
-                        float density)
-{
-	ASSERT(self);
-
-	vkk_uiScreen_density(self->screen, density);
+	float clear_color[4] =
+	{
+		0.0f, 0.0f, 0.0f, 1.0f
+	};
+	if(vkk_renderer_beginDefault(rend,
+	                             VKK_RENDERER_MODE_DRAW,
+	                             clear_color) == 0)
+	{
+		return;
+	}
 	vkk_uiScreen_draw(self->screen);
+	vkk_renderer_end(rend);
 }
 
-void gears_overlay_updateFps(gears_overlay_t* self, int fps)
+int gears_overlay_event(gears_overlay_t* self,
+                        vkk_platformEvent_t* event)
 {
 	ASSERT(self);
+	ASSERT(event);
 
-	gears_layerHud_updateFps(self->layer_hud, fps);
-}
+	if((event->type == VKK_PLATFORM_EVENTTYPE_ACTION_DOWN) ||
+	   (event->type == VKK_PLATFORM_EVENTTYPE_ACTION_MOVE) ||
+	   (event->type == VKK_PLATFORM_EVENTTYPE_ACTION_UP))
+	{
+		vkk_uiScreen_eventAction(self->screen, event);
+	}
+	else if(event->type == VKK_PLATFORM_EVENTTYPE_DENSITY)
+	{
+		vkk_uiScreen_eventDensity(self->screen, event->density);
+	}
+	else if((event->type == VKK_PLATFORM_EVENTTYPE_KEY_UP) ||
+	        ((event->type == VKK_PLATFORM_EVENTTYPE_KEY_DOWN) &&
+	         (event->key.repeat)))
+	{
+		return vkk_uiScreen_eventKey(self->screen, &event->key);
+	}
+	else if(event->type == VKK_PLATFORM_EVENTTYPE_CONTENT_RECT)
+	{
+		vkk_uiScreen_eventContentRect(self->screen,
+		                              &event->content_rect);
+	}
 
-int gears_overlay_pointerDown(gears_overlay_t* self,
-                              float x, float y, double t0)
-{
-	ASSERT(self);
-	return vkk_uiScreen_pointerDown(self->screen, x, y, t0);
-}
-
-int gears_overlay_pointerUp(gears_overlay_t* self,
-                            float x, float y, double t0)
-{
-	ASSERT(self);
-	return vkk_uiScreen_pointerUp(self->screen, x, y, t0);
-}
-
-int gears_overlay_pointerMove(gears_overlay_t* self,
-                              float x, float y, double t0)
-{
-	ASSERT(self);
-	return vkk_uiScreen_pointerMove(self->screen, x, y, t0);
-}
-
-void gears_overlay_contentRect(gears_overlay_t* self,
-                               uint32_t t, uint32_t l,
-                               uint32_t b, uint32_t r)
-{
-	ASSERT(self);
-
-	vkk_uiScreen_contentRect(self->screen, t, l, b, r);
+	return 1;
 }
