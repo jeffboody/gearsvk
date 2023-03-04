@@ -43,14 +43,6 @@ typedef struct gears_overlay_s
 gears_overlay_t* gears_overlay_new(vkk_engine_t* engine);
 void             gears_overlay_delete(gears_overlay_t** _self);
 void             gears_overlay_draw(gears_overlay_t* self);
-void             gears_overlay_eventAction(gears_overlay_t* self,
-                                           vkk_platformEvent_t* event);
-void             gears_overlay_eventContentRect(gears_overlay_t* self,
-                                                vkk_platformEventContentRect_t* ecr);
-void             gears_overlay_eventDensity(gears_overlay_t* self,
-                                            float density);
-int              gears_overlay_eventKey(gears_overlay_t* self,
-                                        vkk_platformEventKey_t* ek);
 int              gears_overlay_event(gears_overlay_t* self,
                                      vkk_platformEvent_t* event);
 

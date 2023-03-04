@@ -93,13 +93,14 @@ References
 
 The following websites were useful in making this port.
 
-	https://www.khronos.org/vulkan/
-	https://vulkan.lunarg.com/
+	https://www.khronos.org/vulkan
+	https://vulkan.lunarg.com
 	https://wiki.libsdl.org/CategoryVulkan
 	https://developer.android.com/ndk/guides/graphics
 	https://github.com/vinjn/awesome-vulkan
-	https://vulkan-tutorial.com/
+	https://vulkan-tutorial.com
 	https://developer.nvidia.com/vulkan-shader-resource-binding
+	https://developer.nvidia.com/blog/vulkan-dos-donts
 
 In addition to the "Vulkan Programming Guide: The Official
 Guide to Learning Vulkan" book.

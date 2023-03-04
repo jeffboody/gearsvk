@@ -14,20 +14,21 @@ layout(location=0) out vec4 fragColor;
 
 void main()
 {
-	vec4 ambient        = vec4(0.2, 0.2, 0.2, 1.0);
+	vec3 ambient        = vec3(0.2, 0.2, 0.2);
+	vec3 color3         = vec3(color);
 	vec3 light_position = vec3(5.0, 5.0, 10.0);
 	light_position      = normalize(light_position);
 
-	vec4 lava = texture(lava_sampler, varying_coord);
+	vec3 lava = vec3(texture(lava_sampler, varying_coord));
 
 	float ndotlp  = dot(varying_normal, light_position);
 	if(ndotlp > 0.0)
 	{
-		vec4 diffuse = vec4(ndotlp, ndotlp, ndotlp, 0.0);
-		fragColor    = lava*color*(ambient + diffuse);
+		vec3 diffuse = vec3(ndotlp, ndotlp, ndotlp);
+		fragColor    = vec4(lava*color3*(ambient + diffuse), 1.0);
 	}
 	else
 	{
-		fragColor = lava*color*ambient;
+		fragColor = vec4(lava*color3*ambient, 1.0);
 	}
 }

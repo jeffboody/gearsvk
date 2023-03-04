@@ -28,8 +28,126 @@
 #define LOG_TAG "gears"
 #include "libcc/cc_log.h"
 #include "libcc/cc_memory.h"
+#include "texgz/texgz_png.h"
 #include "gears_overlay.h"
 #include "gears_renderer.h"
+
+/***********************************************************
+* public                                                   *
+***********************************************************/
+
+static int
+gears_overlay_screenshot(gears_overlay_t* self)
+{
+	ASSERT(self);
+
+	texgz_tex_t* tex;
+	tex = texgz_tex_new(2048, 2048,
+	                    2048, 2048,
+	                    TEXGZ_UNSIGNED_BYTE,
+	                    TEXGZ_RGBA, NULL);
+	if(tex == NULL)
+	{
+		return 0;
+	}
+
+	vkk_image_t* img;
+	img = vkk_image_new(self->engine,
+	                    2048, 2048, 1,
+	                    VKK_IMAGE_FORMAT_RGBA8888,
+	                    0, VKK_STAGE_FS, NULL);
+	if(img == NULL)
+	{
+		goto fail_img;
+	}
+
+	vkk_renderer_t* rend;
+	rend = vkk_renderer_newImage(self->engine, 2048, 2048,
+	                             VKK_IMAGE_FORMAT_RGBA8888);
+	if(rend == NULL)
+	{
+		goto fail_rend;
+	}
+
+	gears_renderer_t* renderer;
+	renderer = gears_renderer_new(self->engine, rend);
+	if(renderer == NULL)
+	{
+		goto fail_renderer;
+	}
+
+	float clear_color[] =
+	{
+		0.0f, 0.0f, 0.0f, 0.0f,
+	};
+
+	if(vkk_renderer_beginImage(rend, VKK_RENDERER_MODE_DRAW,
+	                           img, clear_color) == 0)
+	{
+		goto fail_begin;
+	}
+
+	gears_renderer_draw(renderer, 2048, 2048);
+	vkk_renderer_end(rend);
+
+	if(vkk_image_readPixels(img, tex->pixels) == 0)
+	{
+		goto fail_readpixels;
+	}
+
+	char fname[256];
+	snprintf(fname, 256, "%s/screenshot.png",
+	         vkk_engine_externalPath(self->engine));
+	if(texgz_png_export(tex, fname) == 0)
+	{
+		goto fail_export;
+	}
+
+	gears_renderer_delete(&renderer);
+	vkk_renderer_delete(&rend);
+	vkk_image_delete(&img);
+	texgz_tex_delete(&tex);
+
+	// success
+	return 1;
+
+	// failure
+	fail_export:
+	fail_readpixels:
+	fail_begin:
+		gears_renderer_delete(&renderer);
+	fail_renderer:
+		vkk_renderer_delete(&rend);
+	fail_rend:
+		vkk_image_delete(&img);
+	fail_img:
+		texgz_tex_delete(&tex);
+	return 0;
+}
+
+static int
+gears_overlay_eventKey(gears_overlay_t* self,
+                       vkk_platformEvent_t* event)
+{
+	ASSERT(self);
+	ASSERT(event);
+
+	vkk_platformEventKey_t* e = &event->key;
+
+	if(e->keycode == '=')
+	{
+		if(event->type == VKK_PLATFORM_EVENTTYPE_KEY_UP)
+		{
+			gears_overlay_screenshot(self);
+		}
+	}
+	else
+	{
+		return 0;
+	}
+
+	return 1;
+}
 
 /***********************************************************
 * public                                                   *
@@ -39,6 +157,8 @@ gears_overlay_t*
 gears_overlay_new(vkk_engine_t* engine)
 {
 	ASSERT(engine);
+
+	vkk_renderer_t* rend = vkk_engine_defaultRenderer(engine);
 
 	gears_overlay_t* self = (gears_overlay_t*)
 	                        CALLOC(1, sizeof(gears_overlay_t));
@@ -86,9 +206,7 @@ gears_overlay_new(vkk_engine_t* engine)
 		},
 	};
 
-	self->screen = vkk_uiScreen_new(0, engine,
-	                                vkk_engine_defaultRenderer(engine),
-	                                resource,
+	self->screen = vkk_uiScreen_new(0, engine, rend, resource,
 	                                &widget_style);
 	if(self->screen == NULL)
 	{
@@ -107,7 +225,7 @@ gears_overlay_new(vkk_engine_t* engine)
 		goto fail_layer_hud;
 	}
 
-	self->renderer = gears_renderer_new(engine);
+	self->renderer = gears_renderer_new(engine, rend);
 	if(self->renderer == NULL)
 	{
 		goto fail_renderer;
@@ -189,7 +307,10 @@ int gears_overlay_event(gears_overlay_t* self,
 	        ((event->type == VKK_PLATFORM_EVENTTYPE_KEY_DOWN) &&
 	         (event->key.repeat)))
 	{
-		return vkk_uiScreen_eventKey(self->screen, &event->key);
+		if(gears_overlay_eventKey(self, event) == 0)
+		{
+			return vkk_uiScreen_eventKey(self->screen, &event->key);
+		}
 	}
 	else if(event->type == VKK_PLATFORM_EVENTTYPE_CONTENT_RECT)
 	{

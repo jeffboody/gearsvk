@@ -44,6 +44,7 @@
 typedef struct gears_renderer_s
 {
 	vkk_engine_t*            engine;
+	vkk_renderer_t*          rend;
 	vkk_uniformSetFactory_t* usf;
 	vkk_pipelineLayout_t*    pl;
 	vkk_graphicsPipeline_t*  gp;
@@ -67,7 +68,8 @@ typedef struct gears_renderer_s
 	gear_t* gear3;
 } gears_renderer_t;
 
-gears_renderer_t* gears_renderer_new(vkk_engine_t* engine);
+gears_renderer_t* gears_renderer_new(vkk_engine_t* engine,
+                                     vkk_renderer_t* rend);
 void              gears_renderer_delete(gears_renderer_t** _self);
 void              gears_renderer_rotate(gears_renderer_t* self,
                                         float dx, float dy);

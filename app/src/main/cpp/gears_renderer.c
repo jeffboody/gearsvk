@@ -54,9 +54,6 @@ static void gears_renderer_step(gears_renderer_t* self)
 {
 	ASSERT(self);
 
-	vkk_renderer_t* rend;
-	rend = vkk_engine_defaultRenderer(self->engine);
-
 	// https://www.saschawillems.de/blog/2019/03/29/flipping-the-vulkan-viewport/
 	// Vulkan uses a top-left left origin while OpenGL
 	// uses a bottom-left origin so the frustum top and
@@ -84,7 +81,7 @@ static void gears_renderer_step(gears_renderer_t* self)
 	cc_mat4f_translate(&self->mvm, 0, -3.0f, -2.0f, 0.0f);
 	cc_mat4f_rotate(&self->mvm, 0, self->angle, 0.0f, 0.0f, 1.0f);
 	cc_mat4f_mulm_copy(&self->pm, &self->mvm, &mvp);
-	gear_update(self->gear1, rend, &mvp, &self->mvm);
+	gear_update(self->gear1, self->rend, &mvp, &self->mvm);
 	cc_stack4f_pop(self->mvm_stack, &self->mvm);
 
 	// Gear2
@@ -92,7 +89,7 @@ static void gears_renderer_step(gears_renderer_t* self)
 	cc_mat4f_translate(&self->mvm, 0, 3.1f, -2.0f, 0.0f);
 	cc_mat4f_rotate(&self->mvm, 0, -2.0f * self->angle - 9.0f, 0.0f, 0.0f, 1.0f);
 	cc_mat4f_mulm_copy(&self->pm, &self->mvm, &mvp);
-	gear_update(self->gear2, rend, &mvp, &self->mvm);
+	gear_update(self->gear2, self->rend, &mvp, &self->mvm);
 	cc_stack4f_pop(self->mvm_stack, &self->mvm);
 
 	// Gear3
@@ -100,13 +97,13 @@ static void gears_renderer_step(gears_renderer_t* self)
 	cc_mat4f_translate(&self->mvm, 0, -3.1f, 4.2f, 0.0f);
 	cc_mat4f_rotate(&self->mvm, 0, -2.0f * self->angle - 25.0f, 0.0f, 0.0f, 1.0f);
 	cc_mat4f_mulm_copy(&self->pm, &self->mvm, &mvp);
-	gear_update(self->gear3, rend, &mvp, &self->mvm);
+	gear_update(self->gear3, self->rend, &mvp, &self->mvm);
 	cc_stack4f_pop(self->mvm_stack, &self->mvm);
 
 	cc_stack4f_pop(self->mvm_stack, &self->mvm);
 
 	// query fps
-	int fps = vkk_renderer_fps(rend);
+	int fps = vkk_renderer_fps(self->rend);
 	if(fps == 0)
 	{
 		fps = 60;
@@ -200,9 +197,6 @@ gears_renderer_newGraphicsPipeline(gears_renderer_t* self)
 {
 	ASSERT(self);
 
-	vkk_renderer_t* rend;
-	rend = vkk_engine_defaultRenderer(self->engine);
-
 	vkk_vertexBufferInfo_t vbi[2] =
 	{
 		// layout(location=0) in vec3 vertex;
@@ -221,7 +215,7 @@ gears_renderer_newGraphicsPipeline(gears_renderer_t* self)
 
 	vkk_graphicsPipelineInfo_t gpi =
 	{
-		.renderer          = rend,
+		.renderer          = self->rend,
 		.pl                = self->pl,
 		.vs                = "shaders/vert.spv",
 		.fs                = "shaders/frag.spv",
@@ -338,9 +332,11 @@ gears_renderer_newImage(gears_renderer_t* self)
 ***********************************************************/
 
 gears_renderer_t*
-gears_renderer_new(vkk_engine_t* engine)
+gears_renderer_new(vkk_engine_t* engine,
+                   vkk_renderer_t* rend)
 {
 	ASSERT(engine);
+	ASSERT(rend);
 
 	gears_renderer_t* self;
 	self = (gears_renderer_t*)
@@ -353,6 +349,7 @@ gears_renderer_new(vkk_engine_t* engine)
 
 	self->view_scale = 1.0f;
 	self->engine     = engine;
+	self->rend       = rend;
 
 	if(gears_renderer_newUniformSetFactory(self) == 0)
 	{
@@ -461,19 +458,16 @@ void gears_renderer_draw(gears_renderer_t* self,
 {
 	ASSERT(self);
 
-	vkk_renderer_t* rend;
-	rend = vkk_engine_defaultRenderer(self->engine);
-
 	self->draw_w = draw_w;
 	self->draw_h = draw_h;
 
 	gears_renderer_step(self);
 
-	vkk_renderer_bindGraphicsPipeline(rend, self->gp);
+	vkk_renderer_bindGraphicsPipeline(self->rend, self->gp);
 
-	gear_draw(self->gear1, rend);
-	gear_draw(self->gear2, rend);
-	gear_draw(self->gear3, rend);
+	gear_draw(self->gear1, self->rend);
+	gear_draw(self->gear2, self->rend);
+	gear_draw(self->gear3, self->rend);
 }
 
 void gears_renderer_rotate(gears_renderer_t* self,
