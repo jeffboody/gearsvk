@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 32
     defaultConfig {
         applicationId "com.jeffboody.gearsvk"
         minSdkVersion 24
-        targetSdkVersion 31
-        versionCode 18
-        versionName "20230304-1.0.22"
+        targetSdkVersion 32
+        versionCode 19
+        versionName "20230912-1.0.23"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
@@ -27,6 +27,7 @@ android {
             path "src/main/cpp/CMakeLists.txt"
         }
     }
+    namespace 'com.jeffboody.gearsvk'
 }
 
 dependencies {

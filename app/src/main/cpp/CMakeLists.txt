@@ -58,4 +58,6 @@ target_link_libraries(gearsvk
 
                       # NDK libraries
                       android
-                      log)
+                      log
+                      vulkan
+                      z)
