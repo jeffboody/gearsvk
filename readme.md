@@ -1,26 +1,22 @@
-About
-=====
+Introduction
+============
 
-Gears VK is a heavily modified port of the famous "gears"
-demo.
+![GearsVK](docs/gearsvk.gif?raw=true "GearsVK")
 
-![Gears VK](docs/gearsvk.gif?raw=true "Gears VK")
+GearsVK is a modern port of the classic OpenGL 'gears' demo
+to Vulkan using the VKK library. Designed as a learning
+resource for developers, this project provides a clear and
+concise demonstration of core Vulkan concepts. Building upon
+Brian Paul's original OpenGL implementation, GearsVK offers
+a solid foundation for understanding Vulkan graphics
+programming.
 
-The Gears demo is an open source project intended to help
-developers to learn graphics APIs. The Gears
-demo was originally written by Brian Paul for the OpenGL
-API as part of the Mesa3D project. I've ported this app
-between multiple languages and graphics APIs over the
-years and have found it a very useful learning tool.
-
-This project includes several branches. The main branch
-contains a new port to Vulkan via my VKK (Vulkan Kit)
-library. The scaler-test branch demonstrates how to use
-the VKK library to implement upscaling and super sampling.
-The vulkan-tutorial branch contains my original port to
-Vulkan which uses the Vulkan library directly and includes
-an in depth tutorial. Going forward only the VKK version
-will be maintained.
+Beyond the core demo, this repository includes additional
+branches showcasing advanced techniques like upscaling and
+super sampling, as well as a detailed Vulkan tutorial for
+beginners. I hope GearsVK becomes an invaluable resource for
+aspiring graphics developers to learn about graphics and the
+Vulkan API.
 
 Setup
 =====
@@ -28,7 +24,7 @@ Setup
 Clone Project
 -------------
 
-Clone the gearsvk project https://github.com/jeffboody/gearsvk.
+Clone the GearsVK project https://github.com/jeffboody/gearsvk.
 
 	git clone git@github.com:jeffboody/gearsvk.git
 	git checkout -b main origin/main
@@ -128,12 +124,12 @@ GIF created by ffmpeg.
 Screenshot
 ==========
 
-![Gears VK](docs/gearsvk.jpg?raw=true "Gears VK")
+![GearsVK](docs/gearsvk.jpg?raw=true "GearsVK")
 
 License
 =======
 
-This port of Gears VK was implemented by
+This port of GearsVK was implemented by
 [Jeff Boody](mailto:jeffboody@gmail.com)
 under The MIT License.
 
