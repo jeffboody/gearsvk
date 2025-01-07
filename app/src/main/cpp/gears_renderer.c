@@ -486,7 +486,8 @@ void gears_renderer_rotate(gears_renderer_t* self,
 		float ry = 360.0f * dx / w;
 		cc_quaternion_t q;
 		cc_quaternion_loadeuler(&q, rx, ry, 0.0f);
-		cc_quaternion_rotateq(&self->view_q, &q);
+		cc_quaternion_rotateq(&q, &self->view_q);
+		cc_quaternion_copy(&q, &self->view_q);
 	}
 }
 
