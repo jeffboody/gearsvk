@@ -63,7 +63,8 @@ gears_overlay_screenshot(gears_overlay_t* self)
 
 	vkk_renderer_t* rend;
 	rend = vkk_renderer_newImage(self->engine, 2048, 2048,
-	                             VKK_IMAGE_FORMAT_RGBA8888);
+	                             VKK_IMAGE_FORMAT_RGBA8888,
+	                             VKK_RENDERER_MSAA_ENABLE);
 	if(rend == NULL)
 	{
 		goto fail_rend;
