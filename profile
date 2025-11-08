@@ -3,9 +3,7 @@ SDK=$HOME/Android/Sdk
 export SDK
 
 # Setup Vulkan for Linux SDL
-if [[ "$OSTYPE" != "darwin"* ]]; then
-	source ${HOME}/vulkan/1.3.261.1/setup-env.sh
-fi
+source ${HOME}/vulkan/1.4.321.1/setup-env.sh
 
 #-- DON'T CHANGE BELOW LINE --
 

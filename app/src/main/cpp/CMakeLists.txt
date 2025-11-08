@@ -19,6 +19,10 @@ set(CMAKE_SHARED_LINKER_FLAGS
 # Compiler options
 add_compile_options(-Wall)
 
+# Linker options
+# 16KB page sizes
+add_link_options(-Wl,-z,max-page-size=16384)
+
 # Main library
 add_library(gearsvk
             SHARED

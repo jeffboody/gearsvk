@@ -223,7 +223,7 @@ gears_renderer_newGraphicsPipeline(gears_renderer_t* self)
 		.vbi               = vbi,
 		.primitive         = VKK_PRIMITIVE_TRIANGLE_STRIP,
 		.primitive_restart = 0,
-		.cull_back         = 0,
+		.cull_mode         = VKK_CULL_MODE_BACK,
 		.depth_test        = 1,
 		.depth_write       = 1,
 		.blend_mode        = 0

@@ -313,10 +313,9 @@ int gears_overlay_event(gears_overlay_t* self,
 			return vkk_uiScreen_eventKey(self->screen, &event->key);
 		}
 	}
-	else if(event->type == VKK_PLATFORM_EVENTTYPE_CONTENT_RECT)
+	else if(event->type == VKK_PLATFORM_EVENTTYPE_INSET)
 	{
-		vkk_uiScreen_eventContentRect(self->screen,
-		                              &event->content_rect);
+		vkk_uiScreen_eventInset(self->screen, &event->inset);
 	}
 
 	return 1;
