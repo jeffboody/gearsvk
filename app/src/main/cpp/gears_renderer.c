@@ -50,7 +50,8 @@ static const cc_vec4f_t RED   = { .r=0.8f, .g=0.1f, .b=0.0f, .a=1.0f };
 static const cc_vec4f_t GREEN = { .r=0.0f, .g=0.8f, .b=0.2f, .a=1.0f };
 static const cc_vec4f_t BLUE  = { .r=0.2f, .g=0.2f, .b=1.0f, .a=1.0f };
 
-static void gears_renderer_step(gears_renderer_t* self)
+static void
+gears_renderer_step(gears_renderer_t* self, double frame_dt)
 {
 	ASSERT(self);
 
@@ -103,10 +104,16 @@ static void gears_renderer_step(gears_renderer_t* self)
 	cc_stack4f_pop(self->mvm_stack, &self->mvm);
 
 	// query fps
-	int fps = vkk_renderer_fps(self->rend);
-	if(fps == 0)
+	float fps = (float) vkk_renderer_fps(self->rend);
+	if(fps == 0.0f)
 	{
-		fps = 60;
+		fps = 60.0f;
+	}
+
+	// override fps
+	if((frame_dt > 0.001) && (frame_dt < 0.1))
+	{
+		fps = (float) (1.0/frame_dt);
 	}
 
 	// make the gears rotate at a constant rate
@@ -454,14 +461,15 @@ void gears_renderer_delete(gears_renderer_t** _self)
 }
 
 void gears_renderer_draw(gears_renderer_t* self,
-                         float draw_w, float draw_h)
+                         float draw_w, float draw_h,
+                         double frame_dt)
 {
 	ASSERT(self);
 
 	self->draw_w = draw_w;
 	self->draw_h = draw_h;
 
-	gears_renderer_step(self);
+	gears_renderer_step(self, frame_dt);
 
 	vkk_renderer_bindGraphicsPipeline(self->rend, self->gp);
 

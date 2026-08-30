@@ -37,12 +37,18 @@ typedef struct gears_overlay_s
 	gears_viewAbout_t* view_about;
 	gears_layerHud_t*  layer_hud;
 
+	int param_frame_fps;
+	int param_input_latency;
+
+	double frame_dt;
+
 	gears_renderer_t* renderer;
 } gears_overlay_t;
 
 gears_overlay_t* gears_overlay_new(vkk_engine_t* engine);
 void             gears_overlay_delete(gears_overlay_t** _self);
-void             gears_overlay_draw(gears_overlay_t* self);
+void             gears_overlay_draw(gears_overlay_t* self,
+                                    double frame_dt);
 int              gears_overlay_event(gears_overlay_t* self,
                                      vkk_platformEvent_t* event);
 

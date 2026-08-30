@@ -63,7 +63,8 @@ gears_viewAbout_rendererDraw(vkk_uiWidget_t* widget)
 
 	gears_renderer_draw(overlay->renderer,
 	                    (float) rect_draw->w,
-	                    (float) rect_draw->h);
+	                    (float) rect_draw->h,
+	                    overlay->frame_dt);
 }
 
 /***********************************************************

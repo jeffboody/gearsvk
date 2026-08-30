@@ -3,7 +3,7 @@ SDK=$HOME/Android/Sdk
 export SDK
 
 # Setup Vulkan for Linux SDL
-source ${HOME}/vulkan/1.4.321.1/setup-env.sh
+source ${HOME}/vulkan/1.4.357.1/setup-env.sh
 
 #-- DON'T CHANGE BELOW LINE --
 

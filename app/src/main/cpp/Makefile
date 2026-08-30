@@ -8,7 +8,7 @@ OBJECTS  = $(TARGET).o $(CLASSES:%=%.o)
 HFILES   = $(CLASSES:%=%.h)
 OPT      = -O2 -Wall
 CFLAGS   = $(OPT) -I. -I$(VULKAN_SDK)/include `sdl2-config --cflags` -DA3D_GL2
-LDFLAGS  = -Llibvkk -lvkk -L$(VULKAN_SDK)/lib -lvulkan `sdl2-config --libs` -Llibbfs -lbfs -Llibsqlite3 -lsqlite3 -Llibxmlstream -lxmlstream -Ltexgz -ltexgz -Llibcc -lcc -Llibexpat/expat/lib -lexpat -lm -ldl -lpthread -lz -ljpeg
+LDFLAGS  = -Llibvkk -lvkk -L$(VULKAN_SDK)/lib/VulkanLoader/lib -lvulkan `sdl2-config --libs` -Llibbfs -lbfs -Llibsqlite3 -lsqlite3 -Llibxmlstream -lxmlstream -Ltexgz -ltexgz -Llibcc -lcc -Llibexpat/expat/lib -lexpat -lm -ldl -lpthread -lz -ljpeg
 CCC      = gcc
 
 all: $(TARGET) libcc libbfs libsqlite3 libxmlstream texgz libvkk libexpat

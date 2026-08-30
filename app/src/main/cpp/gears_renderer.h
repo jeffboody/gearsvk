@@ -77,6 +77,7 @@ void              gears_renderer_scale(gears_renderer_t* self,
                                        float scale);
 void              gears_renderer_draw(gears_renderer_t* self,
                                       float draw_w,
-                                      float draw_h);
+                                      float draw_h,
+                                      double frame_dt);
 
 #endif

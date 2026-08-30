@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 35
+    compileSdkVersion 36
     defaultConfig {
         applicationId "com.jeffboody.gearsvk"
-        minSdkVersion 24
-        targetSdkVersion 35
-        versionCode 25
-        versionName "20251108-1.0.25"
+        minSdkVersion 33
+        targetSdkVersion 36
+        versionCode 26
+        versionName "20260819-1.0.26"
         externalNativeBuild {
             cmake {
                 arguments "-DANDROID_STL=c++_shared"

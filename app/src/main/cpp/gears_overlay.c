@@ -88,7 +88,8 @@ gears_overlay_screenshot(gears_overlay_t* self)
 		goto fail_begin;
 	}
 
-	gears_renderer_draw(renderer, 2048, 2048);
+	gears_renderer_draw(renderer, 2048, 2048,
+	                    self->frame_dt);
 	vkk_renderer_end(rend);
 
 	if(vkk_image_readPixels(img, tex->pixels) == 0)
@@ -267,9 +268,12 @@ void gears_overlay_delete(gears_overlay_t** _self)
 	}
 }
 
-void gears_overlay_draw(gears_overlay_t* self)
+void gears_overlay_draw(gears_overlay_t* self,
+                        double frame_dt)
 {
 	ASSERT(self);
+
+	self->frame_dt = frame_dt;
 
 	vkk_renderer_t* rend;
 	rend = vkk_engine_defaultRenderer(self->engine);
@@ -286,6 +290,22 @@ void gears_overlay_draw(gears_overlay_t* self)
 	}
 	vkk_uiScreen_draw(self->screen);
 	vkk_renderer_end(rend);
+
+	// optionally provide a frame pacing hint
+	#ifdef CUSTOM_FRAME_PACING
+	{
+		double desired_fps     = 60.0; // e.g. 30-120
+		double desired_latency = 2.0;  // e.g. 1 or 2
+		double frame_dt        = 1.0/desired_fps;
+		double input_latency   = desired_latency*frame_dt;
+		if(desired_fps < 60.0)
+		{
+			input_latency = desired_latency/60.0;
+		}
+		vkk_engine_framePacing(self->engine, frame_dt,
+		                       input_latency);
+	}
+	#endif
 }
 
 int gears_overlay_event(gears_overlay_t* self,

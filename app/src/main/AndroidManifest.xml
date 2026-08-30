@@ -9,6 +9,7 @@
         android:roundIcon="@drawable/logo"
         android:allowBackup="true"
         android:supportsRtl="true"
+        android:enableOnBackInvokedCallback="false"
         android:theme="@style/AppTheme">
         <activity android:name=".GearsVK"
             android:configChanges="orientation|keyboard|keyboardHidden|screenLayout|screenSize|smallestScreenSize"

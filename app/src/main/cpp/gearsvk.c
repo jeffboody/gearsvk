@@ -45,11 +45,11 @@ void gearsvk_onDestroy(void** _priv)
 	gears_overlay_delete((gears_overlay_t**) _priv);
 }
 
-void gearsvk_onDraw(void* priv)
+void gearsvk_onDraw(void* priv, double frame_dt)
 {
 	ASSERT(priv);
 
-	gears_overlay_draw((gears_overlay_t*) priv);
+	gears_overlay_draw((gears_overlay_t*) priv, frame_dt);
 }
 
 void gearsvk_onPause(void* priv)
@@ -75,7 +75,7 @@ vkk_platformInfo_t VKK_PLATFORM_INFO =
 	{
 		.major = 1,
 		.minor = 0,
-		.patch = 25,
+		.patch = 26,
 	},
 	.app_dir     = "GearsVK",
 	.onCreate    = gearsvk_onCreate,
